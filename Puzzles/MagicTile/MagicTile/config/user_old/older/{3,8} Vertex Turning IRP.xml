@@ -1,0 +1,28 @@
+<PuzzleConfig>
+   <DisplayName>{3,8} Vertex Turning</DisplayName>
+   <ExpectedNumColors>32</ExpectedNumColors>
+   <ID>Puzzle.IRP.{3,8}.V.32</ID>
+   <IRPConfig>
+      <DataFile>3_8b_cell.wrl</DataFile>
+      <FirstTile>0</FirstTile>
+   </IRPConfig>
+   <Identifications>
+      <Identification>
+         <EdgeSet>2:2:1:1:2:1:2:1:2:1:2</EdgeSet>
+         <EndRotation>1</EndRotation>
+         <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
+      </Identification>
+   </Identifications>
+   <NumTiles>7500</NumTiles>
+   <P>3</P>
+   <Q>8</Q>
+   <SlicingCircles>
+      <EdgeCentered/>
+      <FaceCentered/>
+      <Thickness>0.03</Thickness>
+      <VertexCentered>
+         <Distance>0:0.5:1:0</Distance>
+      </VertexCentered>
+   </SlicingCircles>
+   <TileShrink>0.88</TileShrink>
+</PuzzleConfig>

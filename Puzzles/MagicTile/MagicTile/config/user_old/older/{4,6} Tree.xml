@@ -1,0 +1,31 @@
+<PuzzleConfig>
+   <DisplayName>{4,6} Tree</DisplayName>
+   <ExpectedNumColors>12</ExpectedNumColors>
+   <ID>Puzzle.IRP.{4,6}.V.12</ID>
+   <IRPConfig>
+      <DataFile>4_6a_cell.wrl</DataFile>
+      <FirstTile>0</FirstTile>
+   </IRPConfig>
+   <Identifications>
+      <Identification>
+         <EdgeSet>1:2:1</EdgeSet>
+         <EndRotation>2</EndRotation>
+         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
+      </Identification>
+      <Identification>
+         <EdgeSet>2:2:2</EdgeSet>
+         <EndRotation>0</EndRotation>
+         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
+      </Identification>
+   </Identifications>
+   <NumTiles>5000</NumTiles>
+   <P>4</P>
+   <Q>6</Q>
+   <SlicingCircles>
+      <EdgeCentered/>
+      <FaceCentered/>
+      <Thickness>0.04</Thickness>
+      <VertexCentered/>
+   </SlicingCircles>
+   <TileShrink>0.94</TileShrink>
+</PuzzleConfig>

@@ -1,0 +1,21 @@
+<PuzzleConfig>
+   <DisplayName>{5,3} FEV Turning small</DisplayName>
+   <ExpectedNumColors>12</ExpectedNumColors>
+   <ID>Puzzle.{5,3}.FEV.12</ID>
+   <NumTiles>12</NumTiles>
+   <P>5</P>
+   <Q>3</Q>
+   <SlicingCircles>
+      <EdgeCentered>
+         <Distance>1:0:0:0</Distance>
+      </EdgeCentered>
+      <FaceCentered>
+         <Distance>-1:0:1:0</Distance>
+      </FaceCentered>
+      <Thickness>0.005</Thickness>
+      <VertexCentered>
+         <Distance>1:0:0:0</Distance>
+      </VertexCentered>
+   </SlicingCircles>
+   <TileShrink>0.94</TileShrink>
+</PuzzleConfig>

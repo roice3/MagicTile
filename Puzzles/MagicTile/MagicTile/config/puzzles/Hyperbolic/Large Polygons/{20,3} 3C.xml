@@ -1,0 +1,28 @@
+<PuzzleConfig>
+   <ClassDisplayName>{20,3} 3-Color</ClassDisplayName>
+   <ClassID>{20,3}.3</ClassID>
+   <ExpectedNumColors>3</ExpectedNumColors>
+   <Identifications>
+      <Identification>
+         <EdgeSet>2</EdgeSet>
+         <EndRotation>0</EndRotation>
+         <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
+      </Identification>
+   </Identifications>
+   <NumTiles>3500</NumTiles>
+   <P>20</P>
+   <Q>3</Q>
+   <Specific>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0:0:1.1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.02</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+   </Specific>
+   <TileShrink>0.98</TileShrink>
+</PuzzleConfig>

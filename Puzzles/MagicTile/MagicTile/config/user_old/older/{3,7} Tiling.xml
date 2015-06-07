@@ -1,0 +1,37 @@
+<PuzzleConfig>
+   <DisplayName>{3,7} Tiling</DisplayName>
+   <ExpectedNumColors>56</ExpectedNumColors>
+   <ID>Puzzle.{3,7}.F.56</ID>
+   <Identifications>
+      <Identification>
+         <EdgeSet>1:2:1:2:1:2:1</EdgeSet>
+         <EndRotation>1</EndRotation>
+         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
+      </Identification>
+      <Identification>
+         <EdgeSet>2:2:1:2:2:1:2:2:1:2:2</EdgeSet>
+         <EndRotation>0</EndRotation>
+         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
+      </Identification>
+      <Identification>
+         <EdgeSet>2:1:2:2:1:2:2:1:2:2:1</EdgeSet>
+         <EndRotation>0</EndRotation>
+         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
+      </Identification>
+      <Identification>
+         <EdgeSet>1:2:2:1:2:2:1:2:2:1:2</EdgeSet>
+         <EndRotation>0</EndRotation>
+         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
+      </Identification>
+   </Identifications>
+   <NumTiles>7500</NumTiles>
+   <P>3</P>
+   <Q>7</Q>
+   <SlicingCircles>
+      <EdgeCentered/>
+      <FaceCentered/>
+      <Thickness>0.01</Thickness>
+      <VertexCentered/>
+   </SlicingCircles>
+   <TileShrink>0.2</TileShrink>
+</PuzzleConfig>

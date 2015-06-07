@@ -1,0 +1,97 @@
+#VRML V2.0 utf8
+
+PROTO Cell [
+
+exposedField SFFloat dx1 2
+exposedField SFFloat dy1 0
+exposedField SFFloat dz1 0
+
+exposedField SFFloat dx2 0
+exposedField SFFloat dy2 2
+exposedField SFFloat dz2 0
+
+exposedField SFFloat dx3 0
+exposedField SFFloat dy3 0
+exposedField SFFloat dz3 2
+
+eventOut SFBool isLoaded
+]{
+	Group{
+		children [
+
+			 Shape{
+				geometry IndexedFaceSet{
+					solid FALSE
+					convex FALSE
+					colorPerVertex FALSE
+					coord Coordinate { point[
+						 0  0  0,  #0   0 is the origin.
+						 0  0  1,  #1   1 through 12 are 
+						-1  0  1,  #2   on hamiltonian edge path.
+						-1  0  0,  #3
+						-1  1  0,  #4
+						 0  1  0,  #5
+						 0  1 -1,  #6
+						 0  0 -1,  #7
+						 1  0 -1,  #8
+						 1  0  0,  #9
+						 1 -1  0,  #10
+						 0 -1  0,  #11
+						 0 -1  1,  #12
+						-1 -1  1,  #13   13 through 18 not on path but
+						-1 -1  0,  #14   are needed for translated faces
+						-1  1 -1,  #15
+						-1  0 -1,  #16
+						 1 -1 -1,  #17
+						 0 -1 -1,  #18
+						]
+					}
+
+					coordIndex[
+						# faces on hamiltonian path
+						0, 1, 2, 3, -1,
+						0, 3, 4, 5, -1,
+						0, 5, 6, 7, -1,
+						0, 7, 8, 9, -1,
+						0, 9, 10, 11, -1,
+						0, 11, 12, 1, -1,
+						# translated copies of above faces
+						12, 11, 14, 13, -1,
+						7, 6, 15, 16, -1,
+						4, 3, 16, 15, -1,
+						11, 10, 17, 18, -1,
+						8, 7, 18, 17, -1,
+						3, 2, 13, 14, -1,
+					]
+
+					color Color { color [
+						1.0 0.5 0.5,  #red
+						0.5 1.0 0.5,  #green
+						0.5 0.5 1.0,  #blue
+						]
+					}
+					colorIndex[
+						0, 1, 2, 0, 1, 2,
+						0, 1, 2, 0, 1, 2,
+					]
+				}
+				appearance Appearance {
+					material Material {
+						ambientIntensity 0.4
+					}
+				}
+			} #end shape
+
+		] #end children
+	} #end group
+	
+
+	# this is necessary to inform caller that this PROTO is loaded
+	Script {	
+		eventOut SFBool isLoaded IS isLoaded
+		url["javascript: function initialize(){ isLoaded = TRUE; }"]
+	}	
+}
+
+# this is simply so that the cell can be seen outside of a tiling viewer
+Cell {}

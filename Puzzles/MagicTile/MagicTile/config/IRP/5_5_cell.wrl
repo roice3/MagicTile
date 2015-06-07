@@ -1,0 +1,98 @@
+#VRML V2.0 utf8
+
+PROTO Cell [
+    exposedField SFFloat dx1 5.821387
+    exposedField SFFloat dx2 0
+    exposedField SFFloat dx3 0
+    exposedField SFFloat dy1 0
+    exposedField SFFloat dy2 3.236068
+    exposedField SFFloat dy3 0
+    exposedField SFFloat dz1 0
+    exposedField SFFloat dz2 0
+    exposedField SFFloat dz3 3.236068
+    eventOut SFBool isLoaded
+]{
+    Group{
+	children [
+
+
+        Shape{
+            geometry IndexedFaceSet{
+                solid FALSE
+                convex FALSE
+                colorPerVertex FALSE
+                coord Coordinate{
+                    point[
+                    0.000000 0.000000 0.000000,
+                    -1.798907 -0.618034 0.618034,
+                    -2.910693 1.000000 1.000000,
+                    -1.798907 2.618034 0.618034,
+                    .000000 2.000000 0.000000,
+                    0.000000 0.000000 3.236068,
+                    0.000000 2.000000 3.236068,
+                    -1.798907 2.618034 2.618034,
+                    -2.910693 1.000000 2.236068,
+                    -1.798907 -0.618034 2.618034,
+                    1.111786 0.381966 1.618034,
+                    2.910693 1.000000 1.000000,
+                    4.022479 -0.618034 0.618034,
+                    2.910693 -2.236068 1.000000,
+                    1.111786 -1.618034 1.618034,
+                    1.111786 0.381966 -1.618034,
+                    1.111786 -1.618034 -1.618034,
+                    2.910693 -2.236068 -1.000000,
+                    4.022479 -0.618034 -0.618034,
+                    2.910693 1.000000 -1.000000,
+                    1.111786 1.618034 1.618034,
+                    0.000000 -1.236068 0.000000,
+                    ]
+                }
+
+                coordIndex[
+                14, 13, 12, 11, 10, -1,
+                5, 6, 7, 8, 9, -1,
+                0, 10, 5, 9, 1, -1,
+                6, 20, 4, 3, 7, -1,
+                10, 0, 15, 19, 11, -1,
+                15, 19, 18, 17, 16, -1,
+                0, 1, 2, 3, 4, -1,
+                21, 14, 13, 17, 16, -1,
+                ]
+
+                color Color{
+                    color [
+                    1.000000 0.500000 0.500000,
+                    1.000000 1.000000 0.500000,
+                    0.500000 1.000000 0.500000,
+                    0.500000 1.000000 1.000000,
+                    0.500000 0.500000 1.000000,
+                    1.000000 0.500000 1.000000,
+                    1.000000 0.800000 0.500000,
+                    0.500000 0.800000 1.000000,
+                    ]
+                }
+                colorIndex[
+                2, 0, 0, 0, 2, 2, 0, 2, 
+                ]
+            }
+            appearance Appearance {
+                material Material {
+                    ambientIntensity 0.1
+                }
+            }
+        } 
+
+
+	] 
+    } 
+    
+
+    # this is necessary to inform caller that this PROTO is loaded
+    Script {	
+	eventOut SFBool isLoaded IS isLoaded
+	url["javascript: function initialize(){ isLoaded = TRUE; }"]
+    }    
+}
+
+# this is simply so that the cell can be seen outside of a tiling viewer
+Cell {}

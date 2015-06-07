@@ -1,0 +1,145 @@
+#VRML V2.0 utf8
+
+PROTO Cell [
+
+exposedField SFFloat dx1 4
+exposedField SFFloat dy1 0
+exposedField SFFloat dz1 0
+
+exposedField SFFloat dx2 0
+exposedField SFFloat dy2 2
+exposedField SFFloat dz2 0
+
+exposedField SFFloat dx3 0
+exposedField SFFloat dy3 0
+exposedField SFFloat dz3 2
+
+eventOut SFBool isLoaded
+]{
+    Group{
+	children [
+        Shape{
+            geometry IndexedFaceSet{
+                solid FALSE
+                convex FALSE
+                colorPerVertex FALSE
+
+                coord Coordinate{
+                    point[
+                        #vertices of right half:
+                         1  0  0, #0 = center of right half
+                         0  1  0, #1
+                         1  1 -1, #2
+                         2  1  0, #3
+                         1  1  1, #4
+                         0  0 -1, #5
+                         2  0 -1, #6
+                         2  0  1, #7
+                         0  0  1, #8
+                         0 -1  0, #9
+                         1 -1 -1, #10
+                         2 -1  0, #11
+                         1 -1  1, #12
+
+                        #unique vertices of left half (shared verts removed):
+                        -1  0  0, #13 = center of left half
+                        -2  1  0, #14
+                        -1  1 -1, #15
+                        #0  1  0,
+                        -1  1  1, #16
+                        -2  0 -1, #17
+                        #0  0 -1,
+                        #0  0  1,
+                        -2  0  1, #18
+                        -2 -1  0, #19
+                        -1 -1 -1, #20
+                        #0 -1  0,
+                        -1 -1  1, #21
+                    ] #point
+                } #coord
+
+
+                coordIndex[
+                        #fan of triangles adjacient to right center
+                         0,  1,  4, -1,
+                         0,  4,  7, -1,
+                         0,  7,  3, -1,
+                         0,  3,  2, -1,
+                         0,  2,  5, -1,
+                         0,  5,  9, -1,
+                         0,  9, 10, -1,
+                         0, 10,  6, -1,
+                         0,  6, 11, -1,
+                         0, 11, 12, -1,
+                         0, 12,  8, -1,
+                         0,  8,  1, -1,
+                        #disjoint triangles of right half
+                         1,  2,  5, -1,
+                         7, 12, 11, -1,
+                         8,  9, 12, -1,
+                         2,  3,  6, -1,         
+                        #fan of triangles adjacient to left center
+                        13,  5, 15, -1,
+                        13, 15, 14, -1,
+                        13, 14, 17, -1,
+                        13, 17, 20, -1,
+                        13, 20,  9, -1,
+                        13,  9,  8, -1,
+                        13,  8, 21, -1,
+                        13, 21, 19, -1,
+                        13, 19, 18, -1,
+                        13, 18, 16, -1,
+                        13, 16,  1, -1,
+                        13,  1,  5, -1,
+                        #disjoint triangles of left half
+                         1, 16,  8, -1,
+                        17, 20, 19, -1,
+                         9, 20,  5, -1,
+                        14, 18, 16, -1,
+                ] #coordIndex
+
+                color Color{
+                    color [
+                        .8 0 .2, #0
+                        0 .8 .2, #1
+                        .2 0 .8, #2
+                        .8 .8 0, #3
+                        0 0 0, # some dummy
+                        0 0 0, # colors to make
+                        0 0 0, # the indices of
+                        0 0 0, # different shades
+                        0 0 0, # of the same color
+                        0 0 0, # differ by ten
+                        .6 0 0,  #10
+                        0 .6 0,  #11
+                        0 0 .6,  #12
+                        .6 .6 0, #13
+                    ] #color
+                } #Color
+                colorIndex[
+                        #adjacient faces of the same color alternate shades
+                        12, 2, 1, 11, 1, 11, 10, 0, 3, 13, 3, 13,
+                        0, 10, 2, 12,
+                        13, 3, 2, 12, 2, 12, 11, 1, 0, 10, 0, 10,
+                        3, 13, 1, 11,
+                ]
+            } #IndexedFaceSet
+            appearance Appearance {
+                material Material {
+                    ambientIntensity 0.3
+                }
+            }
+        } #shape
+	] #children
+    } #group
+    
+
+    # this is necessary to inform caller that this PROTO is loaded
+    Script {	
+	eventOut SFBool isLoaded IS isLoaded
+	url["javascript: function initialize(){ isLoaded = TRUE; }"]
+    }    
+}
+
+# this is simply so that the cell can be seen outside of a tiling viewer
+Cell {}

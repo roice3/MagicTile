@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{8D56AB30-6E10-4D66-B10E-0DCC4A0F4051}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>R3.Core</RootNamespace>
+    <AssemblyName>R3.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\OpenTK\1.0\Binaries\OpenTK\$(Configuration)\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Algorithm\GraphRelaxation.cs" />
+    <Compile Include="Control\RotationHandler4D.cs" />
+    <Compile Include="Control\Mouse.cs" />
+    <Compile Include="Drawing\Lighting.cs" />
+    <Compile Include="Drawing\RenderToTexture.cs" />
+    <Compile Include="Drawing\TextureHelper.cs" />
+    <Compile Include="Drawing\VBO.cs" />
+    <Compile Include="Formats\PovRay.cs" />
+    <Compile Include="Formats\STL.cs" />
+    <Compile Include="Formats\VEF.cs" />
+    <Compile Include="Formats\VRML.cs" />
+    <Compile Include="Geometry\Circle.cs" />
+    <Compile Include="Drawing\Coordinates.cs" />
+    <Compile Include="Geometry\Euclidean3D.cs" />
+    <Compile Include="Geometry\Geometry2D.cs" />
+    <Compile Include="Geometry\HyperbolicModels.cs" />
+    <Compile Include="Geometry\Mesh.cs" />
+    <Compile Include="Geometry\NearTree.cs" />
+    <Compile Include="Geometry\Polytope.cs" />
+    <Compile Include="Geometry\Sphere.cs" />
+    <Compile Include="Geometry\Spherical2D.cs" />
+    <Compile Include="Geometry\SphericalModels.cs" />
+    <Compile Include="Geometry\Sterographic.cs" />
+    <Compile Include="Geometry\Surface.cs" />
+    <Compile Include="Geometry\Tile.cs" />
+    <Compile Include="Geometry\Torus.cs" />
+    <Compile Include="Geometry\Transformable.cs" />
+    <Compile Include="Geometry\UltraInf.cs" />
+    <Compile Include="Geometry\VectorND.cs" />
+    <Compile Include="Math\DonHatch.cs" />
+    <Compile Include="Drawing\GraphicsUtils.cs" />
+    <Compile Include="Geometry\Euclidean2D.cs" />
+    <Compile Include="Drawing\GLUtils.cs" />
+    <Compile Include="Math\Golden.cs" />
+    <Compile Include="Math\Graph.cs" />
+    <Compile Include="Math\Infinity.cs" />
+    <Compile Include="Math\Isometry.cs" />
+    <Compile Include="Math\Matrix4D.cs" />
+    <Compile Include="Math\Mobius.cs" />
+    <Compile Include="Geometry\Polygon.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Geometry\Slicer.cs" />
+    <Compile Include="Formats\SVG.cs" />
+    <Compile Include="Geometry\Tiling.cs" />
+    <Compile Include="Shapeways\H3.cs" />
+    <Compile Include="Shapeways\H3Fundamental.cs" />
+    <Compile Include="Shapeways\H3Supp.cs" />
+    <Compile Include="Shapeways\H3Utils.cs" />
+    <Compile Include="Shapeways\Honeycomb.cs" />
+    <Compile Include="Shapeways\Lamp.cs" />
+    <Compile Include="Shapeways\R3.cs" />
+    <Compile Include="Shapeways\S3.cs" />
+    <Compile Include="Shapeways\Shapeways.cs" />
+    <Compile Include="Shapeways\ShapewaysSandbox.cs" />
+    <Compile Include="ToDo.cs" />
+    <Compile Include="Math\Utils.cs" />
+    <Compile Include="Geometry\Vector3D.cs" />
+    <Compile Include="UI\Attributes.cs" />
+    <Compile Include="UI\TrackBarValueEditor.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

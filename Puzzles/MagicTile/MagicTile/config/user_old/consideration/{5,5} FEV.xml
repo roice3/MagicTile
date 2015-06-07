@@ -1,0 +1,28 @@
+<PuzzleConfig>
+   <DisplayName>{5,5} Face Turning, 6 Colors</DisplayName>
+   <ExpectedNumColors>6</ExpectedNumColors>
+   <ID>Puzzle.{5,5}.F.6</ID>
+   <Identifications>
+      <Identification>
+         <EdgeSet>1:4</EdgeSet>
+         <EndRotation>0</EndRotation>
+         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
+      </Identification>
+   </Identifications>
+   <NumTiles>5000</NumTiles>
+   <P>5</P>
+   <Q>5</Q>
+   <SlicingCircles>
+      <EdgeCentered>
+         <Distance>1:0:0:0</Distance>
+      </EdgeCentered>
+      <FaceCentered>
+         <Distance>-1:0:1:0</Distance>
+      </FaceCentered>
+      <Thickness>0.01</Thickness>
+      <VertexCentered>
+         <Distance>1:0:0:0</Distance>
+      </VertexCentered>
+   </SlicingCircles>
+   <TileShrink>0.94</TileShrink>
+</PuzzleConfig>

@@ -1,0 +1,144 @@
+<Menu>
+   <Puzzle>
+      <Elliptical>
+         <Sphere>
+            <Item>{3,3}.4</Item>
+            <Item>{3,4}.8</Item>
+            <Item>{3,5}.20</Item>
+            <Item>{4,3}.6</Item>
+            <Item>{5,3}.12</Item>
+            <Item>{3,5}.8</Item>
+         </Sphere>
+         <Group Name="Projective Plane">
+            <Item>{3,4}.4</Item>
+            <Item>{3,5}.10</Item>
+            <Item>{4,3}.3</Item>
+            <Item>{5,3}.6</Item>
+         </Group>
+      </Elliptical>
+      <Euclidean>
+         <Group Name="Torus">
+            <Item>{3,6}.8</Item>
+            <Item>{4,4}.8</Item>
+            <Item>{4,4}.9</Item>
+            <Item>{4,4}.16</Item>
+            <Item>{6,3}.7</Item>
+            <Item>{6,3}.16</Item>
+         </Group>
+         <Group Name="Klein Bottle">
+            <Item>{3,6}.8.Non</Item>
+            <Item>{4,4}.9.Non</Item>
+            <Item>{6,3}.9</Item>
+         </Group>
+      </Euclidean>
+      <Hyperbolic>
+         <Group Name="Klein Quartic">
+            <Item>{3,7}.56</Item>
+            <Item>{7,3}.24</Item>
+         </Group>
+         <Group Name="{3,8}">
+            <Item>{3,8}.8.Non</Item>
+            <Item>{3,8}.10.Non</Item>
+         </Group>
+         <Item>{4,5}.5</Item>
+         <Item>{4,6}.6</Item>
+         <Item>{4,12}.12</Item>
+         <Group Name="{5,4}">
+            <Item>{5,4}.2</Item>
+            <Item>{5,4}.4</Item>
+            <Item>{5,4}.6</Item>
+            <Item>{5,4}.12</Item>
+            <Item>{5,4}.12.Non</Item>
+            <Item>{5,4}.16.Non</Item>
+            <Item>{5,4}.24</Item>
+         </Group>
+         <Group Name="{5,5}">
+            <Item>{5,5}.6</Item>
+            <Item>{5,5}.6B</Item>
+            <Item>{5,5}.6C</Item>
+            <Item>{5,5}.12</Item>
+         </Group>
+         <Item>{6,4}.8</Item>
+         <Group Name="{8,3}">
+            <Item>{8,3}.6</Item>
+            <Item>{8,3}.8</Item>
+            <Item>{8,3}.10</Item>
+            <Item>{8,3}.12</Item>
+            <Item>{8,3}.12B</Item>
+            <Item>{8,3}.24</Item>
+         </Group>
+         <Group Name="{8,4}">
+            <Item>{8,4}.5</Item>
+            <Item>{8,4}.9</Item>
+            <Item>{8,4}.10</Item>
+         </Group>
+         <Group Name="{10,3}">
+            <Item>{10,3}.3</Item>
+            <Item>{10,3}.6</Item>
+            <Item>{10,3}.12</Item>
+            <Item>{10,3}.18</Item>
+            <Item>{10,3}.36</Item>
+         </Group>
+         <Group Name="{12,3}">
+            <Item>{12,3}.4</Item>
+            <Item>{12,3}.6</Item>
+            <Item>{12,3}.12</Item>
+         </Group>
+         <Group Name="{12,4}">
+            <Item>{12,4}.4</Item>
+            <Item>{12,4}.5</Item>
+            <Item>{12,4}.8</Item>
+            <Item>{12,4}.9</Item>
+         </Group>
+         <Group Name="G4GX">
+            <Item>{4,10}.2</Item>
+            <Item>{4,10}.5.Non</Item>
+            <Item>{10,4}.2</Item>
+            <Item>{10,4}.4</Item>
+            <Item>{10,4}.6.Non</Item>
+            <Item>{10,4}.8</Item>
+         </Group>
+         <Group Name="Large Polygons">
+            <Item>{20,3}.3</Item>
+            <Item>{21,3}.4</Item>
+            <Item>{32,3}.3</Item>
+            <Item>{32,3}.6</Item>
+         </Group>
+      </Hyperbolic>
+      <Group Name="Infinite Regular Polyhedra">
+         <Item>IRP.{3,7}.56</Item>
+         <Item>IRP.{3,8}b.32</Item>
+         <Group Name="{3,9}">
+            <Item>IRP.{3,9}a.36</Item>
+            <Item>IRP.{3,9}b.24</Item>
+            <Item>IRP.{3,9}c.24</Item>
+         </Group>
+         <Group Name="{3,12}">
+            <Item>IRP.{3,12}a.24</Item>
+            <Item>IRP.{3,12}b.24</Item>
+         </Group>
+         <Group Name="{4,5}">
+            <Item>IRP.{4,5}a.30</Item>
+            <Item>IRP.{4,5}b.30</Item>
+         </Group>
+         <Group Name="{4,6}">
+            <Item>IRP.{4,6}.12</Item>
+            <Item>IRP.{4,6}b.12</Item>
+            <Item>IRP.{4,6}c.18</Item>
+         </Group>
+         <Item>IRP.{5,5}.8</Item>
+         <Item>IRP.{6,4}.8</Item>
+         <Item>IRP.{6,6}.4</Item>
+         <Item>IRP.runcrhomb.24</Item>
+      </Group>
+      <Group Name="4D Skew Polyhedra">
+         <Item>Skew.{4,4}.9</Item>
+         <Item>Skew.{4,4}.16</Item>
+         <Item>Skew.{4,4}.25</Item>
+         <Item>Skew.{4,4}.36</Item>
+         <Item>Skew.{4,4}.49</Item>
+         <Item>Skew.{4,6}.30</Item>
+         <Item>Skew.{6,4}.20</Item>
+      </Group>
+   </Puzzle>
+</Menu>

@@ -1,0 +1,26 @@
+<PuzzleConfig>
+   <DisplayName>{7,3} Classic NO</DisplayName>
+   <ExpectedNumColors>6</ExpectedNumColors>
+   <ID>Puzzle.{7,3}.Classic</ID>
+   <Identifications>
+      <Identification>
+         <EdgeSet>3:3:3</EdgeSet>
+         <EndRotation>0</EndRotation>
+         <InPlaceReflection>true</InPlaceReflection>
+         <InitialEdgeSet/>
+         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
+      </Identification>
+   </Identifications>
+   <NumTiles>5000</NumTiles>
+   <P>7</P>
+   <Q>3</Q>
+   <SlicingCircles>
+      <EdgeCentered/>
+      <FaceCentered>
+         <Distance>0.666666666666667:0:1:0</Distance>
+      </FaceCentered>
+      <Thickness>0.01</Thickness>
+      <VertexCentered/>
+   </SlicingCircles>
+   <TileShrink>0.94</TileShrink>
+</PuzzleConfig>

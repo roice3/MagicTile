@@ -1,0 +1,15 @@
+<PuzzleConfigClass>
+   <ClassDisplayName>{4,5}a 30-Color</ClassDisplayName>
+   <ClassID>IRP.{4,5}a.30.LessTiles</ClassID>
+   <ExpectedNumColors>30</ExpectedNumColors>
+   <IRPConfig>
+      <DataFile>4_5a_cell.wrl</DataFile>
+      <FirstTile>0</FirstTile>
+      <Reflect>true</Reflect>
+   </IRPConfig>
+   <NumTiles>500</NumTiles>
+   <P>4</P>
+   <Q>5</Q>
+   <Specific/>
+   <TileShrink>0.94</TileShrink>
+</PuzzleConfigClass>

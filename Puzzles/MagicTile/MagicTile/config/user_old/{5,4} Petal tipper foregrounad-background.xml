@@ -1,0 +1,25 @@
+<PuzzleConfig>
+   <DisplayName>{5,4}, foreground - background</DisplayName>
+   <ExpectedNumColors>6</ExpectedNumColors>
+   <ID>Puzzle.{5,4}.Petal-test</ID>
+   <Identifications>
+      <Identification>
+         <EdgeSet>1:2:1</EdgeSet>
+         <EndRotation>2</EndRotation>
+         <InPlaceReflection>false</InPlaceReflection>
+         <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
+      </Identification>
+   </Identifications>
+   <NumTiles>5000</NumTiles>
+   <P>5</P>
+   <Q>4</Q>
+   <SlicingCircles>
+      <EdgeCentered/>
+      <FaceCentered>
+         <Distance>0:0:1:0</Distance>
+      </FaceCentered>
+      <Thickness>0.01</Thickness>
+      <VertexCentered/>
+   </SlicingCircles>
+   <TileShrink>0.94</TileShrink>
+</PuzzleConfig>

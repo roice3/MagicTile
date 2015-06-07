@@ -1,0 +1,16 @@
+<PuzzleConfig>
+   <DisplayName>{4,5}</DisplayName>
+   <ExpectedNumColors>1</ExpectedNumColors>
+   <ID>Tiling.{4,5}</ID>
+   <Identifications>
+      <Identification>
+         <EdgeSet/>
+         <EndRotation>0</EndRotation>
+         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
+      </Identification>
+   </Identifications>
+   <NumTiles>5000</NumTiles>
+   <P>4</P>
+   <Q>5</Q>
+   <TileShrink>0.94</TileShrink>
+</PuzzleConfig>

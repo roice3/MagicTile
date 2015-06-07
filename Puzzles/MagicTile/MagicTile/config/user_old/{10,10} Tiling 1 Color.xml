@@ -1,0 +1,14 @@
+<PuzzleConfig>
+   <DisplayName>{10,10}, Single Color</DisplayName>
+   <ExpectedNumColors>1</ExpectedNumColors>
+   <ID>Tiling.{10,10}.1</ID>
+   <Identifications>
+      <Identification>
+         <EdgeSet/>
+      </Identification>
+   </Identifications>
+   <NumTiles>3500</NumTiles>
+   <P>10</P>
+   <Q>10</Q>
+   <TileShrink>0.97</TileShrink>
+</PuzzleConfig>

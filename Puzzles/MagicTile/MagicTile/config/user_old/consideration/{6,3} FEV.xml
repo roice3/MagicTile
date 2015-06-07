@@ -1,0 +1,25 @@
+<PuzzleConfig>
+   <DisplayName>{6,3} FEV Turning, 7 Colors</DisplayName>
+   <ExpectedNumColors>7</ExpectedNumColors>
+   <ID>Puzzle.{6,3}.FEV.7</ID>
+   <Identifications>
+      <Identification>
+         <EdgeSet>3:2:2</EdgeSet>
+         <EndRotation>2</EndRotation>
+         <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
+      </Identification>
+   </Identifications>
+   <NumTiles>2500</NumTiles>
+   <P>6</P>
+   <Q>3</Q>
+   <SlicingCircles>
+      <FaceCentered>
+         <Distance>-1:0:1:0</Distance>
+      </FaceCentered>
+      <Thickness>0.01</Thickness>
+      <VertexCentered>
+         <Distance>1:0:0:0</Distance>
+      </VertexCentered>
+   </SlicingCircles>
+   <TileShrink>0.94</TileShrink>
+</PuzzleConfig>

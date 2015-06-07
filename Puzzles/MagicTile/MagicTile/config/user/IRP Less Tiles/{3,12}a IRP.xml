@@ -1,0 +1,14 @@
+<PuzzleConfigClass>
+   <ClassDisplayName>{3,12}a 24-Color</ClassDisplayName>
+   <ClassID>IRP.{3,12}a.24.LessTiles</ClassID>
+   <ExpectedNumColors>24</ExpectedNumColors>
+   <IRPConfig>
+      <DataFile>3_12a_cell.wrl</DataFile>
+      <FirstTile>0</FirstTile>
+   </IRPConfig>
+   <NumTiles>500</NumTiles>
+   <P>3</P>
+   <Q>12</Q>
+   <Specific/>
+   <TileShrink>0.94</TileShrink>
+</PuzzleConfigClass>
