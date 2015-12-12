@@ -1,5 +1,5 @@
 <PuzzleConfigClass>
-   <ClassDisplayName>{6,3} 7-Color</ClassDisplayName>
+   <ClassDisplayName>{6,3} 7-Color (Szilassi polyhedron)</ClassDisplayName>
    <ClassID>{6,3}.7</ClassID>
    <ExpectedNumColors>7</ExpectedNumColors>
    <Identifications>
