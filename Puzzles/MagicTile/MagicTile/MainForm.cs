@@ -388,6 +388,11 @@
 				UpdateNumPuzzles( mb.NumPuzzles, mb.NumTilings );
 			}
 
+			if( e.KeyCode == Keys.F12 )
+			{
+				m_renderer.SaveToSvg();
+			}
+
 			if( e.KeyCode == Keys.Escape )
 			{
 				TwistHandler handler = m_renderer.TwistHandler;

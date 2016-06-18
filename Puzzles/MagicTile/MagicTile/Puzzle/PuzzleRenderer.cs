@@ -54,6 +54,21 @@
 		/// </summary>
 		public TwistHandler TwistHandler { get; set; }
 
+		// Save the current display to an svg file.
+		public void SaveToSvg()
+		{
+			var transform = GrabModelTransform();
+
+			List<Polygon> polygons = new List<Polygon>();
+			foreach( Cell cell in m_puzzle.AllCells )
+			{
+				foreach( Sticker s in cell.Stickers )
+					polygons.Add( s.Poly );
+			}
+
+			SVG.WritePolygons( "output.svg", polygons );
+		}
+
 		/// <summary>
 		/// Returns true if we are doing repeated rendering from timers.
 		/// This was starving UI refreshes.
@@ -222,9 +237,14 @@
 				m_settings.HyperbolicModel == HModel.Klein )
 				transform = HyperbolicModels.PoincareToKlein;
 
-			if( m_puzzle.Config.Geometry == Geometry.Spherical &&
-				m_settings.SphericalModel == SphericalModel.Gnomonic )
-				transform = SphericalModels.StereoToGnomonic;
+			if( m_puzzle.Config.Geometry == Geometry.Spherical )
+			{
+				if( m_settings.SphericalModel == SphericalModel.Gnomonic )
+					transform = SphericalModels.StereoToGnomonic;
+
+				if( m_settings.SphericalModel == SphericalModel.Fisheye )
+					transform = SphericalModels.GnomonicToStereo;
+			}
 
 			return transform;
 		}
@@ -302,6 +322,18 @@
 			}
 
 			DrawMovingStickersDirectly();
+
+			// Draw a background disk if we are using the fisheye model.
+			if( m_settings.SphericalModel == SphericalModel.Fisheye )
+			{
+				Polygon p = new Polygon();
+				List<Vector3D> cPoints = new List<Vector3D>();
+				for( int i = 0; i < 100; i++ )
+					cPoints.Add( new Vector3D( Math.Cos( Math.PI * i / 50 ), Math.Sin( Math.PI * i / 50 ) ) );
+				p.CreateEuclidean( cPoints.ToArray() );
+				p.Center = new Vector3D( 10.1, 0 );
+				GLUtils.DrawConcavePolygon( p, m_settings.ColorBg, v => v );
+			}
 
 			GL.Disable( EnableCap.StencilTest );
 		}

@@ -42,3 +42,10 @@ Network Trash Folder
 Temporary Items
 .apdisk
 *.suo
+OpenTK
+Puzzles/MagicTile/MagicTile/bin/Release
+Puzzles/MagicTile/MagicTile/obj
+Puzzles/MagicTile/packages
+Puzzles/MagicTile/MagicTile/config/user
+R3/R3.Core/bin/Release
+R3/R3.Core/obj

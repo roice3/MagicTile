@@ -185,9 +185,14 @@
 				m_settings.HyperbolicModel == HModel.Klein )
 				return HyperbolicModels.KleinToPoincare( point );
 
-			if( m_geometry == Geometry.Spherical &&
-				m_settings.SphericalModel == SphericalModel.Gnomonic )
-				return SphericalModels.GnomonicToStereo( point );
+			if( m_geometry == Geometry.Spherical )
+			{
+				if( m_settings.SphericalModel == SphericalModel.Gnomonic )
+					return SphericalModels.GnomonicToStereo( point );
+
+				if( m_settings.SphericalModel == SphericalModel.Fisheye )
+					return SphericalModels.StereoToGnomonic( point );
+			}
 
 			return point;
 		}

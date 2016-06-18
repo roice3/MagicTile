@@ -19,11 +19,11 @@
 					new XAttribute( "viewBox", @"0 0 5 5" ),
 					new XElement( "g",
 						new XAttribute( "style", @"fill:none;stroke:#0000FF;stroke-width:0.00005in" ),
-						new XElement( "circle",
+						/*new XElement( "circle",
 							new XAttribute( "cx", "0" ),
 							new XAttribute( "cy", "0" ),
 							new XAttribute( "r", "1" ) 
-						),
+						),*/
 						polygons.Select( poly => XPolygon( poly ) )
 			)));
 

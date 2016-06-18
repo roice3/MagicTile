@@ -7,7 +7,8 @@
 	public enum SphericalModel
 	{
 		Sterographic,
-		Gnomonic
+		Gnomonic,
+		Fisheye
 	}
 
 	public class SphericalModels
