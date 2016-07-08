@@ -15,13 +15,82 @@
 
 		public struct Triangle
 		{
-			public Triangle( Vector3D _a, Vector3D _b, Vector3D _c ) { a = _a; b = _b; c = _c; }
+			public Triangle( Vector3D _a, Vector3D _b, Vector3D _c ) { a = _a; b = _b; c = _c; color = new Vector3D(1,1,1); }
 			public Vector3D a;
 			public Vector3D b;
 			public Vector3D c;
+
+			// The reason we use a vector here is so the components 
+			// can be interpreted in different color schemes (HLS, RGB, etc.)
+			public Vector3D color;
+
+			public Vector3D Normal
+			{
+				get
+				{
+					return (b - a).Cross( c - a );
+				}
+			}
 		}
 
 		public List<Triangle> Triangles { get; set; }
+
+		public void BuildIndexes( out Vector3D[] verts, out Vector3D[] normals, out List<int[]> faces )
+		{
+			Dictionary<Vector3D,int> vertMap = new Dictionary<Vector3D,int>();
+			Dictionary<Vector3D, List<Triangle>> triMap = new Dictionary<Vector3D, List<Triangle>>();
+
+			int current = 0;
+			foreach( Triangle tri in Triangles )
+			{
+				int idx;
+				if( !vertMap.TryGetValue( tri.a, out idx ) )
+					vertMap[tri.a] = current++;
+				if( !vertMap.TryGetValue( tri.b, out idx ) )
+					vertMap[tri.b] = current++;
+				if( !vertMap.TryGetValue( tri.c, out idx ) )
+					vertMap[tri.c] = current++;
+
+				List<Triangle> list;
+				if( !triMap.TryGetValue( tri.a, out list ) )
+					triMap[tri.a] = list = new List<Triangle>();
+				list.Add( tri );
+				if( !triMap.TryGetValue( tri.b, out list ) )
+					triMap[tri.b] = list = new List<Triangle>();
+				list.Add( tri );
+				if( !triMap.TryGetValue( tri.c, out list ) )
+					triMap[tri.c] = list = new List<Triangle>();
+				list.Add( tri );
+			}
+
+			List<Vector3D> _verts = new List<Vector3D>();
+			List<Vector3D> _normals = new List<Vector3D>();
+			foreach( var kvp in vertMap )
+			{
+				Vector3D v = kvp.Key;
+				_verts.Add( v );
+
+				Vector3D normal = new Vector3D();
+				List<Triangle> tris = triMap[v];
+				foreach( Triangle tri in tris )
+					normal += tri.Normal;
+				normal /= tris.Count;
+				_normals.Add( normal );
+			}
+			verts = _verts.ToArray();
+			normals = _normals.ToArray();
+
+			faces = new List<int[]>();
+			foreach( Triangle tri in Triangles )
+				faces.Add( new int[] { vertMap[tri.a], vertMap[tri.b], vertMap[tri.c] } );
+		}
+
+		public Mesh Clone()
+		{
+			Mesh clone = new Mesh();
+			clone.Triangles = Triangles.Select( t => t ).ToList();
+			return clone;
+		}
 
 		/// <summary>
 		/// Scale our mesh (useful for shapeways models)
@@ -59,7 +128,7 @@
 		{
 			Mesh mesh = new Mesh();
 
-			int maxTiles = 4000;
+			int maxTiles = 400;
 
 			Tiling tiling = new Tiling();
 			TilingConfig config = new TilingConfig( p, q, maxTiles: maxTiles );
@@ -70,9 +139,9 @@
 			boundaryConfig.Shrink = 1.01;
 			Tile boundary = Tiling.CreateBaseTile( boundaryConfig );
 
-			//AddSymmetryTriangles( mesh, tiling, boundary.Drawn );
+			AddSymmetryTriangles( mesh, tiling, boundary.Drawn );
 			//AddSymmetryTriangles( mesh, tiling, null );
-			//return mesh;
+			return mesh;
 
 			HashSet<Vector3D> completed = new HashSet<Vector3D>();
 			int count = 0;

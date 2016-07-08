@@ -18,22 +18,65 @@
 		/// </summary>
 		public class Cell
 		{
+			public Cell( Facet[] facets ) : this( -1, facets )
+			{
+			}
+
 			public Cell( int p, Facet[] facets )
 			{
 				P = p;
 				Facets = facets;
+				Depths = new int[4];
 			}
 			
 			public int P; // Number of edges in polygon
 			public Facet[] Facets;
 			public Vector3D Center;
 
+			// Not necessary.
+			public Mesh Mesh;
+
+			/// <summary>
+			/// Used to track recursing depth of reflections across various mirrors.
+			/// </summary>
+			public int[] Depths;
+
 			public bool IdealVerts
 			{
 				get
 				{
+					if( this.Verts.Count() == 0 )
+						return false;
 					return Tolerance.Equal( this.Verts.First().MagSquared(), 1 );
 				}
+			}
+
+			public void AppendAllEdges( HashSet<Edge> edges )
+			{
+				foreach( Facet f in Facets )
+					f.AppendAllEdges( edges );
+			}
+
+			/// <summary>
+			/// In Ball model.
+			/// </summary>
+			public void CalcCenterFromFacets()
+			{
+				Vector3D center = new Vector3D();
+				foreach( Sphere s in this.Facets.Select( f => f.Sphere ) )
+				{
+					if( s.IsPlane )
+						continue;
+
+					Vector3D sCenter = s.Center;
+					double abs = s.Center.Abs();
+					sCenter.Normalize();
+					sCenter *= abs - s.Radius;
+					center += sCenter;
+				}
+
+				center /= this.Facets.Length;
+				this.Center = center;
 			}
 
 			public class Facet
@@ -53,7 +96,7 @@
 				/// It is expected that these are always in the Ball model.
 				/// </summary>
 				public Sphere Sphere { get; set; }
-				public Vector3D CenterInBall 
+				private Vector3D CenterInBall 
 				{ 
 					get
 					{
@@ -70,9 +113,51 @@
 					}
 				}
 
-				public void CalcSphere()
+				public void CalcSphereFromVerts( Geometry g )
 				{
-					Sphere = H3Models.Ball.OrthogonalSphereInterior( Verts[0], Verts[1], Verts[2] );
+					switch( g )
+					{
+						case Geometry.Spherical:
+
+							Sphere = new Sphere();
+							if( Verts.Where( v => v == new Vector3D() ).Count() > 0 )	// XXX - not general, I'm so lazy.
+							{
+								Vector3D[] nonZero = Verts.Where( v => v != new Vector3D() ).ToArray();
+								Sphere.Radius = double.PositiveInfinity;
+								Sphere.Center = nonZero[0].Cross( nonZero[1] );
+							}
+							else
+							{
+								// The sphere intersects the unit-sphere at a unit-circle (orthogonal to the facet center direction).
+								Vector3D direction = new Vector3D();
+								foreach( Vector3D v in Verts )
+									direction += v;
+								direction /= Verts.Length;
+								direction.Normalize();
+
+								Vector3D p1 = Euclidean3D.ProjectOntoPlane( direction, new Vector3D(), Verts[0] );
+								p1.Normalize();
+
+								Circle3D c = new Circle3D( p1, Verts[0], -p1 );
+								Sphere.Center = c.Center;
+								Sphere.Radius = c.Radius;
+							}
+
+							break;
+
+						case Geometry.Euclidean:
+
+							Sphere = new Sphere();
+							Sphere.Radius = double.PositiveInfinity;
+							Vector3D v1 = Verts[0], v2 = Verts[1], v3 = Verts[2];
+							Sphere.Center = ( v2 - v1 ).Cross( v3 - v1 );
+							Sphere.Offset = Euclidean3D.ProjectOntoPlane( Sphere.Center, v1, new Vector3D() );
+							break;
+
+						case Geometry.Hyperbolic:
+							Sphere = H3Models.Ball.OrthogonalSphereInterior( Verts[0], Verts[1], Verts[2] );
+							break;
+					}
 				}
 				
 				public Facet Clone()
@@ -99,26 +184,72 @@
 					get
 					{
 						Vector3D result = new Vector3D();
-						foreach( Vector3D v in Verts )
-							result += v;
-						return result;
+						if( Verts != null )
+						{
+							foreach( Vector3D v in Verts )
+								result += v;
+							return result;
+						}
+
+						if( Sphere != null )
+							return Sphere.ID;
+
+						throw new System.ArgumentException();
+					}
+				}
+
+				public void AppendAllEdges( HashSet<Edge> edges )
+				{
+					// We can only do this if we have vertices.
+					if( Verts == null )
+						return;
+
+					for( int i=0; i<Verts.Length; i++ )
+					{
+						int idx1 = i;
+						int idx2 = i == Verts.Length - 1 ? 0 : i + 1;
+						edges.Add( new Edge( Verts[idx1], Verts[idx2] ) );
 					}
 				}
 			}
 
 			public class Edge
 			{
-				public Edge( Vector3D v1, Vector3D v2 )
+				public Edge( Vector3D v1, Vector3D v2, bool order = true )
 				{
 					// Keep things "ordered", so we can easily compare edges.
-					Vector3D[] orderedVerts = new Vector3D[] { v1, v2 };
-					orderedVerts = orderedVerts.OrderBy( v => v, new Vector3DComparer() ).ToArray();
-					Start = orderedVerts[0];
-					End = orderedVerts[1];
+					if( order )
+					{
+						Vector3D[] orderedVerts = new Vector3D[] { v1, v2 };
+						orderedVerts = orderedVerts.OrderBy( v => v, new Vector3DComparer() ).ToArray();
+						Start = orderedVerts[0];
+						End = orderedVerts[1];
+					}
+					else
+					{
+						Start = v1;
+						End = v2;
+					}
+
+					Depths = new int[4];
 				}
 
 				public Vector3D Start;
 				public Vector3D End;
+
+				// The reason we use a vector here is so the components 
+				// can be interpreted in different color schemes (HLS, RGB, etc.)
+				public Vector3D Color;
+
+				/// <summary>
+				/// Used to track recursing depth of reflections across various mirrors.
+				/// </summary>
+				public int[] Depths;
+
+				public Edge Clone()
+				{
+					return (Edge)MemberwiseClone();
+				}
 
 				public Vector3D ID
 				{
@@ -136,6 +267,11 @@
 				public void Write( StreamWriter sw, int level )
 				{
 					sw.WriteLine( string.Format( "{0},{1},{2}", level, Start.ToStringXYZOnly(), End.ToStringXYZOnly() ) );
+				}
+
+				public void CopyDepthsFrom( Edge e )
+				{
+					Depths = (int[])e.Depths.Clone();
 				}
 			}
 
@@ -156,13 +292,27 @@
 				private double m_tolerance = 0.0001;
 			}
 
+			public bool HasVerts
+			{
+				get
+				{
+					foreach( Facet f in Facets )
+						if( f.Verts == null )
+							return false;
+					return true;
+				}
+			}
+
 			public IEnumerable<Vector3D> Verts
 			{
 				get
 				{
 					foreach( Facet facet in Facets )
-					foreach( Vector3D v in facet.Verts )
-						yield return v;
+					{
+						if( facet.Verts != null )
+							foreach( Vector3D v in facet.Verts )
+								yield return v;
+					}
 				}
 			}
 
@@ -173,8 +323,17 @@
 					Vector3D result = new Vector3D();
 					//foreach( Vector3D v in Verts )
 						//result += Sterographic.PlaneToSphereSafe( v );	// XXX - what about when not working in plane.
-					foreach( Vector3D v in Verts )
-						result += v;
+
+					if( HasVerts )
+					{
+						foreach( Vector3D v in Verts )
+							result += v;
+					}
+					else
+					{
+						// Intentionally just use the center.
+					}
+					result += Center;
 					return result;
 				}
 			}
@@ -187,6 +346,11 @@
 
 				Cell clone = new Cell( P, newFacets.ToArray() );
 				clone.Center = Center;
+				clone.Depths = (int[])Depths.Clone();
+
+				if( Mesh != null )
+					clone.Mesh = Mesh.Clone();
+
 				return clone;
 			}
 
@@ -231,6 +395,18 @@
 				foreach( Facet facet in Facets )
 					facet.Reflect( sphere );
 				Center = sphere.ReflectPoint( Center );
+
+				if( this.Mesh != null )
+				{
+					for( int i=0; i<Mesh.Triangles.Count; i++ )
+					{
+						Mesh.Triangle tri = Mesh.Triangles[i];
+						tri.a = sphere.ReflectPoint( tri.a );
+						tri.b = sphere.ReflectPoint( tri.b );
+						tri.c = sphere.ReflectPoint( tri.c );
+						Mesh.Triangles[i] = tri;
+					}
+				}
 			}
 		}
 
@@ -422,6 +598,12 @@
 					m_settings.Position = Polytope.Projection.VertexCentered;
 					m_settings.Ball_Cutoff = 0.88;
 					m_settings.AngularThickness = 0.18;
+
+					// Paper
+					m_settings.Position = Polytope.Projection.CellCentered;
+					m_settings.Ball_Cutoff = 0.96;
+					m_settings.AngularThickness = 0.08;
+
 					break;
 				}
 				case EHoneycomb.H534:
@@ -478,7 +660,8 @@
 				case EHoneycomb.H337:
 				{
 					m_settings.Scale = 75;
-					m_settings.AngularThickness = 0.202;
+					//m_settings.AngularThickness = 0.202;
+					m_settings.AngularThickness = 0.1;
 					break;
 				}
 				case EHoneycomb.H436:
@@ -493,6 +676,11 @@
 				case EHoneycomb.H344:
 				{
 					m_settings.Ball_MinLength = 0.05;
+					break;
+				}
+				case EHoneycomb.H33I:
+				{
+					m_settings.AngularThickness = .17;
 					break;
 				}
 			}
@@ -596,8 +784,8 @@
 				return;
 			}
 
-			//SetupSettings( honeycomb );
-			SetupShapewaysSettings( m_settings, honeycomb );
+			SetupSettings( honeycomb );
+			//SetupShapewaysSettings( m_settings, honeycomb );
 
 			Tiling tiling = CellTilingForHoneycomb( honeycomb );
 
@@ -618,7 +806,7 @@
 				GenHoneycombInternal( mesh, tiling, honeycomb, cellScale );
 
 				mesh = new Shapeways();
-				GenDualHoneycombInternal( mesh, tiling, honeycomb );
+				//GenDualHoneycombInternal( mesh, tiling, honeycomb );
 			}
 		}
 
@@ -680,10 +868,14 @@
 			int p, q, r;
 			Honeycomb.PQR( honeycomb, out p, out q, out r );
 
-			Cell first = new Cell( p, GenFacets( tiling ) );
+			double inRadius = Honeycomb.InRadius( honeycomb );
+			Cell.Facet[] facets = GenFacetSpheres( tiling, inRadius );
+			Cell first = new Cell( p, facets );
+
+			/*Cell first = new Cell( p, GenFacets( tiling ) );
 			first.ToSphere();	// Work in ball model.
 			first.ScaleToCircumSphere( cellScale );
-			first.ApplyMobius( m_settings.Mobius );
+			first.ApplyMobius( m_settings.Mobius );*/
 
 			// This is for getting endpoints of cylinders for hollowing.
 			bool printVerts = false;
@@ -699,17 +891,23 @@
 
 			// Recurse.
 			int level = 1;
-			HashSet<Vector3D> completedCells = new HashSet<Vector3D>();
-			completedCells.Add( first.ID );
+			HashSet<Vector3D> completedCellCenters = new HashSet<Vector3D>();
+			completedCellCenters.Add( first.ID );
 			Dictionary<Cell.Edge, int> completedEdges = new Dictionary<Cell.Edge, int>( new Cell.EdgeEqualityComparer() );	// Values are recursion level, so we can save this out.
-			if( CellOk( first ) )
-				Util.AddEdges( first, level, completedEdges );
+			HashSet<Sphere> completedFacets = new HashSet<Sphere>( facets.Select( f => f.Sphere ) );
+			//if( CellOk( first ) )
+				//Util.AddEdges( first, level, completedEdges );
 			List<Cell> starting = new List<Cell>();
 			starting.Add( first );
-			ReflectRecursive( level, starting, completedCells, completedEdges );
+			List<Cell> completedCells = new List<Cell>();
+			completedCells.Add( first );
+
+			ReflectRecursive( level, starting, completedCellCenters, completedEdges, completedCells, completedFacets );
 
 			bool finite = cellScale != 1;
+			completedEdges.Clear();
 			SaveToFile( honeycombString, completedEdges, finite );
+			PovRay.AppendFacets( completedCells.ToArray(), m_baseDir + honeycombString + ".pov" );
 		}
 
 		public static void SaveToFile( string honeycombString, Cell.Edge[] edges, bool finite, bool append = false )
@@ -728,6 +926,7 @@
 					{ 
 						AngularThickness = m_settings.AngularThickness,
 						Halfspace = m_settings.Halfspace,
+						//Halfspace = true,
 						ThinEdges = m_settings.ThinEdges,
 					},
 					edges.Keys.ToArray(), m_baseDir + honeycombString + ".pov", append ); 
@@ -790,10 +989,11 @@
 			int level = 0;
 			ReflectRecursiveDual( level, starting, completedCellCenters, completedCells, completedEdges, completedFacets );
 
-			RemoveDanglingEdgesRecursive( completedEdges );
+			// Can't do this on i33!
+			//RemoveDanglingEdgesRecursive( completedEdges );
 
-			SaveToFile( honeycombString, completedEdges, finite: true );
-			//PovRay.AppendFacets( completedFacets.ToArray(), m_baseDir + honeycombString + ".pov" );
+			//SaveToFile( honeycombString, completedEdges, finite: true );
+			PovRay.AppendFacets( completedFacets.ToArray(), m_baseDir + honeycombString + ".pov" );
 			//PovRay.AppendFacets( completedCells.ToArray(), m_baseDir + honeycombString + ".pov" );
 		}
 
@@ -930,11 +1130,15 @@
 		/// The cell vertices may be ideal or finite.
 		/// Calculations are carried out in the ball model.
 		/// </summary>
-		private static void ReflectRecursive( int level, List<Cell> cells, HashSet<Vector3D> completedCells, Dictionary<Cell.Edge, int> completedEdges )
+		private static void ReflectRecursive( int level, List<Cell> cells, HashSet<Vector3D> completedCellCenters, Dictionary<Cell.Edge, int> completedEdges,
+			List<Cell> completedCells, HashSet<Sphere> facets )
 		{
 			// Breadth first recursion.
 
 			if( 0 == cells.Count )
+				return;
+
+			if( level > 2 )
 				return;
 
 			level++;
@@ -947,35 +1151,42 @@
 				List<Sphere> facetSpheres = new List<Sphere>();
 				foreach( Cell.Facet facet in cell.Facets )
 				{
+					facetSpheres.Add( facet.Sphere );
+					/*
 					if( idealVerts )
 						facetSpheres.Add( H3Models.Ball.OrthogonalSphere( facet.Verts[0], facet.Verts[1], facet.Verts[2] ) );
 					else
-						facetSpheres.Add( H3Models.Ball.OrthogonalSphereInterior( facet.Verts[0], facet.Verts[1], facet.Verts[2] ) );
+						facetSpheres.Add( H3Models.Ball.OrthogonalSphereInterior( facet.Verts[0], facet.Verts[1], facet.Verts[2] ) );*/
 				}
 
 				foreach( Sphere facetSphere in facetSpheres )
 				{
-					if( completedCells.Count > m_settings.MaxCells )
+					if( completedCellCenters.Count > m_settings.MaxCells )
 						return;
 
 					Cell newCell = cell.Clone();
 					newCell.Reflect( facetSphere );
-					if( completedCells.Contains( newCell.ID ) ||
+					if( completedCellCenters.Contains( newCell.ID ) ||
 						!CellOk( newCell ) )
 						continue;
 
 					//if( CellOk( newCell ) )
-						Util.AddEdges( newCell, level, completedEdges );
+						//Util.AddEdges( newCell, level, completedEdges );
 					reflected.Add( newCell );
-					completedCells.Add( newCell.ID );
+					completedCellCenters.Add( newCell.ID );
+					completedCells.Add( newCell );
+					foreach( Cell.Facet facet in newCell.Facets )
+						facets.Add( facet.Sphere );
 				}
 			}
 
-			ReflectRecursive( level, reflected, completedCells, completedEdges );
+			ReflectRecursive( level, reflected, completedCellCenters, completedEdges, completedCells, facets );
 		}
 
 		private static bool CellOk( Cell cell )
 		{
+			return true;
+
 			bool idealVerts = cell.IdealVerts;
 
 			// ZZZ - maybe criterion should be total perimeter?
@@ -1108,8 +1319,9 @@
 				//double thresh = 0.93;	// {6,3,3}
 				//double thresh = 0.972;	// {7,3,3}
 				//double thresh = 0.94;
-				double thresh = 0.984;
+				//double thresh = 0.984;
 				//thresh = 0.9975;	// XXX - put in settings.
+				double thresh = 0.999;
 				return 
 					edge.Start.Abs() < thresh &&
 					edge.End.Abs() < thresh;

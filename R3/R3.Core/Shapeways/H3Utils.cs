@@ -10,6 +10,8 @@
 
 	// XXX - move to another file
 	// http://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
+	// theta is inclination (like latitude, but from 0 to pi)
+	// phi is azimuth (like longitude)
 	public class SphericalCoords
 	{
 		// x,y,z -> r,theta,phi
@@ -53,7 +55,10 @@
 			return TransformHelper( v, fromUpperHalfPlane );
 		}
 
-		private static Vector3D TransformHelper( Vector3D v, Mobius m )
+		/// <summary>
+		/// NOTE! This should only be used if m is a transform that preserves the imaginary axis!
+		/// </summary>
+		public static Vector3D TransformHelper( Vector3D v, Mobius m )
 		{
 			Vector3D spherical = SphericalCoords.CartesianToSpherical( v );
 			Complex c1 = Complex.FromPolarCoordinates( spherical.X, Math.PI/2 - spherical.Y );
@@ -102,17 +107,25 @@
 				// It must be vertical (because it is orthogonal).
 				Vector3D b1 = H3Models.UHSToBall( Infinity.InfinityVector );
 				Vector3D b2 = H3Models.UHSToBall( s.Offset );
-				H3Models.Ball.OrthogonalCircle( b1, b2, out center, out rad );
+				H3Models.Ball.OrthogonalCircle( b1, b2, out center, out rad );	// Safer to use OrthogonalSphere?
 			}
 			else
 			{
+				Vector3D temp;
+				if( s.Center.IsOrigin )
+				{
+					temp = new Vector3D( s.Radius, 0, 0 );
+				}
+				else
+				{
+					temp = s.Center;
+					temp.Normalize();
+					temp *= s.Radius;
+				}
 				Vector3D centerUhs = s.Center;
-				Vector3D temp = centerUhs;
-				temp.Normalize();
-				temp *= s.Radius;
 				Vector3D b1 = H3Models.UHSToBall( centerUhs - temp );
 				Vector3D b2 = H3Models.UHSToBall( centerUhs + temp );
-				H3Models.Ball.OrthogonalCircle( b1, b2, out center, out rad );
+				H3Models.Ball.OrthogonalCircle( b1, b2, out center, out rad );  // Safer to use OrthogonalSphere?
 
 				// Did we project to a plane?
 				if( Infinity.IsInfinite( rad ) )
@@ -129,6 +142,206 @@
 				Center = center,
 				Radius = rad
 			};
+		}
+
+		// XXX - Not general yet.
+		// s does not have to be geodesic.
+		public static Sphere BallToUHS( Sphere s )
+		{
+			// Get 4 points on the sphere.
+			double rad = s.Radius;
+			Vector3D[] spherePoints;
+			if( s.IsPlane )
+			{
+				Vector3D perp = s.Normal.Perpendicular();
+				Vector3D perp2 = perp;
+				perp2.RotateAboutAxis( s.Normal, Math.PI / 2 );
+				spherePoints = new Vector3D[]
+				{
+					s.Offset,
+					s.Offset + perp,
+					s.Offset - perp,
+					s.Offset + perp2
+				};
+			}
+			else
+			{
+				spherePoints = new Vector3D[]
+				{
+					s.Center + new Vector3D( rad, 0, 0 ),
+					s.Center + new Vector3D( -rad, 0, 0 ),
+					s.Center + new Vector3D( 0, rad, 0 ),
+					s.Center + new Vector3D( 0, 0, rad )
+				};
+			}
+
+			for( int i=0; i<4; i++ )
+				spherePoints[i] = H3Models.BallToUHS( spherePoints[i] );
+
+			return Sphere.From4Points( spherePoints[0], spherePoints[1], spherePoints[2], spherePoints[3] );
+
+			/*
+			Vector3D s1, s2, s3;
+			H3Models.Ball.IdealPoints( s, out s1, out s2, out s3 );
+			s1 = H3Models.BallToUHS( s1 );
+			s2 = H3Models.BallToUHS( s2 );
+			s3 = H3Models.BallToUHS( s3 );
+
+			Circle3D c = new Circle3D( s1, s2, s3 );
+			return new Sphere()
+			{
+				Center = c.Center,
+				Radius = c.Radius
+			};*/
+		}
+
+		public static Circle3D BallToUHS( Circle3D c )
+		{
+			Vector3D[] points = c.RepresentativePoints;
+			for( int i=0; i<3; i++ )
+				points[i] = H3Models.BallToUHS( points[i] );
+			return new Circle3D( points[0], points[1], points[2] );
+		}
+
+		/// <summary>
+		/// Transform a geodesic sphere in the ball model to the Klein model.
+		/// Output will be a plane.
+		/// </summary>
+		public static Sphere BallToKlein( Sphere s )
+		{
+			// If we are already a plane, no transformation is needed.
+			if( s.IsPlane )
+				return s.Clone();
+
+			Vector3D closest = Ball.ClosestToOrigin( s );
+			Vector3D p1 = HyperbolicModels.PoincareToKlein( closest );
+
+			// Ideal points are the same in the Klein/Poincare models, so grab
+			// two more plane points from the ideal circle.
+			Vector3D p2, p3, dummy;
+			Ball.IdealPoints( s, out p2, out dummy, out p3 );
+
+			Vector3D offset = p1;
+			Vector3D normal = (p2 - p1).Cross( p3 - p1 );
+			normal.Normalize();
+			if( !s.Invert )
+				normal *= -1;
+			return Sphere.Plane( offset, normal );
+		}
+
+		/// <summary>
+		/// This applies the same Mobius transform to all vertical planes through the z axis.
+		/// NOTE: m must therefore be a mobius transform that keeps the imaginary axis constant!
+		/// NOTE: s must be geodesic! (orthogonal to boundary).
+		/// </summary>
+		public static Sphere TransformInBall( Sphere s, Mobius m )
+		{
+			Vector3D center;
+			double rad;
+			if( s.IsPlane )
+			{
+				// All planes in the ball go through the origin.
+				if( !s.Offset.IsOrigin )
+					throw new System.ArgumentException();
+
+				// Vertical planes remain unchanged.
+				if( Tolerance.Equal( s.Normal.Z, 0 ) )
+					return s.Clone();
+
+				// Other planes will become spheres.
+				Vector3D pointOnSphere = s.Normal.Perpendicular();
+				pointOnSphere.Normalize();
+				Vector3D b1 = H3Models.TransformHelper( pointOnSphere, m );
+				Vector3D b2 = H3Models.TransformHelper( -pointOnSphere, m );
+				pointOnSphere.RotateAboutAxis( s.Normal, Math.PI / 2 );
+				Vector3D b3 = H3Models.TransformHelper( pointOnSphere, m );
+				return H3Models.Ball.OrthogonalSphere( b1, b2, b3 );
+			}
+			else
+			{
+				Vector3D s1, s2, s3;
+				H3Models.Ball.IdealPoints( s, out s1, out s2, out s3 );
+
+				// Transform the points.
+				Vector3D b1 = H3Models.TransformHelper( s1, m );
+				Vector3D b2 = H3Models.TransformHelper( s2, m );
+				Vector3D b3 = H3Models.TransformHelper( s3, m );
+				return H3Models.Ball.OrthogonalSphere( b1, b2, b3 );
+			}
+			
+			return new Sphere()
+			{
+				Center = center,
+				Radius = rad
+			};
+		}
+
+		/// <summary>
+		/// This applies the the Mobius transform to the plane at infinity.
+		/// Any Mobius is acceptable.
+		/// NOTE: s must be geodesic! (orthogonal to boundary).
+		/// </summary>
+		public static Sphere TransformInUHS( Sphere s, Mobius m )
+		{
+			Vector3D s1, s2, s3;
+			if( s.IsPlane )
+			{
+				// It must be vertical (because it is orthogonal).
+				Vector3D direction = s.Normal;
+				direction.RotateXY( Math.PI / 2 );
+				s1 = s.Offset;
+				s2 = s1 + direction;
+				s3 = s1 - direction;
+			}
+			else
+			{
+				Vector3D offset = new Vector3D( s.Radius, 0, 0 );
+				s1 = s.Center + offset;
+				s2 = s.Center - offset;
+				s3 = offset;
+				s3.RotateXY( Math.PI / 2 );
+				s3 += s.Center;
+			}
+
+			Vector3D b1 = m.Apply( s1 );
+			Vector3D b2 = m.Apply( s2 );
+			Vector3D b3 = m.Apply( s3 );
+			Circle3D boundaryCircle = new Circle3D( b1, b2, b3 );
+
+			Vector3D cen = boundaryCircle.Center;
+			Vector3D off = new Vector3D();
+			if( Infinity.IsInfinite( boundaryCircle.Radius ) )
+			{
+				boundaryCircle.Radius = double.PositiveInfinity;
+				Vector3D normal = b2 - b1;
+				normal.Normalize();
+				normal.RotateXY( -Math.PI / 2 );	// XXX - The direction isn't always correct.
+				cen = normal;
+				off = Euclidean2D.ProjectOntoLine( new Vector3D(), b1, b2 );
+			}
+			
+			return new Sphere
+			{
+				Center = cen,
+				Radius = boundaryCircle.Radius,
+				Offset = off
+			};
+		}
+
+		public static void TransformInBall2( Sphere s, Mobius m )
+		{
+			Sphere newSphere = TransformInBall( s, m );
+			s.Center = newSphere.Center;
+			s.Radius = newSphere.Radius;
+			s.Offset = newSphere.Offset;
+		}
+
+		public static void TransformInUHS2( Sphere s, Mobius m )
+		{
+			Sphere newSphere = TransformInUHS( s, m );
+			s.Center = newSphere.Center;
+			s.Radius = newSphere.Radius;
+			s.Offset = newSphere.Offset;
 		}
 
 		public static double SizeFuncConst( Vector3D v, double scale )
@@ -151,22 +364,51 @@
 			public static void DupinCyclideSphere( Vector3D v, double radiusEuclideanOrigin, 
 				out Vector3D centerEuclidean, out double radiusEuclidean )
 			{
-				double p = v.Abs();
-				if( !v.Normalize() )
+				DupinCyclideSphere( v, radiusEuclideanOrigin, Geometry.Hyperbolic, out centerEuclidean, out radiusEuclidean );
+				ApplyMinRadiusForWiki( ref radiusEuclidean );
+				//ApplyMinRadiusForPrinting( ref radiusEuclidean );
+			}
+
+			/// <summary>
+			/// Helper that works in all geometries.
+			/// center: http://www.wolframalpha.com/input/?i=%28+%28+%28+r+%2B+p+%29+%2F+%28+1+-+r*p+%29+%29+%2B+%28+%28+-r+%2B+p+%29+%2F+%28+1+%2B+r*p+%29+%29++%29+%2F+2
+			/// radius: http://www.wolframalpha.com/input/?i=%28+%28+%28+r+%2B+p+%29+%2F+%28+1+-+r*p+%29+%29+-+%28+%28+-r+%2B+p+%29+%2F+%28+1+%2B+r*p+%29+%29++%29+%2F+2
+			/// </summary>
+			public static void DupinCyclideSphere( Vector3D vNonEuclidean, double radiusEuclideanOrigin, Geometry g,
+				out Vector3D centerEuclidean, out double radiusEuclidean )
+			{
+				if( g == Geometry.Euclidean )
+				{
+					centerEuclidean = vNonEuclidean;
+					radiusEuclidean = radiusEuclideanOrigin;
+					return;
+				}
+
+				double p = vNonEuclidean.Abs();
+				if( !vNonEuclidean.Normalize() )
 				{
 					// We are at the origin.
-					centerEuclidean = v;
+					centerEuclidean = vNonEuclidean;
 					radiusEuclidean = radiusEuclideanOrigin;
 					return;
 				}
 
 				double r = radiusEuclideanOrigin;
-				double center	= p * ( r * r - 1 ) / ( p * p * r * r - 1 );
-				radiusEuclidean = r * ( p * p - 1 ) / ( p * p * r * r - 1 );
-				centerEuclidean = v * center;
+				double numeratorCenter = g == Geometry.Hyperbolic ? ( 1 - r * r ) : ( 1 + r * r );
+				double numeratorRadius = g == Geometry.Hyperbolic ? ( 1 - p * p ) : ( 1 + p * p );
 
-				ApplyMinRadiusForWiki( ref radiusEuclidean );
-				//ApplyMinRadiusForPrinting( ref radiusEuclidean );
+				double center = p * numeratorCenter / ( 1 - p * p * r * r );
+				radiusEuclidean = r * numeratorRadius / ( 1 - p * p * r * r );
+				centerEuclidean = vNonEuclidean * center;
+
+				/*
+				// Alternate impl, in this case for spherical.
+				Mobius m = new Mobius();
+				m.Isometry( Geometry.Spherical, 0, p1 );
+				Vector3D t1 = m.Apply( new Vector3D( mag, 0, 0 ) );
+				Vector3D t2 = m.Apply( new Vector3D( -mag, 0, 0 ) );
+				center = ( t1 + t2 ) / 2;
+				radius = t1.Dist( t2 ) / 2; */
 			}
 
 			private static void ApplyMinRadiusForWiki( ref double radius )
@@ -243,16 +485,66 @@
 				radius = distToCenter * Math.Sin( sectorAngle / 2 );
 			}
 
+			public static Circle3D OrthogonalCircle( Vector3D v1, Vector3D v2 )
+			{
+				Vector3D center;
+				double rad;
+				OrthogonalCircle( v1, v2, out center, out rad );
+				Vector3D normal = v1.Cross( v2 );
+				return new Circle3D { Center = center, Normal = normal, Radius = rad };
+			}
+
+			/// <summary>
+			/// Given 2 points on the boundary of a circle, calculate the orthogonal circle.
+			/// </summary>
+			public static Circle3D OrthogonalCircle( Circle3D c, Vector3D v1, Vector3D v2 )
+			{
+				// Needs testing.
+				throw new System.NotImplementedException();
+
+				// Move/Scale c to unit circle.
+				Vector3D offset = c.Center;
+				double scale = c.Radius;
+				v1 -= offset;
+				v2 -= offset;
+				v1 /= scale;
+				v2 /= scale;
+
+				// Call the other method.
+				Vector3D center;
+				double rad;
+				OrthogonalCircle( v1, v2, out center, out rad );
+				rad *= scale;
+				center += offset;
+
+				return new Circle3D()
+				{
+					Center = center,
+					Radius = rad
+				};
+			}
+
 			/// <summary>
 			/// Given 2 points in the interior of the ball, calculate the center and radius of the orthogonal circle.
+			/// One point may optionally be on the boundary, but one shoudl be in the interior.
+			/// If both points are on the boundary, we'll fall back on our other method.
 			/// </summary>
 			public static void OrthogonalCircleInterior( Vector3D v1, Vector3D v2, out Circle3D circle )
 			{
+				if( Tolerance.Equal( v1.Abs(), 1 ) &&
+					Tolerance.Equal( v2.Abs(), 1 ) )
+				{
+					circle = OrthogonalCircle( v1, v2 );
+					return;
+				}
+	
 				// http://www.math.washington.edu/~king/coursedir/m445w06/ortho/01-07-ortho-to3.html
 				// http://www.youtube.com/watch?v=Bkvo09KE1zo
 
+				Vector3D interior = Tolerance.Equal( v1.Abs(), 1 ) ? v2 : v1;
+				
 				Sphere ball = new Sphere();
-				Vector3D reflected = ball.ReflectPoint( v1 );
+				Vector3D reflected = ball.ReflectPoint( interior );
 				circle = new Circle3D( reflected, v1, v2 );
 			}
 
@@ -291,6 +583,39 @@
 			}
 
 			/// <summary>
+			/// Given a geodesic sphere, returns it's intersection with the boundary plane.
+			/// </summary>
+			public static Circle3D IdealCircle( Sphere s )
+			{
+				Vector3D s1, s2, s3;
+				IdealPoints( s, out s1, out s2, out s3 );
+				return new Circle3D( s1, s2, s3 );
+			}
+
+			/// <summary>
+			/// Given a geodesic sphere, calculates 3 ideal points of the sphere.
+			/// NOTE: s1 and s2 will be antipodal on the ideal circle.
+			/// </summary>
+			public static void IdealPoints( Sphere s, out Vector3D s1, out Vector3D s2, out Vector3D s3 )
+			{
+				// Get two points on the ball and sphere.
+				// http://mathworld.wolfram.com/OrthogonalCircles.html
+				// Orthogonal circles, plus some right angle stuff...
+				double r = s.Radius;
+				Vector3D direction = s.Center;
+				Vector3D perp = direction.Perpendicular();
+				direction.Normalize();
+				s1 = direction;
+				s2 = direction;
+
+				double alpha = Math.Atan( r );
+				s1.RotateAboutAxis( perp, alpha );
+				s2.RotateAboutAxis( perp, -alpha );
+				s3 = s1;
+				s3.RotateAboutAxis( direction, Math.PI / 2 );
+			}
+
+			/// <summary>
 			/// Find the sphere defined by 3 points in the interior of the unit sphere, and orthogonal to the unit sphere.
 			/// </summary>
 			public static Sphere OrthogonalSphereInterior( Vector3D c1, Vector3D c2, Vector3D c3 )
@@ -322,6 +647,23 @@
 					Center = v * ( c + r ),
 					Radius = r
 				};
+			}
+
+			/// <summary>
+			/// Given a geodesic sphere, find the point closest to the origin.
+			/// </summary>
+			public static Vector3D ClosestToOrigin( Sphere s )
+			{
+				return s.ProjectToSurface( new Vector3D() );
+			}
+
+			/// <summary>
+			/// Given a geodesic circle, find the point closest to the origin.
+			/// </summary>
+			public static Vector3D ClosestToOrigin( Circle3D c )
+			{
+				Sphere s = new Sphere { Center = c.Center, Radius = c.Radius };
+				return ClosestToOrigin( s );
 			}
 
 			/// <summary>
@@ -399,7 +741,7 @@
 
 			public static void Geodesic( Vector3D v1, Vector3D v2, out Vector3D center, out double radius, out Vector3D normal, out double angleTot )
 			{
-				bool finite = !Tolerance.Equal( v1.MagSquared(), 1 );
+				bool finite = !Tolerance.Equal( v1.MagSquared(), 1 ) || !Tolerance.Equal( v2.MagSquared(), 1 );
 				if( finite )
 				{
 					Circle3D c;
@@ -409,9 +751,13 @@
 				}
 				else
 					H3Models.Ball.OrthogonalCircle( v1, v2, out center, out radius );
-				normal = ( v1 - center ).Cross( v2 - center );
+				Vector3D t1 = v1 - center;
+				Vector3D t2 = v2 - center;
+				t1.Normalize();	// This was necessary so that the cross product below didn't get too small.
+				t2.Normalize();
+				normal = ( t1 ).Cross( t2 );
 				normal.Normalize();
-				angleTot = ( v1 - center ).AngleTo( v2 - center );
+				angleTot = ( t1 ).AngleTo( t2 );
 			}
 
 			/// <summary>
@@ -423,6 +769,17 @@
 				int div = 36;
 				//int div = 40; // Wiki
 				//LODThin( v1, v2, out div );
+				
+				// Be smart about the number of divisions.
+				Vector3D center, normal;
+				double radius, angleTot;
+				Geodesic( v1, v2, out center, out radius, out normal, out angleTot );
+				double length = radius * angleTot;
+				div = (int)(length * 57 / 2);
+
+				// Keep in reasonable range.
+				div = Math.Max( div, 11 );
+				div = Math.Min( div, 57 );
 
 				return GeodesicPoints( v1, v2, div );
 			}
@@ -536,7 +893,11 @@
 			/// </summary>
 			public static double SizeFunc( Vector3D v, double angularThickness )
 			{
-				return v.Z * Math.Tan( angularThickness );
+				double size = v.Z * Math.Tan( angularThickness );
+				//if( size == 0 )
+				//	size = 0.001;
+
+				return size;
 
 				/* OLD WAY
 				 			
@@ -569,6 +930,21 @@
 				}
 				else
 				{
+					if( Tolerance.Zero( v1.Z ) && Tolerance.Zero( v2.Z ) )
+					{
+						z1 = v1;
+						z2 = v2;
+						return;
+					}
+
+					// If one point is ideal, we need to not reflect that one!
+					bool swapped = false;
+					if( Tolerance.Zero( v1.Z ) )
+					{
+						Utils.SwapPoints( ref v1, ref v2 );
+						swapped = true;
+					}
+
 					Vector3D v1_reflected = v1;
 					v1_reflected.Z *= -1;
 					Circle3D c = new Circle3D( v1_reflected, v1, v2 );
@@ -589,6 +965,8 @@
 					// Make sure the order will be right.
 					// (z1 closest to v1 along arc).
 					if( v1.Dist( z1 ) > v2.Dist( z1 ) )
+						Utils.SwapPoints( ref z1, ref z2 );
+					if( swapped )
 						Utils.SwapPoints( ref z1, ref z2 );
 				}
 			}
@@ -618,12 +996,15 @@
 
 			public static void Geodesic( Vector3D v1, Vector3D v2, out Vector3D center, out double radius, out Vector3D normal, out double angleTot )
 			{
-				center = ( v1 + v2 ) / 2;
-				radius = v1.Dist( v2 ) / 2;
+				Vector3D _v1, _v2;
+				GeodesicIdealEndpoints( v1, v2, out _v1, out _v2 );
+
+				center = ( _v1 + _v2 ) / 2;
+				radius = _v1.Dist( _v2 ) / 2;
 				Vector3D vertical = new Vector3D( center.X, center.Y, radius );
-				normal = ( v1 - center ).Cross( vertical - center );
+				normal = ( _v1 - center ).Cross( vertical - center );
 				normal.Normalize();
-				angleTot = Math.PI;
+				angleTot = ( v1 - center ).AngleTo( v2 - center );
 			}
 
 			/// <summary>
@@ -631,10 +1012,63 @@
 			/// </summary>
 			public static Vector3D[] GeodesicPoints( Vector3D v1, Vector3D v2 )
 			{
+				return GeodesicPoints( v1, v2, 37 );
+			}
+
+			/// <summary>
+			/// Calculate points along a geodesic segment from v1 to v2.
+			/// </summary>
+			public static Vector3D[] GeodesicPoints( Vector3D v1, Vector3D v2, int div )
+			{
 				Vector3D center, normal;
 				double radius, angleTot;
 				Geodesic( v1, v2, out center, out radius, out normal, out angleTot );
-				return Shapeways.CalcArcPoints( center, radius, v1, normal, angleTot );
+
+				// Vertical?
+				if( Infinity.IsInfinite( radius ) )
+				{
+					Segment seg = Segment.Line( v1, v2 );
+					return seg.Subdivide( div );
+				}
+
+				return Shapeways.CalcArcPoints( center, radius, v1, normal, angleTot, div );
+			}
+
+			/// <summary>
+			/// Given a geodesic sphere, returns it's intersection with the boundary plane.
+			/// </summary>
+			public static Circle IdealCircle( Sphere s )
+			{
+				Vector3D s1, s2, s3;
+				IdealPoints( s, out s1, out s2, out s3 );
+				return new Circle( s1, s2, s3 );
+			}
+			
+			/// <summary>
+			/// Given a geodesic sphere, calculates 3 ideal points of the sphere.
+			/// </summary>
+			public static void IdealPoints( Sphere s, out Vector3D s1, out Vector3D s2, out Vector3D s3 )
+			{
+				if( s.IsPlane )
+				{
+					s1 = s.Offset;
+					s2 = s3 = s.Normal;
+					s2.RotateXY( Math.PI / 2 ); s2 += s1;
+					s3.RotateXY( -Math.PI / 2 ); s3 += s1;
+					return;
+				}
+
+				Vector3D cen = s.Center;
+				cen.Z = 0;
+
+				s1 = new Vector3D( s.Radius, 0 );
+				s2 = s3 = s1;
+				s2.RotateXY( Math.PI / 2 );
+				s3.RotateXY( Math.PI );
+
+				s1 += cen;
+				s2 += cen;
+				s3 += cen;
 			}
 		}
 	}

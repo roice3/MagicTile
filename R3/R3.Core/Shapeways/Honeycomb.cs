@@ -135,25 +135,66 @@
 			return EdgeLength( p, q, r );
 		}
 
+		public static Geometry GetGeometry( int p, int q, int r )
+		{
+			double t1 = Math.Sin( PiOverNSafe( p ) ) * Math.Sin( PiOverNSafe( r ) );
+			double t2 = Math.Cos( PiOverNSafe( q ) );
+
+			if( Tolerance.Equal( t1, t2 ) )
+				return Geometry.Euclidean;
+
+			if( Tolerance.GreaterThan( t1, t2 ) )
+				return Geometry.Spherical;
+
+			return Geometry.Hyperbolic;
+		}
+
+		/// <summary>
+		/// Returns the in-radius, in the induced geometry.
+		/// </summary>
 		public static double InRadius( int p, int q, int r )
 		{
 			double pip = PiOverNSafe( p );
 			double pir = PiOverNSafe( r );
 
 			double pi_hpq = Pi_hpq( p, q );
-			double inRadius = DonHatch.acosh( Math.Sin( pip ) * Math.Cos( pir ) / Math.Sin( pi_hpq ) );
-			return inRadius;
+			double inRadius = Math.Sin( pip ) * Math.Cos( pir ) / Math.Sin( pi_hpq );
+
+			switch( GetGeometry( p, q, r ) )
+			{
+				case Geometry.Hyperbolic:
+					return DonHatch.acosh( inRadius );
+				case Geometry.Spherical:
+					return Math.Acos( inRadius );
+			}
+
+			throw new System.NotImplementedException();
 		}
 
+		/// <summary>
+		/// Returns the mid-radius, in the induced geometry.
+		/// </summary>
 		public static double MidRadius( int p, int q, int r )
 		{
 			double pir = PiOverNSafe( r );
 
 			double inRadius = InRadius( p, q, r );
-			double midRadius = DonHatch.asinh( DonHatch.sinh( inRadius ) / Math.Sin( pir ) );
-			return midRadius;
+			double midRadius = DonHatch.sinh( inRadius ) / Math.Sin( pir );
+
+			switch( GetGeometry( p, q, r ) )
+			{
+				case Geometry.Hyperbolic:
+					return DonHatch.asinh( midRadius );
+				case Geometry.Spherical:
+					return Math.Asin( midRadius );
+			}
+
+			throw new System.NotImplementedException();
 		}
 
+		/// <summary>
+		/// Returns the circum-radius, in the induced geometry.
+		/// </summary>
 		public static double CircumRadius( int p, int q, int r )
 		{
 			double pip = PiOverNSafe( p );
@@ -162,8 +203,17 @@
 
 			double pi_hpq = Pi_hpq( p, q );
 			double pi_hqr = Pi_hpq( q, r );
-			double circumRadius = DonHatch.acosh( Math.Cos( pip ) * Math.Cos( piq ) * Math.Cos( pir ) / ( Math.Sin( pi_hpq ) * Math.Sin( pi_hqr ) ) );
-			return circumRadius;
+			double circumRadius = Math.Cos( pip ) * Math.Cos( piq ) * Math.Cos( pir ) / ( Math.Sin( pi_hpq ) * Math.Sin( pi_hqr ) );
+
+			switch( GetGeometry( p, q, r ) )
+			{
+				case Geometry.Hyperbolic:
+					return DonHatch.acosh( circumRadius );
+				case Geometry.Spherical:
+					return Math.Acos( circumRadius );
+			}
+
+			throw new System.NotImplementedException();
 		}
 
 		public static double EdgeLength( int p, int q, int r )

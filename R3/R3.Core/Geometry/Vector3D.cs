@@ -330,7 +330,7 @@
 		}
 
 		/// <summary>
-		/// Rotate in the XY plane by an angle in radians.
+		/// Rotate CCW in the XY plane by an angle in radians.
 		/// </summary>
 		public void RotateXY( double angle )
 		{
@@ -342,7 +342,7 @@
 		}
 
 		/// <summary>
-		/// Rotate in the XY plane about a center.  Angle is in radians.
+		/// Rotate CCW in the XY plane about a center.  Angle is in radians.
 		/// </summary>
 		public void RotateXY( Vector3D center, double angle )
 		{
@@ -406,6 +406,27 @@
 			}
 
 			return( Math.Acos( val ) );
+		}
+
+		/// <summary>
+		/// Finds a perpendicular vector (just one of many possible).
+		/// Result will be normalized.
+		/// </summary>
+		public Vector3D Perpendicular()
+		{
+			if( this.IsOrigin )
+				return new Vector3D();
+
+			Vector3D perp = this.Cross( new Vector3D( 0, 0, 1 ) );
+
+			// If we are a vector on the z-axis, the above will result in the zero vector.
+			if( perp.IsOrigin )
+				perp = this.Cross( new Vector3D( 1, 0, 0 ) );
+
+			if( !perp.Normalize() )
+				throw new System.Exception( "Failed to find perpendicular." );
+
+			return perp;
 		}
 
 		/// <summary>
