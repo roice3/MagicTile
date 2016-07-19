@@ -89,22 +89,50 @@
 				}
 				else
 				{
-					GL.Begin( BeginMode.LineStrip );
-					{
-						foreach( Vector3D point in seg.Subdivide( 1000 ) )
-						{
-							if( transform == null )
-								GL.Vertex2( point.X, point.Y );
-							else
-							{
-								Vector3D transformed = transform( point );
-								GL.Vertex2( transformed.X, transformed.Y );
-							}
-						}
-					}
-					GL.End();
+					DrawSeg( seg, 1000, transform );
 				}
 			}
+		}
+
+		public static void DrawHyperbolicGeodesic( CircleNE c, Color color,
+			System.Func<Vector3D, Vector3D> transform )
+		{
+			GL.Color3( color );
+
+			Segment seg = null;
+			if( c.IsLine )
+			{
+				// It will go through the origin.
+				Vector3D p = c.P1;
+				p.Normalize();
+				seg = Segment.Line( p, -p );
+			}
+			else
+			{
+				Vector3D p1, p2;
+				Euclidean2D.IntersectionCircleCircle( c, new Circle(), out p1, out p2 );
+				seg = Segment.Arc( p1, H3Models.Ball.ClosestToOrigin( new Circle3D() { Center = c.Center, Radius = c.Radius, Normal = new Vector3D(0,0,1) } ), p2 );
+			}
+
+			DrawSeg( seg, 150, transform );
+		}
+
+		private static void DrawSeg( Segment seg, int div, System.Func<Vector3D, Vector3D> transform )
+		{
+			GL.Begin( BeginMode.LineStrip );
+			{
+				foreach( Vector3D point in seg.Subdivide( div ) )
+				{
+					if( transform == null )
+						GL.Vertex2( point.X, point.Y );
+					else
+					{
+						Vector3D transformed = transform( point );
+						GL.Vertex2( transformed.X, transformed.Y );
+					}
+				}
+			}
+			GL.End();
 		}
 
 		private static Polygon m_box;

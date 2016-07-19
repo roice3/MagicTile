@@ -221,6 +221,8 @@
 
 				if( m_puzzle.Config.Geometry == Geometry.Spherical )
 					GLUtils.DrawCircleSafe( toDraw, m_settings.ColorTwistingCircles, GrabModelTransform() );
+				else if( m_puzzle.Config.Earthquake )
+					GLUtils.DrawHyperbolicGeodesic( toDraw, m_settings.ColorTwistingCircles, GrabModelTransform() );
 				else
 					GLUtils.DrawCircle( toDraw, m_settings.ColorTwistingCircles, GrabModelTransform() );
 			}
@@ -325,15 +327,7 @@
 
 			// Draw a background disk if we are using the fisheye model.
 			if( m_settings.SphericalModel == SphericalModel.Fisheye )
-			{
-				Polygon p = new Polygon();
-				List<Vector3D> cPoints = new List<Vector3D>();
-				for( int i = 0; i < 100; i++ )
-					cPoints.Add( new Vector3D( Math.Cos( Math.PI * i / 50 ), Math.Sin( Math.PI * i / 50 ) ) );
-				p.CreateEuclidean( cPoints.ToArray() );
-				p.Center = new Vector3D( 10.1, 0 );
-				GLUtils.DrawConcavePolygon( p, m_settings.ColorBg, v => v );
-			}
+				FillBackgroundExceptDisk();
 
 			GL.Disable( EnableCap.StencilTest );
 		}
@@ -486,6 +480,22 @@
 				m_mouseMotion.ControlType = ControlType.Mouse_3D;
 			if( m_puzzle.HasValidSkewConfig )
 				m_mouseMotion.ControlType = ControlType.Mouse_4D;
+		}
+
+		/// <summary>
+		/// Helper to fill in the background, except for a disk.
+		/// </summary>
+		private void FillBackgroundExceptDisk()
+		{
+			int num = 200;
+
+			Polygon p = new Polygon();
+			List<Vector3D> cPoints = new List<Vector3D>();
+			for( int i = 0; i < num; i++ )
+				cPoints.Add( new Vector3D( Math.Cos( 2 * Math.PI * i / num ), Math.Sin( 2 * Math.PI * i / num ) ) );
+			p.CreateEuclidean( cPoints.ToArray() );
+			p.Center = new Vector3D( 10.1, 0 );
+			GLUtils.DrawConcavePolygon( p, m_settings.ColorBg, v => v );
 		}
 
 		/// <summary>

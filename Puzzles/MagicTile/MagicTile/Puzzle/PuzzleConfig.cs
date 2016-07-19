@@ -394,6 +394,11 @@
 	{
 		public PuzzleConfig()
 		{
+			SetupDefaultConfig();
+		}
+
+		private void SetupDefaultConfig()
+		{
 			this.ID = "Puzzle.{7,3}.Classic";	// Needs to be coordinated with {7,3} config.
 			this.DisplayName = "{7,3} Classic";
 			P = 7;
@@ -406,7 +411,11 @@
 			NumTiles = 5000;
 
 			SlicingCircles = new SlicingCircles();
-			SlicingCircles.FaceCentered.Add( new Distance( 2.0 / 3, 0, 1.0, 0 ) );
+
+			bool earthquake = false;
+			if( !earthquake )
+				SlicingCircles.FaceCentered.Add( new Distance( 2.0 / 3, 0, 1.0, 0 ) );
+			Earthquake = earthquake;
 			TileShrink = 0.94;
 
 			Version = Loader.VersionCurrent;
@@ -453,6 +462,11 @@
 		/// Only need to list for the single generating tile.
 		[DataMember]
 		public SlicingCircles SlicingCircles { get; set; }
+
+		/// <summary>
+		/// Whether or not we are an Earthquake puzzle (based on systolic pants decomposition).
+		/// </summary>
+		public bool Earthquake { get; set; }
 
 		/// <summary>
 		/// Used to control the gap between tiles.

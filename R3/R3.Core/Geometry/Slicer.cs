@@ -21,8 +21,6 @@
 		/// <remarks>The input polygon might get reversed</remarks>
 		public static void SlicePolygon( Polygon p, CircleNE c, Geometry g, double thickness, out List<Polygon> output )
 		{
-			output = new List<Polygon>();
-
 			// Setup the two slicing circles.
 			CircleNE c1 = c.Clone(), c2 = c.Clone();
 			Mobius m = new Mobius();
@@ -32,6 +30,38 @@
 			m.Hyperbolic2( g, c2.CenterNE, pointOnCircle, -thickness / 2 );
 			c2.Transform( m );
 			
+			SlicePolygonHelper( p, c1, c2, out output );
+		}
+
+		/// <summary>
+		/// Slicing function used for earthquake puzzles.
+		/// c should be geodesic (orthogonal to the disk boundary).
+		/// </summary>
+		public static void SlicePolygonWithHyperbolicGeodesic( Polygon p, CircleNE c, double thickness, out List<Polygon> output )
+		{
+			Geometry g = Geometry.Hyperbolic;
+
+			// Setup the two slicing circles.
+			// These are cuts equidistant from the passed in geodesic.
+			Vector3D closestToOrigin = H3Models.Ball.ClosestToOrigin( new Circle3D() { Center = c.Center, Radius = c.Radius, Normal = new Vector3D( 0, 0, 1 ) } );
+
+			Vector3D p1, p2;
+			Euclidean2D.IntersectionCircleCircle( c, new Circle(), out p1, out p2 );
+			Segment seg = Segment.Arc( p1, closestToOrigin, p2 );
+
+			Circle c1 = H3Models.Ball.EquidistantOffset( g, seg, thickness / 2 );
+			Circle c2 = H3Models.Ball.EquidistantOffset( g, seg, -thickness / 2 );
+
+			CircleNE c1NE = c.Clone(), c2NE = c.Clone();
+			c1NE.Center = c1.Center; c2NE.Center = c2.Center;
+			c1NE.Radius = c1.Radius; c2NE.Radius = c2.Radius;
+			SlicePolygonHelper( p, c1NE, c2NE, out output );
+		}
+
+		private static void SlicePolygonHelper( Polygon p, CircleNE c1, CircleNE c2, out List<Polygon> output )
+		{
+			output = new List<Polygon>();
+
 			// ZZZ - alter Clip method to work on Polygons and use that.
 
 			// Slice it up.

@@ -676,6 +676,58 @@
 			}
 
 			/// <summary>
+			/// This is a 2D function for now.
+			/// Given an input geodesic in the plane, returns an equidistant circle.
+			/// Offset would be the offset at the origin.
+			/// Works with all geometries.
+			/// </summary>
+			public static Circle EquidistantOffset( Geometry g, Segment seg, double offset )
+			{
+				Mobius m = new Mobius();
+				Vector3D direction;
+				if( seg.Type == SegmentType.Line )
+				{
+					direction = seg.P2 - seg.P1;
+					direction.RotateXY( Math.PI / 2 );
+				}
+				else
+				{
+					direction = seg.Circle.Center;
+				}
+
+				direction.Normalize();
+				m.Isometry( g, 0, direction * offset );
+
+				System.Func<Vector3D, Vector3D> transform = v =>
+				{
+					if( Tolerance.Equal( v.Abs(), 1 ) )
+						return v;	// XXX, not true in general, but code below goes haywire if this is true.
+
+					Mobius m2 = new Mobius(), m3 = new Mobius();
+					m2.Isometry( g, 0, -v );
+					Vector3D p1_ = m2.Apply( seg.P1 );
+					Vector3D p2_ = m2.Apply( seg.P2 );
+
+					Vector3D direction2 = p2_ - p1_;
+					direction2.RotateXY( Math.PI / 2 );
+					direction2.Normalize();
+					m3.Isometry( g, 0, direction2 * offset );
+
+					Mobius final = m2.Inverse() * m3 * m2;	// This is correct, I think
+					//Mobius final = m2.Inverse() * m * m2;
+					//Mobius final = m;
+					return final.Apply( v );
+				};
+
+				// Transform 3 points on segment.
+				Vector3D p1 = transform( seg.P1 );
+				Vector3D p2 = transform( seg.Midpoint );
+				Vector3D p3 = transform( seg.P2 );
+
+				return new Circle( p1, p2, p3 );
+			}
+
+			/// <summary>
 			/// Calculate the hyperbolic midpoint of an edge.
 			/// Only works for non-ideal edges at the moment.
 			/// </summary>

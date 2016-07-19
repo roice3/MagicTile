@@ -41,8 +41,9 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
-*.suo
+
 OpenTK
+Puzzles/MagicTile/MagicTile.suo
 Puzzles/MagicTile/MagicTile/bin/Release
 Puzzles/MagicTile/MagicTile/obj
 Puzzles/MagicTile/packages

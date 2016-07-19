@@ -94,6 +94,7 @@
     <Compile Include="Puzzle\Sticker.cs" />
     <Compile Include="Puzzle\TopologyAnalyzer.cs" />
     <Compile Include="Puzzle\Twisting\Macro.cs" />
+    <Compile Include="Puzzle\Twisting\Pants.cs" />
     <Compile Include="Puzzle\Twisting\SetupMoves.cs" />
     <Compile Include="Puzzle\Twisting\SingleTwist.cs" />
     <Compile Include="Puzzle\Twisting\SliceMask.cs" />

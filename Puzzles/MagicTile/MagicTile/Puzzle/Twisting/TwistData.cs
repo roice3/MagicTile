@@ -113,10 +113,25 @@
 		public CircleNE[] Circles { get; set; }
 
 		/// <summary>
+		/// For an "Earthquake" puzzle, twisting will be based on a pair of pants.
+		/// null by default.
+		/// </summary>
+		public Pants Pants { get; set; }
+
+		/// <summary>
+		/// Easy check for earthquake mode.
+		/// </summary>
+		private bool Earthquake { get { return Pants != null; } }
+
+		/// <summary>
 		/// Grabs all the circles the apply to a given slicemask.
 		/// </summary>
 		public CircleNE[] CirclesForSliceMask( int mask )
 		{
+			// For earthquake puzzles, return all circles for now.
+			if( Earthquake )
+				return Circles;
+
 			int count = this.Circles.Length;
 			List<int> indexes = new List<int>();
 			foreach( int slice in SliceMask.MaskToSlices( mask ) )
@@ -202,7 +217,9 @@
 				bool inside = sphericalPuzzle ?
 					circleNE.IsPointInsideNE( cell.Center ) :
 					circleNE.IsPointInsideFast( cell.Center );
-				if( inside ||
+
+				if( (Earthquake && !inside) || 
+					inside ||
 					circleNE.Intersects( cell.Boundary ) )
 					return true;
 			}
@@ -232,6 +249,15 @@
 				AffectedStickers = new List<StickerList>();
 				for( int slice=0; slice<this.NumSlices; slice++ )
 					AffectedStickers.Add( new List<Sticker>() );
+			}
+
+			if( Earthquake )
+			{
+				foreach( CircleNE c in Circles )
+					if( !c.IsPointInsideNE( sticker.Poly.Center ) )
+						return;
+				AffectedStickers[0].Add( sticker );
+				return;
 			}
 
 			// Slices are ordered by depth.

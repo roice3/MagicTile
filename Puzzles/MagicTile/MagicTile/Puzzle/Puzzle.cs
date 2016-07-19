@@ -331,6 +331,22 @@
 					twistData.Circles = SetupTemplateSlicingCircles( template, twistData.Center, vertexCentered );
 					result.Add( twistData );
 				}
+
+				// Long way to go to make this general.
+				if( this.Config.Earthquake )
+				{
+					TwistData twistData = new TwistData();
+					twistData.TwistType = ElementType.Vertex;
+					twistData.Center = s.P1;
+					twistData.Order = 3;
+
+					Mobius m = new Mobius();
+					m.Isometry( Geometry.Hyperbolic, Euclidean2D.AngleToCounterClock( new Vector3D( 1, 0 ), s.P1 ), new Vector3D() );
+					twistData.Circles = Pants.PantsCirclesForKQ().Select( c => { c.Transform( m ); return c; } ).ToArray();
+
+					twistData.Pants = new Pants();
+					result.Add( twistData );
+				}
 			}
 
 			return result;
@@ -391,7 +407,10 @@
 			foreach( Polygon slicee in slicees )
 			{
 				List<Polygon> tempSliced2;
-				Slicer.SlicePolygon( slicee, slicer, this.Config.Geometry, this.Config.SlicingCircles.Thickness, out tempSliced2 );
+				if( Config.Earthquake )
+					Slicer.SlicePolygonWithHyperbolicGeodesic( slicee, slicer, this.Config.SlicingCircles.Thickness, out tempSliced2 );
+				else
+					Slicer.SlicePolygon( slicee, slicer, this.Config.Geometry, this.Config.SlicingCircles.Thickness, out tempSliced2 );
 				tempSliced.AddRange( tempSliced2 );
 			}
 
@@ -701,6 +720,7 @@
 			transformedTwistData.Center = newCenter;	// NOTE: Can't use InfinitySafe method here! We need this center to stay accurate, for future transformations.
 			transformedTwistData.Order = untransformed.Order;
 			transformedTwistData.Reverse = reverse;
+			transformedTwistData.Pants = untransformed.Pants;
 			List<CircleNE> transformedCircles = new List<CircleNE>();
 			foreach( CircleNE circleNE in untransformed.Circles )
 			{
@@ -1042,9 +1062,14 @@
 		{
 			m_stateCalcCells.Clear();
 			List<Cell> result = new List<Cell>();
+			result.AddRange( this.MasterCells );
 
-			foreach( Cell master in this.MasterCells )
-				result.Add( master );
+			if( this.Config.Earthquake )
+			{
+				//result.AddRange( this.AllSlaveCells.Take( 50 ) );
+				m_stateCalcCells = result.Distinct().ToList();
+				return;
+			}
 
 			HashSet<Vector3D> complete = new HashSet<Vector3D>();
 			List<TwistData> hotTwists = new List<TwistData>();
