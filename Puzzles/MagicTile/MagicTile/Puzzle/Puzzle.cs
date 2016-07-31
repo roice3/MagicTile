@@ -88,6 +88,11 @@
 		}
 
 		/// <summary>
+		/// Access to the cells needed to render on a rolled up surface.
+		/// </summary>
+		public Cell[] SurfaceRenderingCells { get; private set; }
+
+		/// <summary>
 		/// The cells for an associated IRP, if we have one.
 		/// </summary>
 		public Cell[] IRPCells { get; private set; }
@@ -125,6 +130,19 @@
 		/// Macros for this puzzle.
 		/// </summary>
 		public MacroList MacroList { get; set; }
+
+		/// <summary>
+		/// Whether or not we have surface config.
+		/// </summary>
+		public bool HasSurfaceConfig
+		{
+			get
+			{
+				return
+					Config.SurfaceConfig != null &&
+					Config.SurfaceConfig.Configured;
+			}
+		}
 
 		/// <summary>
 		/// Whether or not we have an associated skew polyhedron.
@@ -228,6 +246,9 @@
 			StatusOrCancel( callback, "preparing twisting..." );
 			SetupTwistDataForFullPuzzle( tiling, topology, templateTwistDataArray );
 			SetupCellNearTree( completed );
+
+			StatusOrCancel( callback, "preparing surface data..." );
+			PrepareSurfaceData( callback );
 
 			StatusOrCancel( callback, "loading and preparing irp data..." );
 			try 
@@ -1131,6 +1152,31 @@
 			m_stateCalcCells = result.Distinct().ToList();
 		}
 		public List<Cell> m_stateCalcCells;
+
+		private void PrepareSurfaceData( IStatusCallback callback )
+		{
+			if( !this.HasSurfaceConfig )
+				return;
+
+			int p = Config.P;
+			int q = Config.Q;
+			SurfaceConfig sc = Config.SurfaceConfig;
+			Vector3D b1 = new Vector3D( sc.Basis1X.Dist( p, q ), sc.Basis1Y.Dist( p, q ) );
+			Vector3D b2 = new Vector3D( sc.Basis2X.Dist( p, q ), sc.Basis2Y.Dist( p, q ) );
+
+			// Mark the cells we need to render the surface.
+			SurfacePoly = Polygon.FromPoints( new Vector3D[] { new Vector3D(), b1, b1 + b2, b2 } );
+			SurfaceRenderingCells = AllCells.Where( c => SurfacePoly.Intersects( c.Boundary ) ).ToArray();
+
+			// Setup texture coords.
+			SurfaceTextureCoords = TextureHelper.TextureCoords( SurfacePoly, Geometry.Euclidean, 32 );
+			SurfaceElementIndices = TextureHelper.CalcElementIndices( SurfacePoly, 5 );
+		}
+
+		public Polygon SurfacePoly { get; private set; }
+
+		public Vector3D[] SurfaceTextureCoords { get; private set; }
+		public List<int[]> SurfaceElementIndices { get; private set; }
 
 		/// <summary>
 		/// Whether we have a valid IRP data file configured.

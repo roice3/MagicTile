@@ -102,5 +102,19 @@
          </SlicingCircles>
       </Puzzle>
    </Specific>
+   <SurfaceConfig>
+      <Basis1X>
+         <Q>2</Q>
+         <R>2</R>
+      </Basis1X>
+      <Basis1Y>
+         <P>-2</P>
+      </Basis1Y>
+      <Basis2X/>
+      <Basis2Y>
+         <P>4</P>
+      </Basis2Y>
+      <Surface>CliffordTorus</Surface>
+   </SurfaceConfig>
    <TileShrink>0.94</TileShrink>
 </PuzzleConfigClass>

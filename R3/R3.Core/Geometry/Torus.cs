@@ -178,6 +178,43 @@
 				}
 				GL.End();
 			}
-		}	
+		}
+
+		/// <summary>
+		/// Maps a point in a rhombus to a point in the unit square, via a simple affine transformation.
+		/// b1 and b2 are the two basis vectors of the rhombus.
+		/// Does not currently check the input point.
+		/// </summary>
+		public static Vector3D MapRhombusToUnitSquare( Vector3D b1, Vector3D b2, Vector3D v )
+		{
+			double a = Euclidean2D.AngleToCounterClock( b1, new Vector3D( 1, 0 ) );
+			v.RotateXY( a );
+			b1.RotateXY( a );
+			b2.RotateXY( a );
+
+			// Shear
+			v.X -= b2.X * ( v.Y / b2.Y );
+
+			// Scale x and y.
+			v.X /= b1.X;
+			v.Y /= b2.Y;
+
+			return v;
+		}
+
+		/// <summary>
+		/// Maps a vector in the unit square to a point on the Clifford Torus.
+		/// Does not currently check the input point.
+		/// </summary>
+		public static Vector3D MapToClifford( Vector3D v )
+		{
+			v *= 2 * Math.PI;
+			Vector3D result = new Vector3D(
+				Math.Cos( v.X ), 
+				Math.Sin( v.X ), 
+				Math.Cos( v.Y ), 
+				Math.Sin( v.Y ) );
+			return Math.Sqrt( 0.5 ) * result;
+		}
 	}
 }

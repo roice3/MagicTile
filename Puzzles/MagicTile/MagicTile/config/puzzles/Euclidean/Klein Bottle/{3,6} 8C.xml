@@ -110,5 +110,19 @@
          </SlicingCircles>
       </Puzzle>
    </Specific>
+   <SurfaceConfig>
+      <Basis1X/>
+      <Basis1Y>
+         <P>-4</P>
+      </Basis1Y>
+      <Basis2X>
+         <Q>2</Q>
+         <R>2</R>
+      </Basis2X>
+      <Basis2Y>
+         <P>2</P>
+      </Basis2Y>
+      <Surface>LawsonKleinBottle</Surface>
+   </SurfaceConfig>
    <TileShrink>0.94</TileShrink>
 </PuzzleConfigClass>

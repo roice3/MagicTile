@@ -139,6 +139,11 @@
 		private Vector3D m_viewLookFrom3D;
 		private Vector3D m_viewLookFrom4D;
 		
+		public void ScaleLookFrom4D( double scale )
+		{
+			m_viewLookFrom4D *= scale;
+		}
+
 		/// <summary>
 		/// The camera up vector, when the view is 3D.
 		/// </summary>

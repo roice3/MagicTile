@@ -154,6 +154,12 @@
 		public int NumTiles { get; set; }
 
 		/// <summary>
+		/// Config required to draw a puzzle on its rolled up surface.
+		/// </summary>
+		[DataMember]
+		public SurfaceConfig SurfaceConfig { get; set; }
+
+		/// <summary>
 		/// An IRP to associate with this puzzle.
 		/// </summary>
 		[DataMember]
@@ -229,6 +235,7 @@
 			config.Identifications = this.Identifications;
 			config.ExpectedNumColors = this.ExpectedNumColors;
 			config.NumTiles = this.NumTiles;
+			config.SurfaceConfig = this.SurfaceConfig;
 			config.IRPConfig = this.IRPConfig;
 			config.Skew4DConfig = this.Skew4DConfig;
 

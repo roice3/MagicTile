@@ -1,6 +1,7 @@
 ﻿namespace MagicTile
 {
 	using MagicTile.Utils;
+	using R3.Core;
 	using R3.Geometry;
 	using System.Collections.Generic;
 	using System.Diagnostics;
@@ -155,6 +156,21 @@
 		/// </summary>
 		[DataMember]
 		public double D { get; set; }
+
+		/// <summary>
+		/// Returns true if we are zero.
+		/// </summary>
+		public bool Zero
+		{
+			get
+			{
+				return
+					Tolerance.Zero( P ) ||
+					Tolerance.Zero( Q ) ||
+					Tolerance.Zero( R ) ||
+					Tolerance.Zero( D );
+			}
+		}
 
 		/// <summary>
 		/// Return the distance we represent for a particular {p,q} tiling.
@@ -366,6 +382,47 @@
 		public int Rotate { get; set; }
 	}
 
+	public enum Surface
+	{
+		CliffordTorus,
+		LawsonKleinBottle
+	}
+
+	/// <summary>
+	/// Configuration required for rendering a puzzle on a compact surface.
+	/// </summary>
+	[DataContract( Namespace = "" )]
+	public class SurfaceConfig
+	{
+		public bool Configured
+		{
+			get
+			{
+				return 
+				 !( Basis1X == null || 
+					Basis1Y == null || 
+					Basis2X == null || 
+					Basis2Y == null );
+			}
+		}
+
+		[DataMember]
+		public Surface Surface { get; set; }
+
+		/// <summary>
+		/// Locally euclidean puzzles.
+		/// We'll define this by a rhombus with two basis vectors.
+		/// </summary>
+		[DataMember]
+		public Distance Basis1X { get; set; }
+		[DataMember]
+		public Distance Basis1Y { get; set; }
+		[DataMember]
+		public Distance Basis2X { get; set; }
+		[DataMember]
+		public Distance Basis2Y { get; set; }
+	}
+
 	public enum Polytope
 	{
 		Duoprism,
@@ -496,6 +553,12 @@
 		/// </summary>
 		[DataMember]
 		public int NumTiles { get; set; }
+
+		/// <summary>
+		/// Config required to draw a puzzle on its rolled up surface.
+		/// </summary>
+		[DataMember]
+		public SurfaceConfig SurfaceConfig { get; set; }
 
 		/// <summary>
 		/// An IRP to associate with this puzzle.

@@ -17,7 +17,8 @@
 
 		//private const int m_textureSize = 1024;
 		// ZZZ - query max size allowed from video card?
-		private const int m_textureSize = 512;
+		public int TextureSize { get { return m_textureSize; } set { m_textureSize = value; } }
+		private int m_textureSize = 512;
 
 		/// <summary>
 		/// Frame Buffer Object handle (we'll use only one for all the textures we generate).

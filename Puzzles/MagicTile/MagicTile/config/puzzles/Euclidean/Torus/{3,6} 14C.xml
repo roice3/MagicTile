@@ -1,4 +1,4 @@
-﻿<PuzzleConfigClass>
+<PuzzleConfigClass>
    <ClassDisplayName>{3,6} 14-Color (K_7, Császár polyhedron)</ClassDisplayName>
    <ClassID>{3,6}.14</ClassID>
    <ExpectedNumColors>14</ExpectedNumColors>
@@ -101,5 +101,22 @@
          </SlicingCircles>
       </Puzzle>
    </Specific>
+   <SurfaceConfig>
+      <Basis1X>
+         <Q>2</Q>
+         <R>2</R>
+      </Basis1X>
+      <Basis1Y>
+         <P>-4</P>
+      </Basis1Y>
+      <Basis2X>
+         <Q>1</Q>
+         <R>1</R>
+      </Basis2X>
+      <Basis2Y>
+         <P>5</P>
+      </Basis2Y>
+      <Surface>CliffordTorus</Surface>
+   </SurfaceConfig>
    <TileShrink>0.94</TileShrink>
 </PuzzleConfigClass>

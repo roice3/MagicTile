@@ -154,6 +154,8 @@
 
 			foreach( Cell master in m_currentTwist.IdentifiedTwistData.AffectedMasterCells )
 				m_renderToTexture.InvalidateTexture( master );
+			if( m_puzzle.HasSurfaceConfig )
+				m_renderToTexture.InvalidateTexture( PuzzleRenderer.SurfaceTexture );
 
 			m_rotation += R3.Core.Utils.DegreesToRadians( m_settings.RotationStep( m_currentTwist.IdentifiedTwistData.Order ) );
 			//Trace.WriteLine( "rotation " + m_rotation );

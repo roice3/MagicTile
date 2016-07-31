@@ -57,7 +57,9 @@
 
 					// In Poincare model.
 					GL.TexCoord2( (textureCoords[idx].X * factor + 1) / 2, (textureCoords[idx].Y * factor + 1) / 2 );
-					Complex transformed = mouseIsometry.Apply( textureVerts[idx].ToComplex() );
+					Complex transformed = textureVerts[idx].ToComplex();
+					if( mouseIsometry != null )
+						transformed = mouseIsometry.Apply( transformed );
 
 					switch( model )
 					{

@@ -101,7 +101,7 @@
 		[Description( "Controls the animation rate of twists.  Range is 0 to 1, and you can set to 1 for instantaneous twisting." )]
 		[Category( "Behavior" )]
 		[Range( 0, 1 )]
-		[Editor( typeof( TrackBarValueEditor ), typeof( UITypeEditor ) )]
+		[Editor( typeof( TrackBarValueEditor<double> ), typeof( UITypeEditor ) )]
 		public double RotationRate { get; set; }
 
 		[DataMember]
@@ -129,12 +129,21 @@
 		public HModel HyperbolicModel { get; set; }
 
 		[DataMember]
+		[DisplayName( "Surface Display" )]
+		[Description( "BETA! Controls rendering the puzzle on a compact surface. " +
+			"This is an experimental feature and will only work with some puzzles. The default (false) designates rendering the universal cover. " +
+			"A true value might show puzzles on various rolled up surfaces. " +
+			"I reserve the right to break this in future versions to make this feature more general. Consider it fragile and spotty!" )]
+		[Category( "Behavior" )]
+		public bool SurfaceDisplay { get; set; }
+
+		[DataMember]
 		[DisplayName( "Gliding" )]
 		[Description( "Controls the amount of auto-gliding.  Moving the slider to the right increases glide, and " +
 			"moving to the left causes the gliding to be more dampened." )]
 		[Category( "Behavior" )]
 		[Range( 0, 1 )]
-		[Editor( typeof( TrackBarValueEditor ), typeof( UITypeEditor ) )]
+		[Editor( typeof( TrackBarValueEditor<double> ), typeof( UITypeEditor ) )]
 		public double Gliding { get; set; }
 
 		[DataMember]
@@ -238,7 +247,7 @@
 		[Description( "Controls the amount of ambient lighting. Range is 0 to 1." )]
 		[Category( "Lighting" )]
 		[Range( 0, 1 )]
-		[Editor( typeof( TrackBarValueEditor ), typeof( UITypeEditor ) )]
+		[Editor( typeof( TrackBarValueEditor<double> ), typeof( UITypeEditor ) )]
 		public double AmbientLighting { get; set; }
 
 		public enum EStereoType
@@ -266,7 +275,7 @@
 			"At the default value of 1, the separation is 1/30th of the focal length, which is usually a comfortable amount." )]
 		[Category( "Stereo" )]
 		[Range( 0, 4 )]
-		[Editor( typeof( TrackBarValueEditor ), typeof( UITypeEditor ) )]
+		[Editor( typeof( TrackBarValueEditor<double> ), typeof( UITypeEditor ) )]
 		public double StereoSeparation { get; set; }
 
 		// NOTE: This member is a multiplier applied to the focal length in calculations.
@@ -277,7 +286,7 @@
 			"At a value of 2, the projection plane is at the origin, in which case half the object is in front of the screen and half behind." )]
 		[Category( "Stereo" )]
 		[Range( 0, 4 )]
-		[Editor( typeof( TrackBarValueEditor ), typeof( UITypeEditor ) )]
+		[Editor( typeof( TrackBarValueEditor<double> ), typeof( UITypeEditor ) )]
 		public double FocalLength { get; set; }
 
 		[OnDeserializing]

@@ -250,6 +250,38 @@
 			return Tolerance.Equal( d1, d2 + d3 );
 		}
 
+		public bool Intersects( Segment s )
+		{
+			Vector3D i1 = Vector3D.DneVector(), i2 = Vector3D.DneVector();
+			int numInt = 0;
+			if( SegmentType.Arc == Type )
+			{
+				if( SegmentType.Arc == s.Type )
+					numInt = Euclidean2D.IntersectionCircleCircle( Circle, s.Circle, out i1, out i2 );
+				else
+					numInt = Euclidean2D.IntersectionLineCircle( P1, P2, s.Circle, out i1, out i2 );
+			}
+			else
+			{
+				if( SegmentType.Arc == s.Type )
+					numInt = Euclidean2D.IntersectionLineCircle( s.P1, s.P2, Circle, out i1, out i2 );
+				else
+					numInt = Euclidean2D.IntersectionLineLine( P1, P2, s.P1, s.P2, out i1 );
+			}
+
+			if( 0 == numInt )
+				return false;
+
+			if( numInt > 0 )
+				if( IsPointOn( i1 ) && s.IsPointOn( i1 ) )
+					return true;
+			if( numInt > 1 )
+				if( IsPointOn( i2 ) && s.IsPointOn( i2 ) )
+					return true;
+
+			return false;
+		}
+
 		public void Reflect( Segment s )
 		{
 			// NOTES:
@@ -546,20 +578,20 @@
 			double circumRadius = Geometry2D.GetNormalizedCircumRadius( p, q );
 
 			double angle = 0;
-			for( int i=0; i<p; i++ )
+			for( int i = 0; i < p; i++ )
 			{
 				Vector3D point = new Vector3D();
-				point.X = ( circumRadius * Math.Cos( angle ) );
-				point.Y = ( circumRadius * Math.Sin( angle ) );
+				point.X = (circumRadius * Math.Cos( angle ));
+				point.Y = (circumRadius * Math.Sin( angle ));
 				points.Add( point );
 				angle += Utils.DegreesToRadians( 360.0 / p );
 			}
 
 			// Turn this into segments.
-			for( int i=0; i<points.Count; i++ )
+			for( int i = 0; i < points.Count; i++ )
 			{
 				int idx1 = i;
-				int idx2 = i == points.Count - 1 ? 0 : i+1;
+				int idx2 = i == points.Count - 1 ? 0 : i + 1;
 				Segment newSegment = new Segment();
 				newSegment.P1 = points[idx1];
 				newSegment.P2 = points[idx2];
@@ -573,8 +605,8 @@
 						// Our magic formula below breaks down for digons.
 						double factor = Math.Tan( Math.PI / 6 );
 						newSegment.Center = newSegment.P1.X > 0 ?
-							new Vector3D( 0,-circumRadius,0 ) * factor :
-							new Vector3D( 0, circumRadius,0 ) * factor;
+							new Vector3D( 0, -circumRadius, 0 ) * factor :
+							new Vector3D( 0, circumRadius, 0 ) * factor;
 					}
 					else
 					{
@@ -583,13 +615,13 @@
 						// (Maybe this is because the Poincare Disc model of the
 						// hyperbolic plane is stereographic projection as well).
 
-						double piq = q == -1 ? 0 : Math.PI / q;	// Handle q infinite.
+						double piq = q == -1 ? 0 : Math.PI / q; // Handle q infinite.
 						double t1 = Math.PI / p;
 						double t2 = Math.PI / 2 - piq - t1;
-						double factor = ( Math.Tan( t1 ) / Math.Tan( t2 ) + 1 ) / 2;
-						newSegment.Center = ( newSegment.P1 + newSegment.P2 ) * factor;
+						double factor = (Math.Tan( t1 ) / Math.Tan( t2 ) + 1) / 2;
+						newSegment.Center = (newSegment.P1 + newSegment.P2) * factor;
 					}
-				
+
 					newSegment.Clockwise = Geometry.Spherical == g ? false : true;
 				}
 
@@ -631,12 +663,12 @@
 			get
 			{
 				double totalLength = 0;
-				for( int i=0; i<NumSides; i++ )
+				for( int i = 0; i < NumSides; i++ )
 				{
 					Segment s = Segments[i];
 					// ZZZ
 					//if( s.valid() )
-						totalLength += s.Length;	
+						totalLength += s.Length;
 				}
 
 				return totalLength;
@@ -740,7 +772,7 @@
 						double maxAngle = s.Angle;
 						Vector3D vs = s.P1 - s.Center;
 						int numSegments = (int)(maxAngle / (arcResolution));
-						if( numSegments < 10 )	// ZZZ - arbitrary.
+						if( numSegments < 10 )  // ZZZ - arbitrary.
 							numSegments = 10;
 						double angle = maxAngle / numSegments;
 						for( int j = 1; j < numSegments; j++ )
@@ -815,6 +847,31 @@
 			}
 		}
 
+		/// <summary>
+		/// Calculate the bounding box of this polygon, using just the vertices.
+		/// </summary>
+		public System.Tuple<Vector3D,Vector3D> BoundingBox
+		{
+			get
+			{
+				double 
+					minX = double.MaxValue, minY = double.MaxValue, 
+					maxX = double.MinValue, maxY = double.MinValue;
+
+				foreach( Vector3D v in Vertices )
+				{
+					minX = Math.Min( minX, v.X );
+					minY = Math.Min( minY, v.Y );
+					maxX = Math.Max( maxX, v.X );
+					maxY = Math.Max( maxY, v.Y );
+				}
+
+				return new System.Tuple<Vector3D, Vector3D>( 
+					new Vector3D( minX, minY ), 
+					new Vector3D( maxX, maxY ) );
+			}
+		}
+
 		public void Reverse()
 		{
 			// Reverse all our segments and swap the order of them.
@@ -845,7 +902,7 @@
 		public void Reflect( Segment s )
 		{
 			// Just reflect all our segments.
-			for( int i=0; i<Segments.Count; i++ )
+			for( int i = 0; i < Segments.Count; i++ )
 				Segments[i].Reflect( s );
 			Center = s.ReflectPoint( Center );
 		}
@@ -897,6 +954,27 @@
 		{
 			foreach( Segment s in this.Segments )
 				s.Scale( this.Center, factor );
+		}
+
+		/// <summary>
+		/// Checks to see if we intersect another polygon.
+		/// </summary>
+		public bool Intersects( Polygon p )
+		{
+			// If we are inside the polygon, or they are inside us, we intersect.
+			// ZZZ - This isn't perfect and doesn't handle all cases.
+			//		 We actually need to check this for any point, not just the center.
+			if( p.IsPointInside( Center ) ||
+				IsPointInside( p.Center ) )
+				return true;
+
+			// If any segments interset, we intersect.
+			foreach( Segment s1 in Segments )
+			foreach( Segment s2 in p.Segments )
+				if( s1.Intersects( s2 ) )
+					return true;
+
+			return false;
 		}
 
 		/// <summary>

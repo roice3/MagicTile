@@ -90,7 +90,7 @@
 
 			m_puzzle = puzzle;
 			CalcTextureScale();
-			m_mouseMotion.Reset( puzzle.Config.Geometry );
+			ResetView();
 
 			this.TwistHandler.PuzzleUpdated( m_puzzle );
 
@@ -102,14 +102,32 @@
 		{
 			Geometry g = m_puzzle == null ? Geometry.Hyperbolic : m_puzzle.Config.Geometry;
 			m_mouseMotion.Reset( g );
+			if( m_puzzle != null && 
+				m_puzzle.HasSurfaceConfig && 
+				m_puzzle.Config.SurfaceConfig.Surface == Surface.LawsonKleinBottle )
+				m_mouseMotion.ScaleLookFrom4D( 1.5 );
 		}
+
+		public const string SurfaceTexture = "SurfaceTexture";
 
 		public void GenTextures()
 		{
 			// No view scaling or rotation when drawing texture.
 			SetOrthoForTexture();
+
+			// We generate the texture differently when rendering to a surface.
+			// We only use a single texture in this case.
+			// ZZZ - This may change in the future with more complicated surfaces.
+			if( this.ShowOnSurface )
+			{
+				m_renderToTexture.TextureSize = 2048;
+				m_renderToTexture.CreateTexture( SurfaceTexture, m_settings.EnableTextureMipmaps, RenderSurfaceForTexture );
+				return;
+			}
+
+			m_renderToTexture.TextureSize = 512;	// Could be smart about this and increase if number of textures is small.
 			foreach( Cell master in m_puzzle.MasterCells )
-				if( !m_renderToTexture.CreateTexture( master, m_settings.EnableTextureMipmaps, this.RenderObjectsForTexture ) )
+				if( !m_renderToTexture.CreateTexture( master, m_settings.EnableTextureMipmaps, RenderCellForTexture ) )
 					return;
 		}
 
@@ -167,11 +185,11 @@
 			{
 				GenTextures();
 
-				if( this.ShowAsSkew )
+				if( this.ShowOnSurface || this.ShowAsSkew )
 				{
 					bool forPicking = false;
 					bool dummy = false;
-					RenderIRP( forPicking, 0, 0, ref dummy );
+					RenderSurface( forPicking, 0, 0, ref dummy );
 				}
 				else
 				{
@@ -186,10 +204,23 @@
 				RenderDirectly();
 			}
 
-			if( !this.ShowAsSkew )
+			if( !(this.ShowOnSurface || this.ShowAsSkew) )
 				RenderClosestTwistingCircles();
 
 			m_glControl.SwapBuffers();
+		}
+
+		private bool ShowOnSurface
+		{
+			get
+			{
+				if( m_puzzle == null )
+					return false;
+
+				return
+					m_settings.SurfaceDisplay  && 
+					m_puzzle.HasSurfaceConfig;
+			}
 		}
 
 		private bool ShowAsSkew
@@ -401,13 +432,39 @@
 			GL.Vertex2( c.Real, c.Imaginary );
 		}
 
-		private void RenderObjectsForTexture( object key )
+		/// <summary>
+		/// Rendering function for generating a texture that can map to a surface.
+		/// ZZZ - not general.  I'm coding this for euclidean puzzles to start.
+		/// </summary>
+		private void RenderSurfaceForTexture( object key )
 		{
 			SetupStandardGLSettings( m_settings.ColorTileEdges );
 
-			Cell template = m_puzzle.MasterCells.First();
+			var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
+			Vector3D mid = (boundingBox.Item1 + boundingBox.Item2) / 2;
+			Mobius m = new Mobius();
+			m.Isometry( Geometry.Euclidean, 0, -mid.ToComplex() );
+			Isometry trans = new Isometry( m, null );
+
+			foreach( Cell c in m_puzzle.SurfaceRenderingCells )
+				RenderCellForTexture( c.IsMaster ? c : c.Master, trans * c.Isometry.Inverse() );
+		}
+
+		private void RenderCellForTexture( object key )
+		{
+			SetupStandardGLSettings( m_settings.ColorTileEdges );
 
 			Cell master = (Cell)key;
+			RenderCellForTexture( master, null );
+		}
+
+		/// <summary>
+		/// Renders a master cell in a standard, origin-centered position.
+		/// To render a slave cell in its actual position, pass in its master cell and the isometry for the slave.
+		/// </summary>
+		private void RenderCellForTexture( Cell master, Isometry transform )
+		{
+			Cell template = m_puzzle.MasterCells.First();
 
 			// Draw unmoving stickers.
 			for( int i = 0; i < template.Stickers.Count; i++ )
@@ -415,9 +472,15 @@
 				if( master.Stickers[i].Twisting )
 					continue;
 
-				Sticker sticker = template.Stickers[i];
+				Polygon stickerPoly = template.Stickers[i].Poly;
+				if( transform != null )
+				{
+					stickerPoly = stickerPoly.Clone();
+					stickerPoly.Transform( transform );
+				}
+
 				Color color = m_puzzle.State.GetStickerColor( master.Stickers[i].CellIndex, master.Stickers[i].StickerIndex );
-				GLUtils.DrawPolygonSolid( sticker.Poly, color );
+				GLUtils.DrawPolygonSolid( stickerPoly, color );
 			}
 
 			// Draw moving stickers.
@@ -444,6 +507,9 @@
 					{
 						Polygon clone = sticker.Poly.Clone();
 						clone.Transform( isometry );
+						if( transform != null )
+							clone.Transform( transform );
+
 						Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
 						GLUtils.DrawPolygonSolid( clone, color );
 					}
@@ -478,7 +544,7 @@
 		{
 			if( m_puzzle.HasValidIRPConfig )
 				m_mouseMotion.ControlType = ControlType.Mouse_3D;
-			if( m_puzzle.HasValidSkewConfig )
+			if( m_puzzle.HasSurfaceConfig || m_puzzle.HasValidSkewConfig )
 				m_mouseMotion.ControlType = ControlType.Mouse_4D;
 		}
 
@@ -529,7 +595,7 @@
 		/// <summary>
 		/// X, Y, and reverseTwist are only important when forPicking = true.
 		/// </summary>
-		private void RenderIRP( bool forPicking, int X, int Y, ref bool reverseTwist )
+		private void RenderSurface( bool forPicking, int X, int Y, ref bool reverseTwist )
 		{
 			SetupStandardGLSettings( forPicking ?
 				Color.Black :
@@ -591,9 +657,9 @@
 				SetupProjectionForStereo( rightEye, ratio, focalLength, eyesep, p1, p1 - from, up );
 
 				if( forPicking )
-					RenderIRPForPickingInternal( X, Y );
+					RenderSurfaceForPickingInternal( X, Y );
 				else
-					RenderIRPInternal();
+					RenderSurfaceInternal();
 
 				//
 				// Image 2
@@ -604,9 +670,9 @@
 				SetupProjectionForStereo( rightEye, ratio, focalLength, eyesep, p2, p2 - from, up );
 
 				if( forPicking )
-					RenderIRPForPickingInternal( X, Y );
+					RenderSurfaceForPickingInternal( X, Y );
 				else
-					RenderIRPInternal();
+					RenderSurfaceInternal();
 
 				// Put this back.
 				GL.Viewport( 0, 0, width, height );
@@ -615,9 +681,9 @@
 			{
 				SetPerspective();
 				if( forPicking )
-					RenderIRPForPickingInternal( X, Y );
+					RenderSurfaceForPickingInternal( X, Y );
 				else
-					RenderIRPInternal();
+					RenderSurfaceInternal();
 			}
 
 			if( forPicking )
@@ -660,32 +726,29 @@
 			GluLookAt( camera, lookat, up );
 		}
 
-		private void RenderTori()
-		{
-			Torus.Parameters parameters = new Torus.Parameters()
-			{
-				NumSegments1 = 50,
-				NumSegments2 = 50
-			};
-			Torus t1 = Torus.CreateClifford( parameters );
-			parameters.TubeRadius1 = 0.25;
-			Torus t2 = Torus.CreateTorus( parameters );
-			parameters.TubeRadius1 = 0.75;
-			Torus t3 = Torus.CreateTorus( parameters );
-
-			Matrix4D rot = m_mouseMotion.RotHandler4D.Current4dView;
-			t1.Render( TransformFunc( rot ) );
-			t2.Render( TransformFunc( rot ) );
-			t3.Render( TransformFunc( rot ) );
-		}
-
-		private void RenderIRPInternal()
+		private void RenderSurfaceInternal()
 		{
 			m_trackClosest = false;
 
 			GL.Enable( EnableCap.DepthTest );
 			GL.Color3( Color.White );
-			
+
+			if( this.ShowOnSurface )
+				RenderOnSurfaceInternal();
+			else
+				RenderIRPInternal();	
+		}
+
+		private void RenderOnSurfaceInternal()
+		{
+			m_renderToTexture.BindTexture( SurfaceTexture );
+			ShowTextureTrianglesIfNeeded();
+			using( VBO vbo = CreateSurfaceVbo() )
+				vbo.Draw();
+		}
+
+		private void RenderIRPInternal()
+		{
 			foreach( Cell irpCell in m_puzzle.IRPCells )
 			{
 				int masterIndex = irpCell.IndexOfMaster;
@@ -720,15 +783,21 @@
 			}
 		}
 
-		private void RenderIRPForPickingInternal( int X, int Y )
+		private void RenderSurfaceForPickingInternal( int X, int Y )
 		{
 			m_trackClosest = false;
 			m_closestTwistingCircles = null;
 
 			GL.Enable( EnableCap.DepthTest );
 			GL.Disable( EnableCap.Texture2D );
-			GL.Enable( EnableCap.CullFace );	// We have to color backfacing/frontfacing polygons differently.
+			GL.Enable( EnableCap.CullFace );    // We have to color backfacing/frontfacing polygons differently.
 
+			if( this.ShowAsSkew )
+				RenderIRPForPickingInternal( X, Y );
+		}
+
+		private void RenderIRPForPickingInternal( int X, int Y )
+		{
 			foreach( Cell irpCell in m_puzzle.IRPCells )
 			{
 				using( VBO vbo1 = CreateIrpPickVbo( irpCell, backFacing: false ) )
@@ -870,6 +939,73 @@
 			GL.LineWidth( 1.25f );
 		}
 
+		private void CalcNormal( Vector3D[] textureVerts, int[] elements, int idx, ref Vector3D normal, double lengthCutoff, ref bool skip )
+		{
+			if( idx % 3 != 0 )
+				return;
+
+			// Cull portions of large spheres which should really be out at infinity.
+			Vector3D p1 = textureVerts[elements[idx + 0]];
+			Vector3D p2 = textureVerts[elements[idx + 1]];
+			Vector3D p3 = textureVerts[elements[idx + 2]];
+			double length = Euclidean3D.MaxTriangleEdgeLengthAfterTransform( ref p1, ref p2, ref p3, 
+				TransformFunc( m_mouseMotion.RotHandler4D.Current4dView ) );
+			skip = length >= lengthCutoff;    // Tried an area check too, but this worked better.
+
+			normal = Euclidean3D.NormalFrom3Points( p1, p2, p3 );
+		}
+
+		private VBO CreateSurfaceVbo()
+		{
+			var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
+			Vector3D mid = (boundingBox.Item1 + boundingBox.Item2) / 2;
+
+			Matrix4D rot = m_mouseMotion.RotHandler4D.Current4dView;
+			Vector3D[] textureCoords = m_puzzle.SurfaceTextureCoords;
+			Vector3D[] textureVerts = textureCoords.Select( v =>
+			{
+				v = Torus.MapRhombusToUnitSquare( m_puzzle.SurfacePoly.Vertices[1], m_puzzle.SurfacePoly.Vertices[3], v );
+				if( m_puzzle.Config.SurfaceConfig.Surface == Surface.CliffordTorus )
+					v = Torus.MapToClifford( v );
+				else
+					v = KleinBottle.MapToLawson( v, m_puzzle.Config.P == 4 );
+				return v;
+			} ).ToArray();
+
+			int lod = 5;
+			int[] elements = m_puzzle.SurfaceElementIndices[lod];
+
+			List<VertexPositionNormalTexture> vboVertices = new List<VertexPositionNormalTexture>();
+			List<short> vboElements = new List<short>();
+
+			Vector3D normal = Vector3D.DneVector();
+			bool skip = false;
+			double factor = m_surfaceTextureScale;
+			for( int i = 0; i < elements.Length; i++ )
+			{
+				int idx = elements[i];
+				Vector3D vert = textureVerts[idx];
+
+				TransformSkewVert( rot, ref vert );
+				CalcNormal( textureVerts, elements, i, ref normal, 20, ref skip );
+				if( skip )
+					vert = Vector3D.DneVector();
+
+				// This is because we centered the texture when creating it.
+				Vector3D texCoord = textureCoords[idx] - mid;
+
+				vboVertices.Add( new VertexPositionNormalTexture(
+					(float)vert.X, (float)vert.Y, (float)vert.Z,
+					(float)normal.X, (float)normal.Y, (float)normal.Z,
+					(float)(texCoord.X * factor + 1) / 2, (float)(texCoord.Y * factor + 1) / 2 ) );
+				vboElements.Add( (short)i );
+			}
+
+			VBO vbo = new VBO();
+			vbo.Create( vboVertices.ToArray(), vboElements.ToArray() );
+			return vbo;
+		}
+
 		private VBO CreateIrpVbo( Cell irpCell )
 		{
 			Cell template = m_puzzle.MasterCells.First();
@@ -897,17 +1033,8 @@
 				if( m_puzzle.HasValidSkewConfig )
 				{
 					TransformSkewVert( rot, ref vert );
-					if( m_settings.ConstrainToHypersphere && i % 3 == 0 )
-					{
-						// Cull portions of large spheres which should really be out at infinity.
-						Vector3D p1 = textureVerts[elements[i+0]];
-						Vector3D p2 = textureVerts[elements[i+1]];
-						Vector3D p3 = textureVerts[elements[i+2]];
-						double length = Euclidean3D.MaxTriangleEdgeLengthAfterTransform( ref p1, ref p2, ref p3, TransformFunc( rot ) );
-						skip = length >= 20;	// Tried an area check too, but this worked better.
-
-						normal = Euclidean3D.NormalFrom3Points( p1, p2, p3 );
-					}
+					if( m_settings.ConstrainToHypersphere )
+						CalcNormal( textureVerts, elements, i, ref normal, 20, ref skip );
 				}
 
 				if( skip )
@@ -975,16 +1102,8 @@
 						//		 The PickInfo coords are more dense. We'll therefore use a smaller cutoff here,  
 						//		 causing more culling and twisting to not work in outer areas.
 						//		 That should be better than unintended twisting happening where it shouldn't.
-						if( m_settings.ConstrainToHypersphere && i % 3 == 0 )
-						{
-							// Cull portions of large spheres which should really be out at infinity.
-							Vector3D p1 = pi.SubdividedVerts[pi.SubdividedElements[i+0]];
-							Vector3D p2 = pi.SubdividedVerts[pi.SubdividedElements[i+1]];
-							Vector3D p3 = pi.SubdividedVerts[pi.SubdividedElements[i+2]];
-							double length = Euclidean3D.MaxTriangleEdgeLengthAfterTransform( ref p1, ref p2, ref p3, TransformFunc( rot ) );
-							skip = length >= 10;	// smaller cutoff.
-						}
-
+						Vector3D dummy = new Vector3D();
+						CalcNormal( pi.SubdividedVerts, pi.SubdividedElements, i, ref dummy, 10, ref skip );
 						if( skip )
 							vert = Vector3D.DneVector();
 
@@ -1097,11 +1216,19 @@
 		}
 
 		float m_textureScale = 1.0f;
+		float m_surfaceTextureScale = 1.0f;
 		private void CalcTextureScale()
 		{
 			Cell template = m_puzzle.MasterCells.First();
 			double width = 2 * template.VertexCircle.Radius;
 			m_textureScale = (float)(2.0 / width);
+
+			if( m_puzzle.SurfacePoly == null )
+				return;
+			var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
+			Vector3D diag = boundingBox.Item2 - boundingBox.Item1;
+			width = Math.Max( Math.Abs( diag.X ), Math.Abs( diag.Y ) );
+			m_surfaceTextureScale = (float)(2.0 / width);
 		}
 
 		private void SetOrthoForTexture()
@@ -1109,7 +1236,10 @@
 			m_mouseMotion.ControlType = ControlType.Mouse_2D;
 
 			GL.MatrixMode( MatrixMode.Projection );
-			OpenTK.Matrix4 proj = OpenTK.Matrix4.CreateOrthographic( 2.0f / m_textureScale, 2.0f / m_textureScale, 1, -1 );
+			float texScale = ShowOnSurface ? 
+				m_surfaceTextureScale :
+				m_textureScale;
+			OpenTK.Matrix4 proj = OpenTK.Matrix4.CreateOrthographic( 2.0f / texScale, 2.0f / texScale, 1, -1 );
 			GL.LoadMatrix( ref proj );
 
 			GL.MatrixMode( MatrixMode.Modelview );
@@ -1220,7 +1350,7 @@
 
 		private void MouseMoveInternal()
 		{
-			if( this.ShowAsSkew )
+			if( this.ShowOnSurface || this.ShowAsSkew )
 				return;
 
 			if( FindClosestTwistingCircles( m_lastX, m_lastY ) )
@@ -1284,11 +1414,11 @@
 			//
 
 			bool skewReverseTwist = false;
-			if( this.ShowAsSkew )
+			if( this.ShowOnSurface || this.ShowAsSkew )
 			{
 				bool forPicking = true;
 				if( m_puzzle.AllTwistData.Count > 0 )	// Trying to do picking on tilings will cause issues.
-					RenderIRP( forPicking, clickData.X, clickData.Y, ref skewReverseTwist );
+					RenderSurface( forPicking, clickData.X, clickData.Y, ref skewReverseTwist );
 			}
 			else
 			{

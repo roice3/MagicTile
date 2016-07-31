@@ -12,7 +12,17 @@
 		public TextureHelper()
 		{
 			int levels = 3;
-			m_maxSubdivisions = (int)Math.Pow( 2, levels );
+			m_maxSubdivisions = NumDiv( levels );
+		}
+
+		public TextureHelper( int levels )
+		{
+			m_maxSubdivisions = NumDiv( levels );
+		}
+
+		private static int NumDiv( int levels )
+		{
+			return (int)Math.Pow( 2, levels );
 		}
 
 		/// <summary>
@@ -27,15 +37,22 @@
 		/// </summary>
 		public void SetupElementIndices( Polygon poly )
 		{
+			ElementIndices = CalcElementIndices( poly, 3 );
+		}
+
+		public static List<int[]> CalcElementIndices( Polygon poly, int levels )
+		{
 			//int numBaseTriangles = poly.Segments.Count == 3 ? 1 : poly.Segments.Count;	// For geodesic saddles.
 			int numBaseTriangles = poly.Segments.Count;
 
-			ElementIndices = new List<int[]>();
-			for( int i=0; Math.Pow( 2, i ) <= m_maxSubdivisions; i++ )
-				ElementIndices.Add( TextureElements( numBaseTriangles, i ) );
+			int numDiv = NumDiv( levels );
+			List<int[]> result = new List<int[]>();
+			for( int i = 0; Math.Pow( 2, i ) <= numDiv; i++ )
+				result.Add( TextureElements( numBaseTriangles, i, numDiv ) );
+			return result;
 		}
 
-		private static int m_maxSubdivisions = 8;	// Must be a power of 2.
+		private int m_maxSubdivisions = 8;	// Must be a power of 2.
 
 
 		///////////////////////////////////////////////////////////////// PLAYING AROUND WITH GEODESIC SADDLES
@@ -127,11 +144,10 @@
 
 		/// <summary>
 		/// Helper to generate a set of texture coordinates.
-		/// ZZZ - make this a non-euclidean calc?
 		/// </summary>
-		public static Vector3D[] TextureCoords( Polygon poly, Geometry g )
+		public static Vector3D[] TextureCoords( Polygon poly, Geometry g, int maxDiv = 8 )
 		{
-			int divisions = m_maxSubdivisions;
+			int divisions = maxDiv;
 
 			List<Vector3D> points = new List<Vector3D>();
 			if( 0 == poly.Segments.Count )
@@ -269,9 +285,9 @@
 		/// Grabs an array of indices into the coordinate array for TextureCoords.
 		/// The array represents individual triangles (each set of 3 is one triangle).
 		/// </summary>
-		public static int[] TextureElements( int numBaseTriangles, int LOD )
+		public static int[] TextureElements( int numBaseTriangles, int LOD, int maxDiv = 8 )
 		{
-			int divisions = m_maxSubdivisions;
+			int divisions = maxDiv;
 			int stride = divisions / (int)Math.Pow( 2, LOD );
 
 			// 9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1

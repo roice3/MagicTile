@@ -63,6 +63,7 @@
     <Compile Include="Geometry\Euclidean3D.cs" />
     <Compile Include="Geometry\Geometry2D.cs" />
     <Compile Include="Geometry\HyperbolicModels.cs" />
+    <Compile Include="Geometry\KleinBottle.cs" />
     <Compile Include="Geometry\Mesh.cs" />
     <Compile Include="Geometry\NearTree.cs" />
     <Compile Include="Geometry\Polytope.cs" />
