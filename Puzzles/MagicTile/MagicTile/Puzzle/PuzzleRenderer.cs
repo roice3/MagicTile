@@ -102,13 +102,18 @@
 		{
 			Geometry g = m_puzzle == null ? Geometry.Hyperbolic : m_puzzle.Config.Geometry;
 			m_mouseMotion.Reset( g );
-			if( m_puzzle != null && 
-				m_puzzle.HasSurfaceConfig && 
-				m_puzzle.Config.SurfaceConfig.Surface == Surface.LawsonKleinBottle )
-				m_mouseMotion.ScaleLookFrom4D( 1.5 );
+			if( m_puzzle != null &&
+				m_puzzle.HasSurfaceConfig )
+			{
+				if( m_surface == Surface.Sphere )
+					m_mouseMotion.ScaleLookFrom4D( 0.45 );
+				if( m_surface == Surface.LawsonKleinBottle )
+					m_mouseMotion.ScaleLookFrom4D( 1.5 );
+			}
 		}
 
-		public const string SurfaceTexture = "SurfaceTexture";
+		public const string SurfaceTexture1 = "SurfaceTexture1";
+		public const string SurfaceTexture2 = "SurfaceTexture2";	// Needed for spherical puzzles, northern hemisphere.
 
 		public void GenTextures()
 		{
@@ -121,7 +126,10 @@
 			if( this.ShowOnSurface )
 			{
 				m_renderToTexture.TextureSize = 2048;
-				m_renderToTexture.CreateTexture( SurfaceTexture, m_settings.EnableTextureMipmaps, RenderSurfaceForTexture );
+				m_lowerHemisphere = true;
+				m_renderToTexture.CreateTexture( SurfaceTexture1, m_settings.EnableTextureMipmaps, RenderSurfaceForTexture );
+				m_lowerHemisphere = false;
+				m_renderToTexture.CreateTexture( SurfaceTexture2, m_settings.EnableTextureMipmaps, RenderSurfaceForTexture );
 				return;
 			}
 
@@ -130,6 +138,8 @@
 				if( !m_renderToTexture.CreateTexture( master, m_settings.EnableTextureMipmaps, RenderCellForTexture ) )
 					return;
 		}
+
+		private bool m_lowerHemisphere = true;
 
 		public void InvalidateTextures()
 		{
@@ -180,7 +190,8 @@
 
 			m_glControl.MakeCurrent();
 
-			bool useTexture = m_puzzle.Config.Geometry != Geometry.Spherical;
+			bool spherical = m_puzzle.Config.Geometry == Geometry.Spherical;
+			bool useTexture = !spherical || ShowOnSurface;
 			if( useTexture )
 			{
 				GenTextures();
@@ -330,10 +341,11 @@
 			GL.LineWidth( 2.0f );
 		}
 
-		private void RenderDirectly()
+		private void RenderDirectly( bool renderingTexture = false )
 		{
 			SetupStandardGLSettings( m_settings.ColorTileEdges );
-			GL.Disable( EnableCap.Texture2D );
+			if( !renderingTexture )
+				GL.Disable( EnableCap.Texture2D );
 
 			// We use the stencil buffer,
 			// and need the depth buffer enabled as well.
@@ -434,20 +446,48 @@
 
 		/// <summary>
 		/// Rendering function for generating a texture that can map to a surface.
-		/// ZZZ - not general.  I'm coding this for euclidean puzzles to start.
+		/// ZZZ - not general.  I'm coding this for euclidean/spherical puzzles to start.
 		/// </summary>
 		private void RenderSurfaceForTexture( object key )
 		{
 			SetupStandardGLSettings( m_settings.ColorTileEdges );
 
-			var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
-			Vector3D mid = (boundingBox.Item1 + boundingBox.Item2) / 2;
 			Mobius m = new Mobius();
-			m.Isometry( Geometry.Euclidean, 0, -mid.ToComplex() );
-			Isometry trans = new Isometry( m, null );
+			Isometry trans = new Isometry();
+			bool clipForElliptical = false;
+			if( m_surface == Surface.Sphere || m_surface == Surface.Boys )
+			{
+				// This didn't work because the stencil testing didn't work when rendering to a texture.
+				// Maybe there is a trick I can use to make this work later.
+				// Hopefully concave polys won't be a big problem in the mean time.
+				// RenderDirectly( renderingTexture: true );
+
+				clipForElliptical = true;
+				if( !m_lowerHemisphere )
+				{
+					m.Elliptic( Geometry.Spherical, Complex.ImaginaryOne, Math.PI );
+					trans = new Isometry( m, null );
+				}
+			}
+			else
+			{
+				var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
+				Vector3D mid = (boundingBox.Item1 + boundingBox.Item2) / 2;
+				m.Isometry( Geometry.Euclidean, 0, -mid.ToComplex() );
+				trans = new Isometry( m, null );
+			}
 
 			foreach( Cell c in m_puzzle.SurfaceRenderingCells )
-				RenderCellForTexture( c.IsMaster ? c : c.Master, trans * c.Isometry.Inverse() );
+				RenderCellForTexture( c.IsMaster ? c : c.Master, trans * c.Isometry.Inverse(), clipForElliptical );
+		}
+
+		private Surface m_surface
+		{
+			get
+			{
+				Surface? result = m_puzzle?.Config?.SurfaceConfig?.Surface;
+				return result == null ? Surface.None : result.Value;
+			}
 		}
 
 		private void RenderCellForTexture( object key )
@@ -462,7 +502,7 @@
 		/// Renders a master cell in a standard, origin-centered position.
 		/// To render a slave cell in its actual position, pass in its master cell and the isometry for the slave.
 		/// </summary>
-		private void RenderCellForTexture( Cell master, Isometry transform )
+		private void RenderCellForTexture( Cell master, Isometry transform, bool clipForElliptical = false )
 		{
 			Cell template = m_puzzle.MasterCells.First();
 
@@ -478,6 +518,10 @@
 					stickerPoly = stickerPoly.Clone();
 					stickerPoly.Transform( transform );
 				}
+
+				if( clipForElliptical )
+					if( stickerPoly.Center.Abs() > 1.5 )
+						continue;
 
 				Color color = m_puzzle.State.GetStickerColor( master.Stickers[i].CellIndex, master.Stickers[i].StickerIndex );
 				GLUtils.DrawPolygonSolid( stickerPoly, color );
@@ -509,6 +553,10 @@
 						clone.Transform( isometry );
 						if( transform != null )
 							clone.Transform( transform );
+
+						if( clipForElliptical )
+							if( clone.Center.Abs() > 1.5 )
+								continue;
 
 						Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
 						GLUtils.DrawPolygonSolid( clone, color );
@@ -741,10 +789,20 @@
 
 		private void RenderOnSurfaceInternal()
 		{
-			m_renderToTexture.BindTexture( SurfaceTexture );
 			ShowTextureTrianglesIfNeeded();
+
+			m_lowerHemisphere = true;
+			m_renderToTexture.BindTexture( SurfaceTexture1 );
 			using( VBO vbo = CreateSurfaceVbo() )
 				vbo.Draw();
+
+			if( m_surface == Surface.Sphere )
+			{
+				m_lowerHemisphere = false;
+				m_renderToTexture.BindTexture( SurfaceTexture2 );
+				using( VBO vbo = CreateSurfaceVbo() )
+					vbo.Draw();
+			}
 		}
 
 		private void RenderIRPInternal()
@@ -964,11 +1022,28 @@
 			Vector3D[] textureCoords = m_puzzle.SurfaceTextureCoords;
 			Vector3D[] textureVerts = textureCoords.Select( v =>
 			{
-				v = Torus.MapRhombusToUnitSquare( m_puzzle.SurfacePoly.Vertices[1], m_puzzle.SurfacePoly.Vertices[3], v );
-				if( m_puzzle.Config.SurfaceConfig.Surface == Surface.CliffordTorus )
+				switch( m_surface )
+				{
+				case Surface.Sphere:
+					v = Spherical2D.PlaneToSphere( v );
+					if( !m_lowerHemisphere )
+					{
+						v.RotateAboutAxis( new Vector3D( 0, 1 ), Math.PI );
+					}
+					break;
+				case Surface.Boys:
+					v = R3.Geometry.Surface.MapToBoys( v );
+					break;
+				case Surface.CliffordTorus:
+					v = Torus.MapRhombusToUnitSquare( m_puzzle.SurfacePoly.Vertices[1], m_puzzle.SurfacePoly.Vertices[3], v );
 					v = Torus.MapToClifford( v );
-				else
+					break;
+				case Surface.LawsonKleinBottle:
+					v = Torus.MapRhombusToUnitSquare( m_puzzle.SurfacePoly.Vertices[1], m_puzzle.SurfacePoly.Vertices[3], v );
 					v = KleinBottle.MapToLawson( v, m_puzzle.Config.P == 4 );
+					break;
+				}
+
 				return v;
 			} ).ToArray();
 
@@ -1225,10 +1300,16 @@
 
 			if( m_puzzle.SurfacePoly == null )
 				return;
-			var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
-			Vector3D diag = boundingBox.Item2 - boundingBox.Item1;
-			width = Math.Max( Math.Abs( diag.X ), Math.Abs( diag.Y ) );
-			m_surfaceTextureScale = (float)(2.0 / width);
+
+			if( m_surface == Surface.Sphere || m_surface == Surface.Boys )
+				m_surfaceTextureScale = 1.0f;
+			else
+			{
+				var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
+				Vector3D diag = boundingBox.Item2 - boundingBox.Item1;
+				width = Math.Max( Math.Abs( diag.X ), Math.Abs( diag.Y ) );
+				m_surfaceTextureScale = (float)(2.0 / width);
+			}
 		}
 
 		private void SetOrthoForTexture()
@@ -1236,7 +1317,7 @@
 			m_mouseMotion.ControlType = ControlType.Mouse_2D;
 
 			GL.MatrixMode( MatrixMode.Projection );
-			float texScale = ShowOnSurface ? 
+			float texScale = ShowOnSurface ?
 				m_surfaceTextureScale :
 				m_textureScale;
 			OpenTK.Matrix4 proj = OpenTK.Matrix4.CreateOrthographic( 2.0f / texScale, 2.0f / texScale, 1, -1 );

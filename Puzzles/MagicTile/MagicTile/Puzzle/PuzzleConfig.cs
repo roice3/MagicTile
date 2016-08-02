@@ -384,6 +384,9 @@
 
 	public enum Surface
 	{
+		None,
+		Sphere,
+		Boys,
 		CliffordTorus,
 		LawsonKleinBottle
 	}
@@ -398,11 +401,7 @@
 		{
 			get
 			{
-				return 
-				 !( Basis1X == null || 
-					Basis1Y == null || 
-					Basis2X == null || 
-					Basis2Y == null );
+				return Surface != Surface.None;
 			}
 		}
 

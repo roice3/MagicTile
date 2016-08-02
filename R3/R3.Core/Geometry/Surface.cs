@@ -6,6 +6,28 @@
 
 	public class Surface
 	{
+		// Maps unit disk to Boy's surface.
+
+		public static Vector3D MapToBoys( Vector3D v )
+		{
+			// https://en.wikipedia.org/wiki/Boy%27s_surface#Parametrization_of_Boy.27s_surface
+			Complex w = v.ToComplex();
+			Complex t0 = (Complex.Pow( w, 6 ) + Complex.Pow( w, 3 ) * Math.Sqrt( 5 ) - 1);
+			Complex t1 = w * (1 - Complex.Pow( w, 4 )) / t0;
+			Complex t2 = w * (1 + Complex.Pow( w, 4 )) / t0;
+			Complex t3 = (1 + Complex.Pow( w, 6 )) / t0;
+			double g1 = -3 / 2 * t1.Imaginary;
+			double g2 = -3 / 2 * t2.Real;
+			double g3 = t3.Imaginary - 0.5;
+			double denom = g1 * g1 + g2 * g2 + g3 * g3;
+			v = new Vector3D( g1, g2, g3 );
+			v /= denom;
+
+			// The above is actually a map to R^3, but we want a surface in S^3
+			return Sterographic.R3toS3( v );
+			return v;
+		}
+
 		/// <summary>
 		/// Transform a mesh in the Poincare model to Dini's surface.
 		/// </summary>

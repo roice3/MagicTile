@@ -9,6 +9,7 @@
 	using System.Diagnostics;
 	using System.Drawing;
 	using System.Linq;
+	using System.Numerics;
 
 	public interface IStatusCallback
 	{
@@ -1158,18 +1159,44 @@
 			if( !this.HasSurfaceConfig )
 				return;
 
-			int p = Config.P;
-			int q = Config.Q;
 			SurfaceConfig sc = Config.SurfaceConfig;
-			Vector3D b1 = new Vector3D( sc.Basis1X.Dist( p, q ), sc.Basis1Y.Dist( p, q ) );
-			Vector3D b2 = new Vector3D( sc.Basis2X.Dist( p, q ), sc.Basis2Y.Dist( p, q ) );
+			Geometry g = Geometry.Euclidean;
+			if( sc.Surface == Surface.Sphere || sc.Surface == Surface.Boys )
+			{
+				// Build a polygon with arc segments that will make a circle.
+				Segment seg = Segment.Arc( 
+					new Vector3D( 1, 0 ), 
+					new Vector3D( Math.Sqrt( 0.5 ), Math.Sqrt( 0.5 ) ), 
+					new Vector3D( 0, 1 ) );
+				List<Segment> segs = new List<Segment>();
+				for( int i=0; i<4; i++ )
+				{
+					Mobius m = new Mobius();
+					m.Isometry( Geometry.Euclidean, Math.PI * i / 2, new Complex() );
+					Segment clone = seg.Clone();
+					clone.Transform( m );
+					segs.Add( clone );
+				}
 
-			// Mark the cells we need to render the surface.
-			SurfacePoly = Polygon.FromPoints( new Vector3D[] { new Vector3D(), b1, b1 + b2, b2 } );
-			SurfaceRenderingCells = AllCells.Where( c => SurfacePoly.Intersects( c.Boundary ) ).ToArray();
+				SurfacePoly = new Polygon();
+				SurfacePoly.Segments = segs;
+				SurfaceRenderingCells = AllCells.ToArray();
+				g = Geometry.Spherical; // This will make the texture verts get calculated correctly.
+			}
+			else
+			{
+				int p = Config.P;
+				int q = Config.Q;
+				Vector3D b1 = new Vector3D( sc.Basis1X.Dist( p, q ), sc.Basis1Y.Dist( p, q ) );
+				Vector3D b2 = new Vector3D( sc.Basis2X.Dist( p, q ), sc.Basis2Y.Dist( p, q ) );
+
+				// Mark the cells we need to render the surface.
+				SurfacePoly = Polygon.FromPoints( new Vector3D[] { new Vector3D(), b1, b1 + b2, b2 } );
+				SurfaceRenderingCells = AllCells.Where( c => SurfacePoly.Intersects( c.Boundary ) ).ToArray();
+			}
 
 			// Setup texture coords.
-			SurfaceTextureCoords = TextureHelper.TextureCoords( SurfacePoly, Geometry.Euclidean, 32 );
+			SurfaceTextureCoords = TextureHelper.TextureCoords( SurfacePoly, g, 32 );
 			SurfaceElementIndices = TextureHelper.CalcElementIndices( SurfacePoly, 5 );
 		}
 
