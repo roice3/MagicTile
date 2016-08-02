@@ -363,7 +363,7 @@
 
 					Mobius m = new Mobius();
 					m.Isometry( Geometry.Hyperbolic, Euclidean2D.AngleToCounterClock( new Vector3D( 1, 0 ), s.P1 ), new Vector3D() );
-					twistData.Circles = Pants.PantsCirclesForKQ().Select( c => { c.Transform( m ); return c; } ).ToArray();
+					twistData.Circles = Pants.SystolesForKQ().Select( c => { c.Transform( m ); return c; } ).ToArray();
 
 					twistData.Pants = new Pants();
 					result.Add( twistData );
