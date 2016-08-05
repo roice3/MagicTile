@@ -505,6 +505,7 @@
 		private void RenderCellForTexture( Cell master, Isometry transform, bool clipForElliptical = false )
 		{
 			Cell template = m_puzzle.MasterCells.First();
+			const double clipCutoff = 2.0;
 
 			// Draw unmoving stickers.
 			for( int i = 0; i < template.Stickers.Count; i++ )
@@ -520,7 +521,7 @@
 				}
 
 				if( clipForElliptical )
-					if( stickerPoly.Center.Abs() > 1.5 )
+					if( stickerPoly.Center.Abs() > clipCutoff )
 						continue;
 
 				Color color = m_puzzle.State.GetStickerColor( master.Stickers[i].CellIndex, master.Stickers[i].StickerIndex );
@@ -555,7 +556,7 @@
 							clone.Transform( transform );
 
 						if( clipForElliptical )
-							if( clone.Center.Abs() > 1.5 )
+							if( clone.Center.Abs() > clipCutoff )
 								continue;
 
 						Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
@@ -850,8 +851,36 @@
 			GL.Disable( EnableCap.Texture2D );
 			GL.Enable( EnableCap.CullFace );    // We have to color backfacing/frontfacing polygons differently.
 
-			if( this.ShowAsSkew )
+			if( this.ShowOnSurface )
+				RenderOnSurfaceForPickingInternal( X, Y );
+			else
 				RenderIRPForPickingInternal( X, Y );
+		}
+
+		private void RenderOnSurfaceForPickingInternal( int X, int Y )
+		{
+			m_lowerHemisphere = true;
+			using( VBO vbo1 = CreateSurfacePickVbo( backFacing: false ) )
+			using( VBO vbo2 = CreateSurfacePickVbo( backFacing: true ) )
+			{
+				GL.CullFace( CullFaceMode.Back );
+				vbo1.Draw();
+				GL.CullFace( CullFaceMode.Front );
+				vbo2.Draw();
+			}
+
+			if( m_surface == Surface.Sphere )
+			{
+				m_lowerHemisphere = false;
+				using( VBO vbo1 = CreateSurfacePickVbo( backFacing: false ) )
+				using( VBO vbo2 = CreateSurfacePickVbo( backFacing: true ) )
+				{
+					GL.CullFace( CullFaceMode.Back );
+					vbo1.Draw();
+					GL.CullFace( CullFaceMode.Front );
+					vbo2.Draw();
+				}
+			}
 		}
 
 		private void RenderIRPForPickingInternal( int X, int Y )
@@ -1013,12 +1042,11 @@
 			normal = Euclidean3D.NormalFrom3Points( p1, p2, p3 );
 		}
 
-		private VBO CreateSurfaceVbo()
+		/// <summary>
+		/// ZZZ - This is inefficient.  We could precalculate this at puzzle build time.
+		/// </summary>
+		private Vector3D[] SurfaceTransformedTextureVerts()
 		{
-			var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
-			Vector3D mid = (boundingBox.Item1 + boundingBox.Item2) / 2;
-
-			Matrix4D rot = m_mouseMotion.RotHandler4D.Current4dView;
 			Vector3D[] textureCoords = m_puzzle.SurfaceTextureCoords;
 			Vector3D[] textureVerts = textureCoords.Select( v =>
 			{
@@ -1047,8 +1075,18 @@
 				return v;
 			} ).ToArray();
 
-			int lod = 5;
-			int[] elements = m_puzzle.SurfaceElementIndices[lod];
+			return textureVerts;
+		}
+
+		private VBO CreateSurfaceVbo()
+		{
+			var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
+			Vector3D mid = (boundingBox.Item1 + boundingBox.Item2) / 2;
+
+			Matrix4D rot = m_mouseMotion.RotHandler4D.Current4dView;
+			Vector3D[] textureCoords = m_puzzle.SurfaceTextureCoords;
+			Vector3D[] textureVerts = SurfaceTransformedTextureVerts();
+			int[] elements = m_puzzle.SurfaceElementIndices;
 
 			List<VertexPositionNormalTexture> vboVertices = new List<VertexPositionNormalTexture>();
 			List<short> vboElements = new List<short>();
@@ -1148,6 +1186,45 @@
 				TransformSkewVert( rot, ref v );
 				return v;
 			};
+		}
+
+		private VBO CreateSurfacePickVbo( bool backFacing )
+		{
+			Matrix4D rot = m_mouseMotion.RotHandler4D.Current4dView;
+			Vector3D[] textureVerts = SurfaceTransformedTextureVerts();
+			int[] elements = m_puzzle.SurfaceElementIndices;
+
+			List<VertexPositionColor> vboVertices = new List<VertexPositionColor>();
+			List<short> vboElements = new List<short>();
+
+			Vector3D normal = Vector3D.DneVector();
+			bool skip = false;
+			double factor = m_surfaceTextureScale;
+			for( int i = 0; i < elements.Length; i++ )
+			{
+				int idx = elements[i];
+				Vector3D vert = textureVerts[idx];
+
+				TransformSkewVert( rot, ref vert );
+				CalcNormal( textureVerts, elements, i, ref normal, 20, ref skip );
+				if( skip )
+					vert = Vector3D.DneVector();
+
+				// We'll color backfacing differently, so that we can reverse twisting for those.
+				// We also have to take into consideration the orienation of the twist data itself.
+				var td = m_puzzle.SurfaceElementTwistData1[i / 3];
+				if( m_surface == Surface.Sphere && !m_lowerHemisphere )
+					td = m_puzzle.SurfaceElementTwistData2[i / 3];
+				int orientation = backFacing ^ td.Reverse ? 1 : 0;
+				Color c = Color.FromArgb( td.IdentifiedTwistData.Index, orientation, 1 );
+
+				vboVertices.Add( new VertexPositionColor( (float)vert.X, (float)vert.Y, (float)vert.Z, c ) );
+				vboElements.Add( (short)vboElements.Count );
+			}
+
+			VBO vbo = new VBO();
+			vbo.Create( vboVertices.ToArray(), vboElements.ToArray() );
+			return vbo;
 		}
 
 		private VBO CreateIrpPickVbo( Cell irpCell, bool backFacing )

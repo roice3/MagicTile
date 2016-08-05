@@ -1156,6 +1156,7 @@
 
 		private void PrepareSurfaceData( IStatusCallback callback )
 		{
+			ClearSurfaceVars();
 			if( !this.HasSurfaceConfig )
 				return;
 
@@ -1196,14 +1197,57 @@
 			}
 
 			// Setup texture coords.
+			int lod = 5;
 			SurfaceTextureCoords = TextureHelper.TextureCoords( SurfacePoly, g, 32 );
-			SurfaceElementIndices = TextureHelper.CalcElementIndices( SurfacePoly, 5 );
+			SurfaceElementIndices = TextureHelper.CalcElementIndices( SurfacePoly, lod )[lod];
+
+			// For each triangle of the surface, cache the closest twisting data.
+			List<TwistData> elementTwistData1 = new List<TwistData>();
+			List<TwistData> elementTwistData2 = new List<TwistData>();
+			int[] elements = SurfaceElementIndices;
+			for( int i = 0; i < elements.Length; i++ )
+			{
+				if( i % 3 != 0 )
+					continue;
+
+				Vector3D p1 = SurfaceTextureCoords[elements[i + 0]];
+				Vector3D p2 = SurfaceTextureCoords[elements[i + 1]];
+				Vector3D p3 = SurfaceTextureCoords[elements[i + 2]];
+				Vector3D avg = (p1 + p2 + p3) / 3;
+
+				TwistData td = ClosestTwistingCircles( avg );
+				elementTwistData1.Add( td );
+
+				// We have two patches for the sphere.
+				if( Config.SurfaceConfig.Surface == Surface.Sphere )
+				{
+					Mobius m = new Mobius();
+					m.Elliptic( Geometry.Spherical, Complex.ImaginaryOne, Math.PI );
+					avg = m.Apply( avg );
+
+					td = ClosestTwistingCircles( avg );
+					elementTwistData2.Add( td );
+				}
+			}
+			SurfaceElementTwistData1 = elementTwistData1.ToArray();
+			SurfaceElementTwistData2 = elementTwistData2.ToArray();
+		}
+
+		private void ClearSurfaceVars()
+		{
+			SurfacePoly = null;
+			SurfaceTextureCoords = null;
+			SurfaceElementIndices = null;
+			SurfaceElementTwistData1 = null;
+			SurfaceElementTwistData2 = null;
 		}
 
 		public Polygon SurfacePoly { get; private set; }
 
 		public Vector3D[] SurfaceTextureCoords { get; private set; }
-		public List<int[]> SurfaceElementIndices { get; private set; }
+		public int[] SurfaceElementIndices { get; private set; }
+		public TwistData[] SurfaceElementTwistData1 { get; private set; }
+		public TwistData[] SurfaceElementTwistData2 { get; private set; }
 
 		/// <summary>
 		/// Whether we have a valid IRP data file configured.
