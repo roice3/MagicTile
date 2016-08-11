@@ -41,13 +41,23 @@
 		{
 			Geometry g = Geometry.Hyperbolic;
 
-			// Setup the two slicing circles.
-			// These are cuts equidistant from the passed in geodesic.
-			Vector3D closestToOrigin = H3Models.Ball.ClosestToOrigin( new Circle3D() { Center = c.Center, Radius = c.Radius, Normal = new Vector3D( 0, 0, 1 ) } );
+			Segment seg = null;
+			if( c.IsLine )
+			{
+				Vector3D p1, p2;
+				Euclidean2D.IntersectionLineCircle( c.P1, c.P2, new Circle(), out p1, out p2 );
+				seg = Segment.Line( p1, p2 );
+			}
+			else
+			{
+				// Setup the two slicing circles.
+				// These are cuts equidistant from the passed in geodesic.
+				Vector3D closestToOrigin = H3Models.Ball.ClosestToOrigin( new Circle3D() { Center = c.Center, Radius = c.Radius, Normal = new Vector3D( 0, 0, 1 ) } );
 
-			Vector3D p1, p2;
-			Euclidean2D.IntersectionCircleCircle( c, new Circle(), out p1, out p2 );
-			Segment seg = Segment.Arc( p1, closestToOrigin, p2 );
+				Vector3D p1, p2;
+				Euclidean2D.IntersectionCircleCircle( c, new Circle(), out p1, out p2 );
+				seg = Segment.Arc( p1, closestToOrigin, p2 );
+			}
 
 			Circle c1 = H3Models.Ball.EquidistantOffset( g, seg, thickness / 2 );
 			Circle c2 = H3Models.Ball.EquidistantOffset( g, seg, -thickness / 2 );

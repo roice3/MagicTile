@@ -195,6 +195,17 @@
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
+      <Earthquake/>
+      <Puzzle>
+         <Earthquake>true</Earthquake>
+         <DisplayName>Earthquake</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered/>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
    </Specific>
    <TileShrink>0.94</TileShrink>
 </PuzzleConfigClass>

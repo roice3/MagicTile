@@ -160,8 +160,8 @@
 			level++;
 
 			PuzzleConfig tiling;
-			PuzzleConfig[] face, edge, vertex, mixed;
-			puzzleConfigClass.GetPuzzles( out tiling, out face, out edge, out vertex, out mixed );
+			PuzzleConfig[] face, edge, vertex, mixed, earthquake;
+			puzzleConfigClass.GetPuzzles( out tiling, out face, out edge, out vertex, out mixed, out earthquake );
 
 			AddPuzzle( tiling, parentTreeNode, parentMenuItem, isTiling: true );
 
@@ -208,6 +208,18 @@
 				AddGroup( sw, level, "Mixed Twisting", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
 				StartTable( sw );
 				foreach( PuzzleConfig config in mixed )
+				{
+					AddPuzzle( config, groupNode, groupMenuItem, isTiling: false );
+					WriteTableEntry( sw, config.MenuName );
+				}
+				EndTable( sw );
+			}
+
+			if( earthquake.Length > 0 )
+			{
+				AddGroup( sw, level, "Special", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
+				StartTable( sw );
+				foreach( PuzzleConfig config in earthquake )
 				{
 					AddPuzzle( config, groupNode, groupMenuItem, isTiling: false );
 					WriteTableEntry( sw, config.MenuName );

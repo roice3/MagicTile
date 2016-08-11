@@ -269,7 +269,9 @@
 					numInt = Euclidean2D.IntersectionLineLine( P1, P2, s.P1, s.P2, out i1 );
 			}
 
-			if( 0 == numInt )
+			// -1 can denote conincident segments (I'm not consistent in the impls above :/),
+			// and we are not going to include those for now.
+			if( numInt <= 0 )
 				return false;
 
 			if( numInt > 0 )
@@ -964,8 +966,8 @@
 			// If we are inside the polygon, or they are inside us, we intersect.
 			// ZZZ - This isn't perfect and doesn't handle all cases.
 			//		 We actually need to check this for any point, not just the center.
-			if( p.IsPointInside( Center ) ||
-				IsPointInside( p.Center ) )
+			if( p.IsPointInsideParanoid( Center ) ||
+				IsPointInsideParanoid( p.Center ) )
 				return true;
 
 			// If any segments interset, we intersect.
@@ -1097,8 +1099,11 @@
 			//		 See http://en.wikipedia.org/wiki/Point_in_polygon about
 			//		 some of the degenerate cases that are possible.
 
-			if( Tolerance.Zero( p.MagSquared() ) )
-				return true;
+			// I don't know why I had this in here, as it seems patently wrong in the general case.
+			// I'm leaving it commented out.  In case removing this exposes some other issue,
+			// maybe it will be easier to track down.
+			//if( Tolerance.Zero( p.MagSquared() ) )
+				//return true;
 
 			// Get all of the the boundary intersection points.
 			List<Vector3D> iPoints = GetIntersectionPoints( ray ).ToList();

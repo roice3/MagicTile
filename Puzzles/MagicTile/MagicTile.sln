@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicTile", "MagicTile\MagicTile.csproj", "{EF1B4C5B-3A21-498B-9FDF-C553BCE3BD34}"
 	ProjectSection(ProjectDependencies) = postProject
 		{8D56AB30-6E10-4D66-B10E-0DCC4A0F4051} = {8D56AB30-6E10-4D66-B10E-0DCC4A0F4051}
@@ -9,6 +11,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R3.Core", "..\..\R3\R3.Core\R3.Core.csproj", "{8D56AB30-6E10-4D66-B10E-0DCC4A0F4051}"
 EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms

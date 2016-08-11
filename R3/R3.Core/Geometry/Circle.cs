@@ -358,6 +358,17 @@
 	/// </summary>
 	public class CircleNE : Circle, ITransformable
 	{
+		public CircleNE() { }
+
+		public CircleNE( Circle c, Vector3D centerNE )
+		{
+			Center = c.Center;
+			Radius = c.Radius;
+			P1 = c.P1;
+			P2 = c.P2;
+			CenterNE = centerNE;
+		}
+
 		public Vector3D CenterNE { get; set; }
 
 		public new CircleNE Clone()
@@ -411,12 +422,7 @@
 			{
 				// We are inside if the test point is on the same side
 				// as the non-Euclidean center.
-				Vector3D d = P2 - P1;
-				Vector3D t1 = (testPoint - P1).Cross( d );
-				Vector3D t2 = (CenterNE - P1).Cross( d );
-				bool pos1 = t1.Z > 0;
-				bool pos2 = t2.Z > 0;
-				return !(pos1 ^ pos2);
+				return Euclidean2D.SameSideOfLine( P1, P2, testPoint, CenterNE );
 			}
 			else
 			{

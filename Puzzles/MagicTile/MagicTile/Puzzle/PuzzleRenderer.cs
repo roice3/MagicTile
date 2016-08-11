@@ -261,15 +261,39 @@
 				if( -1 == lod )
 					continue;
 
+				var c = m_settings.ColorTwistingCircles;
+				var t = GrabModelTransform();
 				if( m_puzzle.Config.Geometry == Geometry.Spherical )
-					GLUtils.DrawCircleSafe( toDraw, m_settings.ColorTwistingCircles, GrabModelTransform() );
+				{ 
+					GLUtils.DrawCircleSafe( toDraw, c, t );
+				}
 				else if( m_puzzle.Config.Earthquake )
+				{
+					if( m_choppedPantsSeg != -1 )
+					{
+						Polygon clone = twistData.Pants.Hexagon.Clone();
+						clone.Transform( m_mouseMotion.Isometry );
+						int div = 15;
+						GL.Color3( c );
+						GLUtils.DrawSeg( clone.Segments[m_choppedPantsSeg], div, t );
+						
+						/*GLUtils.DrawPolygon( clone, c, t );
+						foreach( Polygon poly in twistData.Pants.AdjacentHexagons )
+						{
+							poly.Transform( m_mouseMotion.Isometry );
+							GLUtils.DrawPolygon( poly, c, t );	
+						}*/
+					}
 					GLUtils.DrawHyperbolicGeodesic( toDraw, m_settings.ColorTwistingCircles, GrabModelTransform() );
+				}
 				else
-					GLUtils.DrawCircle( toDraw, m_settings.ColorTwistingCircles, GrabModelTransform() );
+				{
+					GLUtils.DrawCircle( toDraw, c, t );
+				}
 			}
 		}
 		private TwistData m_closestTwistingCircles = null;
+		private int m_choppedPantsSeg = -1;
 
 		/// <summary>
 		/// Grabs a model transform based on puzzle geometry and settings.
@@ -996,7 +1020,8 @@
 			if( -1 == lod )
 				return;
 
-			if( m_settings.ShowOnlyFundamental && !cell.IsMaster )
+			// ZZZ - Might be nice to add a debug setting to show the state calc cells.
+			if( m_settings.ShowOnlyFundamental && !cell.IsMaster /* && !m_puzzle.m_stateCalcCells.Contains( cell ) */ )
 				return;
 
 			ShowTextureTrianglesIfNeeded();
@@ -1450,6 +1475,16 @@
 			object previous = (object)m_closestTwistingCircles;
 			m_closestTwistingCircles = m_puzzle.ClosestTwistingCircles( spaceCoordsNoMouseMotion.Value );
 			object newlyFound = (object)m_closestTwistingCircles;
+
+			// Twisting is more subtle for the earthquake puzzle.
+			if( m_puzzle.Config.Earthquake )
+			{
+				int prev = m_choppedPantsSeg;
+				Vector3D mouse = spaceCoordsNoMouseMotion.Value;
+				m_choppedPantsSeg = m_closestTwistingCircles.Pants.Closest( mouse );
+				if( prev != m_choppedPantsSeg )
+					return true;
+			}
 
 			// Did we change?
 			if( newlyFound != previous )

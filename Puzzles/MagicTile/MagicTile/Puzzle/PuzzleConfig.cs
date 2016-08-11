@@ -522,6 +522,7 @@
 		/// <summary>
 		/// Whether or not we are an Earthquake puzzle (based on systolic pants decomposition).
 		/// </summary>
+		[DataMember]
 		public bool Earthquake { get; set; }
 
 		/// <summary>

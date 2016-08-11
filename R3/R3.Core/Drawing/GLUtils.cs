@@ -117,7 +117,7 @@
 			DrawSeg( seg, 150, transform );
 		}
 
-		private static void DrawSeg( Segment seg, int div, System.Func<Vector3D, Vector3D> transform )
+		public static void DrawSeg( Segment seg, int div, System.Func<Vector3D, Vector3D> transform )
 		{
 			GL.Begin( BeginMode.LineStrip );
 			{
@@ -191,7 +191,8 @@
 		/// Draws a polygon in OpenGL immediate mode.
 		/// Draws only line mode.
 		/// </summary>
-		public static void DrawPolygon( Polygon p, Color color )
+		public static void DrawPolygon( Polygon p, Color color,
+			System.Func<Vector3D, Vector3D> transform )
 		{
 			GL.Color3( color );
 			GL.Begin( BeginMode.LineLoop );
@@ -199,7 +200,9 @@
 				Vector3D[] edgePoints = p.EdgePoints;
 				for( int i = 0; i < edgePoints.Length; i++ )
 				{
-					GL.Vertex2( edgePoints[i].X, edgePoints[i].Y );
+					Vector3D transformed = transform == null ?
+						edgePoints[i] : transform( edgePoints[i] );
+					GL.Vertex2( transformed.X, transformed.Y );
 				}
 			}
 			GL.End();

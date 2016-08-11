@@ -215,9 +215,14 @@
 				AddMaster( t, tiling, identifications, completed );
 			}
 
+			StatusOrCancel( callback, "analyzing topology..." );
+			TopologyAnalyzer topology = new TopologyAnalyzer( this, template );
+			topology.Analyze();
+			this.Topology = topology.ToString();
+
 			StatusOrCancel( callback, "marking cells for state calcs..." );
 			TwistData[] templateTwistDataArray = TemplateTwistData( template ).ToArray();
-			MarkCellsForStateCalcs( tiling, completed, templateTwistDataArray );
+			MarkCellsForStateCalcs( tiling, completed, templateTwistDataArray, topology );
 
 			// Slice up the template tile.
 			StatusOrCancel( callback, "slicing up template tile..." );
@@ -235,11 +240,6 @@
 				foreach( Cell cell in m_stateCalcCells )
 					AddStickersToCell( cell, tStickers );
 			}
-
-			StatusOrCancel( callback, "analyzing topology..." );
-			TopologyAnalyzer topology = new TopologyAnalyzer( this, template );
-			topology.Analyze();
-			this.Topology = topology.ToString();
 
 			StatusOrCancel( callback, "setting up texture coordinates..." );
 			SetupTextureCoords();
@@ -361,12 +361,16 @@
 					twistData.TwistType = ElementType.Vertex;
 					twistData.Center = s.P1;
 					twistData.Order = 3;
+					twistData.NumSlices = 1;
 
 					Mobius m = new Mobius();
 					m.Isometry( Geometry.Hyperbolic, Euclidean2D.AngleToCounterClock( new Vector3D( 1, 0 ), s.P1 ), new Vector3D() );
-					twistData.Circles = Pants.SystolesForKQ().Select( c => { c.Transform( m ); return c; } ).ToArray();
 
 					twistData.Pants = new Pants();
+					twistData.Pants.SetupHexagonForKQ();
+					twistData.Pants.Transform( m );
+					twistData.Circles = Pants.SystolesForKQ().Select( c => { c.Transform( m ); return c; } ).ToArray();
+
 					result.Add( twistData );
 				}
 			}
@@ -409,6 +413,29 @@
 			List<Polygon> slicees = new List<Polygon>(), sliced = null;
 			slicees.Add( template.Drawn );
 			SliceRecursive( slicees, slicers, ref sliced );
+			
+			// ZZZ - Hacky to special case this,
+			//		 but I'm not sure how the general solution will go.
+			if( this.Config.Earthquake )
+			{
+				slicers.Clear();
+				for( int i=0; i<7; i++ )
+				{
+					Mobius m = new Mobius();
+					m.Elliptic( Geometry.Hyperbolic, new Complex(), Math.PI * 2 * i / 7 );
+					CircleNE c = new CircleNE() { P1 = new Vector3D(), P2 = new Vector3D( 1, 0 ), Radius = double.PositiveInfinity, CenterNE = new Vector3D( 0, 0.5 ) };
+					c.Transform( m );
+					slicers.Add( c );
+				}
+
+				List<Polygon> result = new List<Polygon>();
+				result.Add( sliced[4] );
+				slicees = sliced.Except( result ).ToList();
+				List<Polygon> temp = new List<Polygon>();
+				SliceRecursive( slicees, slicers, ref temp );
+				result.AddRange( temp );
+				return result;
+			}
 
 			return sliced;
 		}
@@ -742,7 +769,11 @@
 			transformedTwistData.Center = newCenter;	// NOTE: Can't use InfinitySafe method here! We need this center to stay accurate, for future transformations.
 			transformedTwistData.Order = untransformed.Order;
 			transformedTwistData.Reverse = reverse;
-			transformedTwistData.Pants = untransformed.Pants;
+			if( untransformed.Pants != null )
+			{
+				transformedTwistData.Pants = untransformed.Pants.Clone();
+				transformedTwistData.Pants.Transform( isometry );
+			}
 			List<CircleNE> transformedCircles = new List<CircleNE>();
 			foreach( CircleNE circleNE in untransformed.Circles )
 			{
@@ -1080,20 +1111,48 @@
 		/// <summary>
 		/// Marks all the cells we'll need to use for state calcs.
 		/// </summary>
-		private void MarkCellsForStateCalcs( Tiling tiling, Dictionary<Vector3D, Cell> cells, TwistData[] templateTwistDataArray )
+		private void MarkCellsForStateCalcs( Tiling tiling, Dictionary<Vector3D, Cell> cells, 
+			TwistData[] templateTwistDataArray, TopologyAnalyzer topology )
 		{
 			m_stateCalcCells.Clear();
 			List<Cell> result = new List<Cell>();
 			result.AddRange( this.MasterCells );
 
+			// Special handlinng for earthquake.
+			// ZZZ - I wonder if this should be the approach in the normal case too (cycling through 
+			//		 masters first and slaves second), but fear changing the existing behavior.
+			//		 After all, any slave twist will also result in some master twist.
+			//		 This might speed up code below, and get rid of the complexity of the "hotTwists" code.
+			HashSet<Vector3D> complete = new HashSet<Vector3D>();
 			if( this.Config.Earthquake )
 			{
-				//result.AddRange( this.AllSlaveCells.Take( 50 ) );
+				// Get all twist data attached to master cells.
+				List<TwistData> toCheck = new List<TwistData>();
+				foreach( TwistData twistData in templateTwistDataArray )
+				foreach( Cell master in this.MasterCells )
+				{
+					bool dummy = false;
+					TwistData transformed = TransformedTwistDataForCell( master, twistData, dummy );
+					if( complete.Contains( transformed.Center ) )
+						continue;
+					complete.Add( transformed.Center );
+					toCheck.Add( transformed );
+				}
+
+				foreach( Cell slave in this.AllSlaveCells )
+				foreach( TwistData td in toCheck )
+				{
+					if( td.WillAffectCell( slave, this.IsSpherical ) )
+					{
+						result.Add( slave );
+						break;
+					}
+				}
+
 				m_stateCalcCells = result.Distinct().ToList();
 				return;
 			}
 
-			HashSet<Vector3D> complete = new HashSet<Vector3D>();
 			List<TwistData> hotTwists = new List<TwistData>();
 			foreach( TwistData twistData in templateTwistDataArray )
 			foreach( Cell slave in this.AllSlaveCells )

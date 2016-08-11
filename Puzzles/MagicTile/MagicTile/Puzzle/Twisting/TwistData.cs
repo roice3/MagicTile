@@ -212,14 +212,29 @@
 		/// </summary>
 		public bool WillAffectCell( Cell cell, bool sphericalPuzzle )
 		{
+			if( Earthquake )
+			{
+				return Pants.TestCircle.Intersects( cell.Boundary );
+
+				/* This turned out too slow.
+				
+				if( Pants.Hexagon.Intersects( cell.Boundary ) )
+					return true;
+				
+				foreach( Polygon poly in Pants.AdjacentHexagons )
+					if( poly.Intersects( cell.Boundary ) )
+						return true;
+				
+				return false; */
+			}
+
 			foreach( CircleNE circleNE in this.Circles )
 			{
 				bool inside = sphericalPuzzle ?
 					circleNE.IsPointInsideNE( cell.Center ) :
 					circleNE.IsPointInsideFast( cell.Center );
 
-				if( (Earthquake && !inside) || 
-					inside ||
+				if( inside ||
 					circleNE.Intersects( cell.Boundary ) )
 					return true;
 			}
@@ -253,10 +268,9 @@
 
 			if( Earthquake )
 			{
-				foreach( CircleNE c in Circles )
-					if( !c.IsPointInsideNE( sticker.Poly.Center ) )
-						return;
-				AffectedStickers[0].Add( sticker );
+				Vector3D cen = sticker.Poly.Center;
+				if( Pants.IsPointInsideOptimized( cen ) )
+					AffectedStickers[0].Add( sticker );
 				return;
 			}
 
