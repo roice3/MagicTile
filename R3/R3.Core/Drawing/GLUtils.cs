@@ -114,7 +114,7 @@
 				seg = Segment.Arc( p1, H3Models.Ball.ClosestToOrigin( new Circle3D() { Center = c.Center, Radius = c.Radius, Normal = new Vector3D(0,0,1) } ), p2 );
 			}
 
-			DrawSeg( seg, 150, transform );
+			DrawSeg( seg, 75, transform );
 		}
 
 		public static void DrawSeg( Segment seg, int div, System.Func<Vector3D, Vector3D> transform )
@@ -283,7 +283,7 @@
 			GL.End();
 		}
 
-		public static void DrawPolygonSolid( Polygon p, Color color )
+		public static void DrawPolygonSolid( Polygon p, Color color, bool fast = false )
 		{
 			GL.Color3( color );
 			GL.PolygonMode( MaterialFace.FrontAndBack, PolygonMode.Fill );
@@ -291,7 +291,10 @@
 			{
 				GL.Vertex3( p.Center.X, p.Center.Y, p.Center.Z );
 
-				Vector3D[] edgePoints = p.EdgePoints;
+				Vector3D[] edgePoints = fast ?
+					p.CalcEdgePoints( arcResolution: R3.Core.Utils.DegreesToRadians( 9.0 ), 
+						minSegs: 5, checkForInfinities: false ) :
+					p.EdgePoints;
 				for( int i = 0; i < edgePoints.Length; i++ )
 				{
 					GL.Vertex3( edgePoints[i].X, edgePoints[i].Y, edgePoints[i].Z );

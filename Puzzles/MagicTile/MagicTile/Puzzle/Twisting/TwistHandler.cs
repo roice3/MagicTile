@@ -2,6 +2,7 @@
 {
 	using OpenTK;
 	using R3.Drawing;
+	using R3.Geometry;
 	using System.Collections.Generic;
 	using System.Diagnostics;
 	using System.Linq;
@@ -63,7 +64,10 @@
 					return 0;
 
 				double max = m_currentTwist.Magnitude;
-				return ( max / 2.0 ) * ( -Math.Cos( Math.PI * m_rotation / max ) + 1 );
+				double result = ( max / 2.0 ) * ( -Math.Cos( Math.PI * m_rotation / max ) + 1 );
+				if( m_puzzle.Config.Earthquake )
+					result /= m_currentTwist.Magnitude;	// Scale from 0 to 1.
+				return result;
 			}
 		}
 
@@ -144,7 +148,15 @@
 			m_rotation = 0;
 			m_currentTwist = twist;
 			m_currentTwist.IdentifiedTwistData.StartTwist( m_currentTwist.SliceMask, m_puzzle.IsSpherical );
+			if( m_currentTwist.IdentifiedTwistDataEarthquake != null )
+				m_currentTwist.IdentifiedTwistDataEarthquake.StartTwist( m_currentTwist.SliceMask, m_puzzle.IsSpherical );
 			m_timer.Enabled = true;
+		}
+
+		private void InvalidateTextures( IdentifiedTwistData itd )
+		{
+			foreach( Cell master in itd.AffectedMasterCells )
+				m_renderToTexture.InvalidateTexture( master );
 		}
 
 		private void IterateRotate()
@@ -152,15 +164,17 @@
 			if( m_currentTwist == null )
 				return;
 
-			foreach( Cell master in m_currentTwist.IdentifiedTwistData.AffectedMasterCells )
-				m_renderToTexture.InvalidateTexture( master );
+			InvalidateTextures( m_currentTwist.IdentifiedTwistData );
+			if( m_currentTwist.IdentifiedTwistDataEarthquake != null )
+				InvalidateTextures( m_currentTwist.IdentifiedTwistDataEarthquake );
 			if( m_puzzle.HasSurfaceConfig )
 			{
 				m_renderToTexture.InvalidateTexture( PuzzleRenderer.SurfaceTexture1 );
 				m_renderToTexture.InvalidateTexture( PuzzleRenderer.SurfaceTexture2 );
 			}
 
-			m_rotation += R3.Core.Utils.DegreesToRadians( m_settings.RotationStep( m_currentTwist.IdentifiedTwistData.Order ) );
+			int order = m_currentTwist.IdentifiedTwistDataEarthquake == null ? m_currentTwist.IdentifiedTwistData.Order : 10;
+			m_rotation += R3.Core.Utils.DegreesToRadians( m_settings.RotationStep( order ) );
 			//Trace.WriteLine( "rotation " + m_rotation );
 			if( m_rotation > m_currentTwist.Magnitude )
 			{
@@ -201,6 +215,8 @@
 			m_workingMacro.Update( m_currentTwist );
 
 			m_currentTwist.IdentifiedTwistData.EndTwist( m_currentTwist.SliceMask, m_puzzle.IsSpherical );
+			if( m_currentTwist.IdentifiedTwistDataEarthquake != null )
+				m_currentTwist.IdentifiedTwistDataEarthquake.EndTwist( m_currentTwist.SliceMask, m_puzzle.IsSpherical );
 			m_currentTwist = null;
 
 			if( updateStatus )
@@ -328,6 +344,7 @@
 			if( allTwistData.Count == 0 )
 				return;
 
+			bool earthquake = m_puzzle.Config.Earthquake;
 			for( int i = 0; i < numTwists; i++ )
 			{
 				m_currentTwist = new SingleTwist();
@@ -344,9 +361,25 @@
 				else
 					m_currentTwist.IdentifiedTwistData = allTwistData[rand.Next( allTwistData.Count )];
 
-				int numSlices = m_currentTwist.IdentifiedTwistData.TwistDataForStateCalcs.First().NumSlices;
-				int randomSlice = rand.Next( numSlices ) + 1;
+				TwistData td = m_currentTwist.IdentifiedTwistData.TwistDataForStateCalcs.First();
+				int numSlices = td.NumSlices;
+				int randomSlice = rand.Next( numSlices );
+				if( !earthquake )
+					randomSlice += 1;
 				m_currentTwist.SliceMask = SliceMask.SliceToMask( randomSlice );
+
+				if( earthquake )
+				{
+					int choppedSeg = m_currentTwist.SliceMask * 2;
+					Vector3D lookup = td.Pants.TinyOffset( choppedSeg );
+					Vector3D reflected = td.Pants.Hexagon.Segments[choppedSeg].ReflectPoint( lookup );
+					TwistData tdEarthQuake = m_puzzle.ClosestTwistingCircles( reflected );
+
+					m_currentTwist.IdentifiedTwistDataEarthquake = tdEarthQuake.IdentifiedTwistData;
+
+					// Fix scrambing here.
+					m_currentTwist.SliceMaskEarthquake = tdEarthQuake.Pants.Closest( reflected ) / 2;
+				}
 
 				// Apply the twist.
 				FinishRotate( updateStatus: false );

@@ -156,12 +156,23 @@
 		/// <summary>
 		/// Move from a point p1 -> p2 along a geodesic.
 		/// Also somewhat from Don.
+		/// factor can be used to only go some fraction of the distance from p1 to p2.
 		/// </summary>
-		public void Geodesic( Geometry g, Complex p1, Complex p2 )
+		public void Geodesic( Geometry g, Complex p1, Complex p2, double factor = 1.0 )
 		{
 			Mobius t = new Mobius();
 			t.Isometry( g, 0, p1 * -1 );
 			Complex p2t = t.Apply( p2 );
+
+			// Only implemented for hyperbolic so far.
+			if( factor != 1.0 && g == Geometry.Hyperbolic )
+			{
+				double newMag = DonHatch.h2eNorm( DonHatch.e2hNorm( p2t.Magnitude ) * factor );
+				Vector3D temp = Vector3D.FromComplex( p2t );
+				temp.Normalize();
+				temp *= newMag;
+				p2t = temp.ToComplex();
+			}
 
 			Mobius m1 = new Mobius(), m2 = new Mobius();
 			m1.Isometry( g, 0, p1 * -1 );

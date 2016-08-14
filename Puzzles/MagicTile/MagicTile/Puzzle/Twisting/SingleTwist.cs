@@ -2,6 +2,7 @@
 {
 	using System.Collections.Generic;
 	using System.Diagnostics;
+	using System.Linq;
 	using System.Xml.Linq;
 
 	public class SingleTwist
@@ -10,8 +11,10 @@
 		{
 			SingleTwist newTwist = new SingleTwist();
 			newTwist.IdentifiedTwistData = this.IdentifiedTwistData;
+			newTwist.IdentifiedTwistDataEarthquake = this.IdentifiedTwistDataEarthquake;
 			newTwist.LeftClick = this.LeftClick;
 			newTwist.SliceMask = this.SliceMask;
+			newTwist.SliceMaskEarthquake = this.SliceMaskEarthquake;
 			newTwist.MacroStart = this.MacroStart;
 			newTwist.MacroEnd = this.MacroEnd;
 			return newTwist;
@@ -23,6 +26,29 @@
 		public IdentifiedTwistData IdentifiedTwistData { get; set; }
 
 		/// <summary>
+		/// Earthquake twists involve two sets of identified twist data.
+		/// Normally, this will be null.
+		/// </summary>
+		public IdentifiedTwistData IdentifiedTwistDataEarthquake { get; set; }
+
+		/// <summary>
+		/// Convenient access to the state calc twist data.
+		/// </summary>
+		public List<TwistData> StateCalcTD
+		{
+			get
+			{
+				List<TwistData> twistDataList = null;
+				if( IdentifiedTwistDataEarthquake != null )
+					twistDataList = IdentifiedTwistData.TwistDataForStateCalcs.Concat(
+						IdentifiedTwistDataEarthquake.TwistDataForStateCalcs ).ToList();
+				else
+					twistDataList = IdentifiedTwistData.TwistDataForStateCalcs;
+				return twistDataList;
+			}
+		}
+
+		/// <summary>
 		/// Left or right click.
 		/// </summary>
 		public bool LeftClick { get; set; }
@@ -31,6 +57,11 @@
 		/// The slicemask for this twist.
 		/// </summary>
 		public int SliceMask { get; set; }
+
+		/// <summary>
+		/// The slicemask for the earthquake part of the twist.
+		/// </summary>
+		public int SliceMaskEarthquake { get; set; }
 
 		public bool MacroStart { get; set; }
 		public bool MacroEnd { get; set; }

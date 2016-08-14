@@ -12,9 +12,12 @@
 	/// </summary>
 	public class Pants : ITransformable
 	{
+		public static Polygon TemplateHex = null;
+
 		public Pants()
 		{
 			Hexagon = new Polygon();
+			Isometry = new Isometry();
 		}
 
 		public Pants Clone()
@@ -22,6 +25,7 @@
 			Pants pants = new Pants();
 			pants.Hexagon = Hexagon.Clone();
 			pants.TestCircle = TestCircle.Clone();
+			pants.CircumCircle = CircumCircle.Clone();
 			return pants;
 		}
 
@@ -34,21 +38,31 @@
 		public Polygon Hexagon { get; set; }
 
 		/// <summary>
-		/// A circle we use to help find affected cells.
-		/// It's important that this is a NE (non-euclidean) circle.
+		/// The net combination of isometries used during puzzle building.
+		/// </summary>
+		public Isometry Isometry { get; private set; }
+
+		/// <summary>
+		/// Test circles we use to help find affected cells/stickers.
+		/// It's important that these are NE (non-euclidean) circles.
 		/// </summary>
 		public CircleNE TestCircle { get; private set; }
+		public CircleNE CircumCircle { get; private set; }
 
 		public void Transform( Mobius m )
 		{
 			Hexagon.Transform( m );
 			TestCircle.Transform( m );
+			CircumCircle.Transform( m );
+			Isometry *= new Isometry( m, null );
 		}
 
 		public void Transform( Isometry i )
 		{
 			Hexagon.Transform( i );
 			TestCircle.Transform( i );
+			CircumCircle.Transform( i );
+			Isometry *= i;
 		}
 
 		/// <summary>s
@@ -61,6 +75,9 @@
 		/// <returns></returns>
 		public bool IsPointInsideOptimized( Vector3D p )
 		{
+			if( !CircumCircle.IsPointInsideFast( p ) )
+				return false;
+
 			// We will check that we are on the same side of every segment as the center.
 			Vector3D cen = Hexagon.Center;
 			foreach( Segment s in Hexagon.Segments )
@@ -116,10 +133,18 @@
 
 		public int Closest( Vector3D p )
 		{
-			double d1 = Hexagon.Segments[1].Midpoint.Dist( p );
-			double d2 = Hexagon.Segments[3].Midpoint.Dist( p );
-			double d3 = Hexagon.Segments[5].Midpoint.Dist( p );
+			// Needs to be non-euclidean calc,
+			// Moving the hex to the center will make that be the case.
+			Mobius m = MobiusToCenter;
+			Polygon poly = Hexagon.Clone();
+			poly.Transform( m );
+			p = m.Apply( p );
+
+			double d1 = poly.Segments[1].Midpoint.Dist( p );
+			double d2 = poly.Segments[3].Midpoint.Dist( p );
+			double d3 = poly.Segments[5].Midpoint.Dist( p );
 			double min = Math.Min( d1, Math.Min( d2, d3 ) );
+
 			if( min == d1 )
 				return 4;
 			if( min == d2 )
@@ -127,6 +152,33 @@
 			if( min == d3 )
 				return 2;
 			return -1;
+		}
+
+		private Mobius MobiusToCenter
+		{
+			get
+			{
+				Mobius m = new Mobius();
+				m.Isometry( Geometry.Hyperbolic, 0, -Hexagon.Center );
+				return m;
+			}
+		}
+
+		public Vector3D TinyOffset( int awayFromSeg )
+		{
+			// Center;
+			Mobius m = MobiusToCenter;
+			Vector3D p = Hexagon.Center;
+			Polygon poly = Hexagon.Clone();
+			poly.Transform( m );
+			p = m.Apply( p );
+
+			// Do the offset.
+			p -= poly.Segments[awayFromSeg].Midpoint / 10;
+
+			// Go back.
+			p = m.Inverse().Apply( p );
+			return p;
 		}
 
 		public void SetupHexagonForKQ()
@@ -169,6 +221,7 @@
 			m.Isometry( Geometry.Hyperbolic, 0, -vertex0 );
 			Polygon clone = Hexagon.Clone();
 			clone.Transform( m );
+
 			Circle temp = new Circle(
 				clone.Segments[0].Midpoint,
 				clone.Segments[2].Midpoint,
@@ -176,6 +229,14 @@
 			CircleNE tempNE = new CircleNE( temp, new Vector3D() );
 			tempNE.Transform( m.Inverse() );
 			TestCircle = tempNE;
+
+			temp = new Circle(
+				clone.Segments[0].P1,
+				clone.Segments[1].P1,
+				clone.Segments[2].P1 );
+			tempNE = new CircleNE( temp, new Vector3D() );
+			tempNE.Transform( m.Inverse() );
+			CircumCircle = tempNE;
 		}
 
 		/// <summary>

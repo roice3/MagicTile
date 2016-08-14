@@ -92,10 +92,8 @@
 			intersection = p3 + n2 * factor;
 
 			// XXX - Unfortunately, this is happening sometimes.
-			if( !Tolerance.Zero( DistancePointLine( intersection, p1, p2 ) ) )
-			{
+			//if( !Tolerance.Zero( DistancePointLine( intersection, p1, p2 ) ) )
 				//Debug.Assert( false );
-			}
 
 			return 1;
 		}

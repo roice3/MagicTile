@@ -755,42 +755,52 @@
 		{
 			get
 			{
-				List<Vector3D> points = new List<Vector3D>();
 				double arcResolution = Utils.DegreesToRadians( 4.5 );
+				int minSegs = 10;
+				return CalcEdgePoints( arcResolution, minSegs, checkForInfinities: true );
+			}
+		}
 
-				for( int i = 0; i < NumSides; i++ )
+		public Vector3D[] CalcEdgePoints( double arcResolution, int minSegs, bool checkForInfinities )
+		{
+			List<Vector3D> points = new List<Vector3D>();
+			
+			for( int i = 0; i < NumSides; i++ )
+			{
+				Segment s = Segments[i];
+
+				// First point.
+				// ZZZ - getting lazy
+				//Debug.Assert( ! (isInfinite( s.m_p1 ) && isInfinite( s.m_p2 )) );
+				Vector3D p1 = checkForInfinities && Infinity.IsInfinite( s.P1 ) ? 
+					s.P2 * Infinity.FiniteScale : 
+					s.P1;
+				points.Add( p1 );
+
+				// For arcs, add in a bunch of extra points.
+				if( SegmentType.Arc == s.Type )
 				{
-					Segment s = Segments[i];
-
-					// First point.
-					// ZZZ - getting lazy
-					//Debug.Assert( ! (isInfinite( s.m_p1 ) && isInfinite( s.m_p2 )) );
-					Vector3D p1 = Infinity.IsInfinite( s.P1 ) ? s.P2 * Infinity.FiniteScale : s.P1;
-					points.Add( p1 );
-
-					// For arcs, add in a bunch of extra points.
-					if( SegmentType.Arc == s.Type )
+					double maxAngle = s.Angle;
+					Vector3D vs = s.P1 - s.Center;
+					int numSegments = (int)(maxAngle / (arcResolution));
+					if( numSegments < minSegs )
+						numSegments = minSegs;
+					double angle = maxAngle / numSegments;
+					for( int j = 1; j < numSegments; j++ )
 					{
-						double maxAngle = s.Angle;
-						Vector3D vs = s.P1 - s.Center;
-						int numSegments = (int)(maxAngle / (arcResolution));
-						if( numSegments < 10 )  // ZZZ - arbitrary.
-							numSegments = 10;
-						double angle = maxAngle / numSegments;
-						for( int j = 1; j < numSegments; j++ )
-						{
-							vs.RotateXY( s.Clockwise ? -angle : angle );
-							points.Add( vs + s.Center );
-						}
+						vs.RotateXY( s.Clockwise ? -angle : angle );
+						points.Add( vs + s.Center );
 					}
-
-					// Last point.
-					Vector3D p2 = Infinity.IsInfinite( s.P2 ) ? s.P1 * Infinity.FiniteScale : s.P2;
-					points.Add( p2 );
 				}
 
-				return points.ToArray();
+				// Last point.
+				Vector3D p2 = checkForInfinities && Infinity.IsInfinite( s.P2 ) ? 
+					s.P1 * Infinity.FiniteScale : 
+					s.P2;
+				points.Add( p2 );
 			}
+
+			return points.ToArray();
 		}
 
 		/// <summary>

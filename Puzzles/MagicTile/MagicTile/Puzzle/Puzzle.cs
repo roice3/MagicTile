@@ -10,6 +10,7 @@
 	using System.Drawing;
 	using System.Linq;
 	using System.Numerics;
+	using System.Threading.Tasks;
 
 	public interface IStatusCallback
 	{
@@ -25,6 +26,7 @@
 			m_slaves = new Dictionary<Cell, List<Cell>>();
 			IRPCells = new Cell[] {};
 			m_stateCalcCells = new List<Cell>();
+			m_stateCalcCellSet = new HashSet<Cell>();
 			AllTwistData = new List<IdentifiedTwistData>();
 			Config = new PuzzleConfig();
 			TextureHelper = new TextureHelper();
@@ -86,6 +88,11 @@
 				foreach( Cell slave in this.SlaveCells( master ) )
 					yield return slave;
 			}
+		}
+
+		public bool IsStateCalcCell( Cell cell )
+		{
+			return m_stateCalcCellSet.Contains( cell );
 		}
 
 		/// <summary>
@@ -360,14 +367,16 @@
 					TwistData twistData = new TwistData();
 					twistData.TwistType = ElementType.Vertex;
 					twistData.Center = s.P1;
-					twistData.Order = 3;
-					twistData.NumSlices = 1;
+					twistData.Order = 3;		// The only use here is in controlling twist speed.
+					twistData.NumSlices = 3;	// We'll use the slices as a way to mark the 3 directions.
 
 					Mobius m = new Mobius();
 					m.Isometry( Geometry.Hyperbolic, Euclidean2D.AngleToCounterClock( new Vector3D( 1, 0 ), s.P1 ), new Vector3D() );
 
 					twistData.Pants = new Pants();
 					twistData.Pants.SetupHexagonForKQ();
+					if( Pants.TemplateHex == null )
+						Pants.TemplateHex = twistData.Pants.Hexagon.Clone();
 					twistData.Pants.Transform( m );
 					twistData.Circles = Pants.SystolesForKQ().Select( c => { c.Transform( m ); return c; } ).ToArray();
 
@@ -769,6 +778,7 @@
 			transformedTwistData.Center = newCenter;	// NOTE: Can't use InfinitySafe method here! We need this center to stay accurate, for future transformations.
 			transformedTwistData.Order = untransformed.Order;
 			transformedTwistData.Reverse = reverse;
+			transformedTwistData.NumSlices = untransformed.NumSlices;
 			if( untransformed.Pants != null )
 			{
 				transformedTwistData.Pants = untransformed.Pants.Clone();
@@ -923,8 +933,10 @@
 				List<TwistData> collectionTwistData = IsSpherical ? 
 					collection.TwistDataForDrawing : 
 					collection.TwistDataForStateCalcs;
-				foreach( TwistData twistData in collectionTwistData )
+				Parallel.For( 0, collectionTwistData.Count, i =>
 				{
+					TwistData twistData = collectionTwistData[i];
+
 					// Mark all the affected master cells.
 					foreach( Cell master in MasterCells )
 						twistData.WillAffectMaster( master, this.IsSpherical );
@@ -935,7 +947,7 @@
 					foreach( Cell cell in cells )
 					foreach( Sticker sticker in cell.Stickers )
 						twistData.WillAffectSticker( sticker, this.IsSpherical );
-				}
+				} );
 			}
 
 			// Optimization.
@@ -1115,6 +1127,7 @@
 			TwistData[] templateTwistDataArray, TopologyAnalyzer topology )
 		{
 			m_stateCalcCells.Clear();
+			m_stateCalcCellSet.Clear();
 			List<Cell> result = new List<Cell>();
 			result.AddRange( this.MasterCells );
 
@@ -1139,17 +1152,22 @@
 					toCheck.Add( transformed );
 				}
 
-				foreach( Cell slave in this.AllSlaveCells )
-				foreach( TwistData td in toCheck )
+				Cell[] allSlaves = AllSlaveCells.ToArray();
+				Parallel.For( 0, allSlaves.Length, i =>
 				{
-					if( td.WillAffectCell( slave, this.IsSpherical ) )
+					Cell slave = allSlaves[i];
+					foreach( TwistData td in toCheck )
 					{
-						result.Add( slave );
-						break;
+						if( td.WillAffectCell( slave, this.IsSpherical ) )
+						{
+							result.Add( slave );
+							break;
+						}
 					}
-				}
+				} );
 
 				m_stateCalcCells = result.Distinct().ToList();
+				m_stateCalcCellSet = new HashSet<Cell>( m_stateCalcCells );
 				return;
 			}
 
@@ -1210,8 +1228,11 @@
 			}
 
 			m_stateCalcCells = result.Distinct().ToList();
+			m_stateCalcCellSet = new HashSet<Cell>( m_stateCalcCells );
 		}
-		public List<Cell> m_stateCalcCells;
+
+		private List<Cell> m_stateCalcCells;
+		private HashSet<Cell> m_stateCalcCellSet;
 
 		private void PrepareSurfaceData( IStatusCallback callback )
 		{
@@ -1801,15 +1822,18 @@
 			// Maps from sticker to new sticker position.
 			Dictionary<Sticker, Vector3D> newMap = new Dictionary<Sticker, Vector3D>();
 
+			bool earthquake = Config.Earthquake;
 			IdentifiedTwistData identifiedTwistData = twist.IdentifiedTwistData;
-			double rotation = twist.Magnitude;
+			double rotation = earthquake ? 1.0 : twist.Magnitude;
 			if( !twist.LeftClick )
 				rotation *= -1;
 
-			foreach( TwistData twistData in identifiedTwistData.TwistDataForStateCalcs )	// ZZZ - only need to do one of these.
+			int count = 0;
+			foreach( TwistData twistData in twist.StateCalcTD )
 			{
-				Mobius mobius = new Mobius();
-				mobius.Elliptic( this.Config.Geometry, twistData.Center, twistData.Reverse ? rotation * -1 : rotation );
+				count++;
+				Mobius mobius = twistData.MobiusForTwist( Config.Geometry, twist, rotation,
+					earthquake, count > identifiedTwistData.TwistDataForStateCalcs.Count );
 
 				foreach( List<Sticker> list in twistData.AffectedStickersForSliceMask( twist.SliceMask ) )
 				foreach( Sticker sticker in list )

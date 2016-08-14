@@ -165,6 +165,12 @@
 		public bool EnableAntialiasing { get; set; }
 
 		[DataMember]
+		[DisplayName( "Show State Calc Tiles" )]
+		[Description( "Display just the tiles that are used for state calculations." )]
+		[Category( "Debug" )]
+		public bool ShowStateCalcCells { get; set; }
+
+		[DataMember]
 		[DisplayName( "Show as Skew" )]
 		[Description( "Controls rendering the puzzle as a regular skew polyhedron (IRP or finite 4D). " +
 			"This setting is ignored if the puzzle does not have an associated skew polyhedron, or if the tiling is configured to only display as skew." )]

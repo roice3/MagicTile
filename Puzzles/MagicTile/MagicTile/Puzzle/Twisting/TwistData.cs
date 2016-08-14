@@ -187,6 +187,9 @@
 		/// </summary>
 		public List<StickerList> AffectedStickersForSliceMask( int mask )
 		{
+			if( Earthquake )
+				return AffectedStickers;
+
 			List<StickerList> result = new List<StickerList>();
 			foreach( int slice in SliceMask.MaskToSlices( mask ) )
 			{
@@ -214,9 +217,20 @@
 		{
 			if( Earthquake )
 			{
-				return Pants.TestCircle.Intersects( cell.Boundary );
+				if( Pants.TestCircle.HasVertexInside( cell.Boundary ) )
+					return true;
 
-				/* This turned out too slow.
+				for( int i=0; i<3; i++ )
+				{
+					CircleNE c = Pants.TestCircle.Clone();
+					c.Reflect( Pants.Hexagon.Segments[i * 2] );
+					if( c.HasVertexInside( cell.Boundary ) )
+						return true;
+				}
+
+				return false;
+
+				/* This turned out too slow, and probably not robust too.
 				
 				if( Pants.Hexagon.Intersects( cell.Boundary ) )
 					return true;
@@ -294,6 +308,28 @@
 			if( sphericalPuzzle && 
 				( this.NumSlices != this.Circles.Length ) )
 				AffectedStickers[this.NumSlices-1].Add( sticker );
+		}
+
+		public Mobius MobiusForTwist( Geometry g, SingleTwist twist, double rotation, bool earthquake, bool earthquakeData = false )
+		{
+			Mobius mobius = new Mobius();
+			if( earthquake )
+			{
+				int seg = earthquakeData ?
+					(twist.SliceMaskEarthquake * 2 + 3) % 6 :
+					(twist.SliceMask * 2 + 3) % 6;
+				Vector3D p1 = this.Pants.Hexagon.Segments[seg].P2;
+				Vector3D p2 = Pants.Hexagon.Segments[seg].P1;
+				if( Pants.Isometry.Reflected )
+					R3.Core.Utils.SwapPoints( ref p1, ref p2 );
+				System.Diagnostics.Debug.Assert( !Reverse );
+				mobius.Geodesic( Geometry.Hyperbolic, p1, p2, rotation );
+			}
+			else
+			{
+				mobius.Elliptic( g, Center, Reverse ? rotation * -1 : rotation );
+			}
+			return mobius;
 		}
 	}
 }

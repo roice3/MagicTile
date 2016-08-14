@@ -342,6 +342,17 @@
 		}
 
 		/// <summary>
+		/// Optimized version for common case.
+		/// </summary>
+		public void Rotate90()
+		{
+			double component1 = X;
+			double component2 = Y;
+			X = -component2;
+			Y = component1;
+		}
+
+		/// <summary>
 		/// Rotate CCW in the XY plane about a center.  Angle is in radians.
 		/// </summary>
 		public void RotateXY( Vector3D center, double angle )

@@ -109,8 +109,8 @@
 			Vector3D b2 = ( p3 - p1 ) / 2;
 			b1.Normalize();
 			b2.Normalize();
-			b1.RotateXY( Math.PI / 2 );
-			b2.RotateXY( Math.PI / 2 );
+			b1.Rotate90();
+			b2.Rotate90();
 
 			Vector3D newCenter;
 			int found = Euclidean2D.IntersectionLineLine( m1, m1 + b1, m2, m2 + b2, out newCenter );
@@ -344,6 +344,17 @@
 			{
 				Vector3D[] iPoints = GetIntersectionPoints( seg );
 				if( iPoints != null && iPoints.Length > 0 )
+					return true;
+			}
+
+			return false;
+		}
+
+		public bool HasVertexInside( Polygon poly )
+		{
+			foreach( Segment seg in poly.Segments )
+			{
+				if( IsPointInside( seg.P1 ) )
 					return true;
 			}
 

@@ -257,7 +257,7 @@
 			foreach( CircleNE slicingCircle in twistData.CirclesForSliceMask( this.SliceMaskEnsureSlice ) )
 			{
 				CircleNE toDraw = slicingCircle.Clone();
-				int lod = LOD( toDraw );
+				int lod = LOD( toDraw, stateCalcCell: false );
 				if( -1 == lod )
 					continue;
 
@@ -528,8 +528,15 @@
 		/// </summary>
 		private void RenderCellForTexture( Cell master, Isometry transform, bool clipForElliptical = false )
 		{
+			RenderUnmoving( master, transform, clipForElliptical );
+			RenderMoving( master, transform, clipForElliptical );
+		}
+
+		const double m_ellipticalClipCutoff = 2.0;
+
+		private void RenderUnmoving( Cell master, Isometry transform, bool clipForElliptical = false )
+		{
 			Cell template = m_puzzle.MasterCells.First();
-			const double clipCutoff = 2.0;
 
 			// Draw unmoving stickers.
 			for( int i = 0; i < template.Stickers.Count; i++ )
@@ -545,47 +552,63 @@
 				}
 
 				if( clipForElliptical )
-					if( stickerPoly.Center.Abs() > clipCutoff )
+					if( stickerPoly.Center.Abs() > m_ellipticalClipCutoff )
 						continue;
 
 				Color color = m_puzzle.State.GetStickerColor( master.Stickers[i].CellIndex, master.Stickers[i].StickerIndex );
 				GLUtils.DrawPolygonSolid( stickerPoly, color );
 			}
+		}
+
+		private void RenderMoving( Cell master, Isometry transform, bool clipForElliptical = false )
+		{
+			bool earthquake = m_puzzle.Config.Earthquake;
 
 			// Draw moving stickers.
 			SingleTwist twist = this.TwistHandler.CurrrentTwist;
-			if( twist != null )
+			if( twist == null )
+				return;
+			
+			IdentifiedTwistData identifiedTwistData = twist.IdentifiedTwistData;
+			double rotation = this.TwistHandler.SmoothedRotation;
+			if( !twist.LeftClick )
+				rotation *= -1;
+
+			int count = 0;
+			foreach( TwistData twistData in twist.StateCalcTD )
 			{
-				IdentifiedTwistData identifiedTwistData = twist.IdentifiedTwistData;
-				double rotation = this.TwistHandler.SmoothedRotation;
-				if( !twist.LeftClick )
-					rotation *= -1;
+				count++;
+				if( !twistData.AffectedMasterCells.ContainsKey( master ) )
+					continue;
 
-				foreach( TwistData twistData in identifiedTwistData.TwistDataForStateCalcs )
+				Mobius mobius = twistData.MobiusForTwist( m_puzzle.Config.Geometry, twist, rotation, 
+					earthquake, count > identifiedTwistData.TwistDataForStateCalcs.Count );
+				Isometry isometry = new Isometry( master.Isometry );
+				isometry.Mobius *= mobius;
+
+				foreach( List<Sticker> list in twistData.AffectedStickersForSliceMask( twist.SliceMask ) )
+				foreach( Sticker sticker in list )	
 				{
-					if( !twistData.AffectedMasterCells.ContainsKey( master ) )
-						continue;
-
-					Mobius mobius = new Mobius();
-					mobius.Elliptic( m_puzzle.Config.Geometry, twistData.Center, twistData.Reverse ? rotation * -1 : rotation );
-					Isometry isometry = new Isometry( master.Isometry );
-					isometry.Mobius *= mobius;
-
-					foreach( List<Sticker> list in twistData.AffectedStickersForSliceMask( twist.SliceMask ) )
-					foreach( Sticker sticker in list )	
+					// Performance boost for earthquake.
+					if( earthquake )
 					{
-						Polygon clone = sticker.Poly.Clone();
-						clone.Transform( isometry );
-						if( transform != null )
-							clone.Transform( transform );
-
-						if( clipForElliptical )
-							if( clone.Center.Abs() > clipCutoff )
-								continue;
-
-						Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
-						GLUtils.DrawPolygonSolid( clone, color );
+						Vector3D test = sticker.Poly.Center;
+						test = isometry.Apply( test );
+						if( test.Abs() > 0.5 )
+							continue;
 					}
+
+					Polygon clone = sticker.Poly.Clone();
+					clone.Transform( isometry );
+					if( transform != null )
+						clone.Transform( transform );
+
+					if( clipForElliptical )
+						if( clone.Center.Abs() > m_ellipticalClipCutoff )
+							continue;
+
+					Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
+					GLUtils.DrawPolygonSolid( clone, color, fast: earthquake );
 				}
 			}
 		}
@@ -973,13 +996,13 @@
 		/// Higher LOD is more accurate.
 		/// NOTE: This transforms in the input circle.
 		/// </summary>
-		private int LOD( CircleNE circleNE )
+		private int LOD( CircleNE circleNE, bool stateCalcCell )
 		{
 			// First, see if we need to draw this one.
 			circleNE.Transform( m_mouseMotion.Isometry );
 
 			// ZZZ - Performance setting should control this cutoff.
-			if( circleNE.Radius < .005 )
+			if( !stateCalcCell && circleNE.Radius < .005 )
 				return -1;
 
 			// Nothing warps for Euclidean, so we can go low res.
@@ -1006,7 +1029,7 @@
 		private int LOD( Cell cell )
 		{
 			CircleNE vCircle = cell.VertexCircle.Clone();
-			return LOD( vCircle );
+			return LOD( vCircle, stateCalcCell: m_puzzle.IsStateCalcCell( cell ) );
 		}
 
 		/// <summary>
@@ -1020,8 +1043,10 @@
 			if( -1 == lod )
 				return;
 
-			// ZZZ - Might be nice to add a debug setting to show the state calc cells.
-			if( m_settings.ShowOnlyFundamental && !cell.IsMaster /* && !m_puzzle.m_stateCalcCells.Contains( cell ) */ )
+			if( m_settings.ShowStateCalcCells && !m_puzzle.IsStateCalcCell( cell ) )
+				return;
+
+			if( m_settings.ShowOnlyFundamental && !cell.IsMaster )
 				return;
 
 			ShowTextureTrianglesIfNeeded();
@@ -1624,7 +1649,20 @@
 			SingleTwist twist = new SingleTwist();
 			twist.IdentifiedTwistData = m_closestTwistingCircles.IdentifiedTwistData;
 			twist.LeftClick = clickData.Button == MouseButtons.Left;
-			twist.SliceMask = this.SliceMaskEnsureSlice;
+			if( m_puzzle.Config.Earthquake )
+			{
+				twist.SliceMask = m_choppedPantsSeg / 2;
+
+				TwistData td = m_closestTwistingCircles;
+				Vector3D lookup = td.Pants.TinyOffset( m_choppedPantsSeg );
+				Vector3D reflected = td.Pants.Hexagon.Segments[m_choppedPantsSeg].ReflectPoint( lookup );
+				TwistData tdEarthQuake = m_puzzle.ClosestTwistingCircles( reflected );
+				
+				twist.IdentifiedTwistDataEarthquake = tdEarthQuake.IdentifiedTwistData;
+				twist.SliceMaskEarthquake = tdEarthQuake.Pants.Closest( reflected ) / 2;
+			}
+			else
+				twist.SliceMask = this.SliceMaskEnsureSlice;
 			
 			// Correction when clicking on mirrored tiles for non-orientable puzzles.
 			// We want the user to always see the tiles they left-click turn CCW.
