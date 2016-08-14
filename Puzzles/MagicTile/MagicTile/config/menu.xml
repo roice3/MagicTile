@@ -20,6 +20,7 @@
          <Group Name="Torus">
             <Item>{3,6}.8</Item>
             <Item>{3,6}.14</Item>
+            <Item>{4,4}.4</Item>
             <Item>{4,4}.8</Item>
             <Item>{4,4}.9</Item>
             <Item>{4,4}.16</Item>
@@ -28,6 +29,7 @@
          </Group>
          <Group Name="Klein Bottle">
             <Item>{3,6}.8.Non</Item>
+            <Item>{4,4}.4.Non</Item>
             <Item>{4,4}.9.Non</Item>
             <Item>{6,3}.9</Item>
          </Group>
