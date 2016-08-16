@@ -6,12 +6,12 @@
       <Identification>
          <EdgeSet>2</EdgeSet>
          <EndRotation>0</EndRotation>
-         <InPlaceReflection>true</InPlaceReflection>
+         <InPlaceReflection>false</InPlaceReflection>
          <InitialEdgeSet>0:2</InitialEdgeSet>
          <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
       </Identification>
       <Identification>
-         <EdgeSet>2</EdgeSet>
+         <EdgeSet>2:1</EdgeSet>
          <EndRotation>0</EndRotation>
          <InPlaceReflection>false</InPlaceReflection>
          <InitialEdgeSet>1:3</InitialEdgeSet>
