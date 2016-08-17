@@ -1118,7 +1118,8 @@
 					break;
 				case Surface.LawsonKleinBottle:
 					v = Torus.MapRhombusToUnitSquare( m_puzzle.SurfacePoly.Vertices[1], m_puzzle.SurfacePoly.Vertices[3], v );
-					v = KleinBottle.MapToLawson( v, m_puzzle.Config.P == 4 );
+					v = KleinBottle.MapToLawson( v, 
+						m_puzzle.Config.P == 4 && m_puzzle.Config.ExpectedNumColors == 9 );	// ZZZ - Hacky to handle this one puzzle differently.
 					break;
 				}
 
