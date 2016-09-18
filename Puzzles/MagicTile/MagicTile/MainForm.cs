@@ -796,6 +796,7 @@
 				"  Rob Nelson, for brainstorming and ideas\n" +
 				"  Andrey Astrelin, for helping with puzzle configurations\n" + 
 				"  Ed Baumann, for enthusiasm and solving so many puzzles\n" +
+				"  Burkard Polster, for great suggestions and popularizing\n" +
 				"  Don Hatch and Fritz Obermeyer, for making inspiring software\n" +
 				"  The 4D_Cubing Yahoo group";
 			string caption = "About";
