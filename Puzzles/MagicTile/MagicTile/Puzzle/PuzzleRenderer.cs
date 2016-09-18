@@ -247,12 +247,13 @@
 			}
 		}
 
-		private void RenderClosestTwistingCircles()
+		private void RenderClosestTwistingCircles( Isometry additionalTransform = null )
 		{
 			if( m_closestTwistingCircles == null || !m_settings.HighlightTwistingCircles )
 				return;
 
-			GL.Disable( EnableCap.Texture2D );
+			if( additionalTransform == null )
+				GL.Disable( EnableCap.Texture2D );
 			foreach( TwistData twistData in m_closestTwistingCircles.IdentifiedTwistData.TwistDataForDrawing )
 			foreach( CircleNE slicingCircle in twistData.CirclesForSliceMask( this.SliceMaskEnsureSlice ) )
 			{
@@ -263,7 +264,23 @@
 
 				var c = m_settings.ColorTwistingCircles;
 				var t = GrabModelTransform();
-				if( m_puzzle.Config.Geometry == Geometry.Spherical )
+				if( additionalTransform != null )
+					t = v => additionalTransform.Apply( v );
+
+				// Various special casing for different situations.
+				/*if( this.ShowOnSurface )
+				{
+					GL.Enable( EnableCap.DepthTest );
+					// ZZZ - Would need to do polygon offset
+					t = v =>
+					{
+						v = SurfaceTransformedTextureVert( v );
+						TransformSkewVert( m_mouseMotion.RotHandler4D.Current4dView, ref v );
+						return v;
+					};
+					GLUtils.DrawCircle( toDraw, c, t );
+				}
+				else*/ if( m_puzzle.Config.Geometry == Geometry.Spherical )
 				{ 
 					GLUtils.DrawCircleSafe( toDraw, c, t );
 				}
@@ -276,13 +293,6 @@
 						int div = 15;
 						GL.Color3( c );
 						GLUtils.DrawSeg( clone.Segments[m_choppedPantsSeg], div, t );
-						
-						/*GLUtils.DrawPolygon( clone, c, t );
-						foreach( Polygon poly in twistData.Pants.AdjacentHexagons )
-						{
-							poly.Transform( m_mouseMotion.Isometry );
-							GLUtils.DrawPolygon( poly, c, t );	
-						}*/
 					}
 					GLUtils.DrawHyperbolicGeodesic( toDraw, m_settings.ColorTwistingCircles, GrabModelTransform() );
 				}
@@ -503,6 +513,10 @@
 
 			foreach( Cell c in m_puzzle.SurfaceRenderingCells )
 				RenderCellForTexture( c.IsMaster ? c : c.Master, trans * c.Isometry.Inverse(), clipForElliptical );
+
+			GL.Disable( EnableCap.DepthTest );
+			GL.LineWidth( 10.0f );	// Needs to be big to be visible.
+			RenderClosestTwistingCircles( trans );
 		}
 
 		private Surface m_surface
@@ -832,7 +846,7 @@
 			if( this.ShowOnSurface )
 				RenderOnSurfaceInternal();
 			else
-				RenderIRPInternal();	
+				RenderIRPInternal();
 		}
 
 		private void RenderOnSurfaceInternal()
@@ -1098,35 +1112,36 @@
 		private Vector3D[] SurfaceTransformedTextureVerts()
 		{
 			Vector3D[] textureCoords = m_puzzle.SurfaceTextureCoords;
-			Vector3D[] textureVerts = textureCoords.Select( v =>
-			{
-				switch( m_surface )
-				{
-				case Surface.Sphere:
-					v = Spherical2D.PlaneToSphere( v );
-					if( !m_lowerHemisphere )
-					{
-						v.RotateAboutAxis( new Vector3D( 0, 1 ), Math.PI );
-					}
-					break;
-				case Surface.Boys:
-					v = R3.Geometry.Surface.MapToBoys( v );
-					break;
-				case Surface.CliffordTorus:
-					v = Torus.MapRhombusToUnitSquare( m_puzzle.SurfacePoly.Vertices[1], m_puzzle.SurfacePoly.Vertices[3], v );
-					v = Torus.MapToClifford( v );
-					break;
-				case Surface.LawsonKleinBottle:
-					v = Torus.MapRhombusToUnitSquare( m_puzzle.SurfacePoly.Vertices[1], m_puzzle.SurfacePoly.Vertices[3], v );
-					v = KleinBottle.MapToLawson( v, 
-						m_puzzle.Config.P == 4 && m_puzzle.Config.ExpectedNumColors == 9 );	// ZZZ - Hacky to handle this one puzzle differently.
-					break;
-				}
-
-				return v;
-			} ).ToArray();
-
+			Vector3D[] textureVerts = textureCoords.Select( v => SurfaceTransformedTextureVert( v ) ).ToArray();
 			return textureVerts;
+		}
+
+		private Vector3D SurfaceTransformedTextureVert( Vector3D v )
+		{
+			switch( m_surface )
+			{
+			case Surface.Sphere:
+				v = Spherical2D.PlaneToSphere( v );
+				if( !m_lowerHemisphere )
+				{
+					v.RotateAboutAxis( new Vector3D( 0, 1 ), Math.PI );
+				}
+				break;
+			case Surface.Boys:
+				v = R3.Geometry.Surface.MapToBoys( v );
+				break;
+			case Surface.CliffordTorus:
+				v = Torus.MapRhombusToUnitSquare( m_puzzle.SurfacePoly.Vertices[1], m_puzzle.SurfacePoly.Vertices[3], v );
+				v = Torus.MapToClifford( v );
+				break;
+			case Surface.LawsonKleinBottle:
+				v = Torus.MapRhombusToUnitSquare( m_puzzle.SurfacePoly.Vertices[1], m_puzzle.SurfacePoly.Vertices[3], v );
+				v = KleinBottle.MapToLawson( v,
+					m_puzzle.Config.P == 4 && m_puzzle.Config.ExpectedNumColors == 9 ); // ZZZ - Hacky to handle this one puzzle differently.
+				break;
+			}
+
+			return v;
 		}
 
 		private VBO CreateSurfaceVbo()
@@ -1490,6 +1505,24 @@
 				return true;
 			}
 
+			object previous = (object)m_closestTwistingCircles;
+
+			// If we are showing on the surface, we have to do a complete
+			// render for picking to figure out what is closest.
+			if( this.ShowOnSurface )
+			{
+				// Don't do this when animating (spinning, twisting or dragging).  It's too slow.
+				if( TwistHandler.Twisting || 
+					m_mouseMotion.Handler.IsDragging ||
+					m_mouseMotion.Handler.IsSpinning )
+					return false;
+
+				bool forPicking = true;
+				bool reverseTwist = false;
+				RenderSurface( forPicking, X, Y, ref reverseTwist );
+				return previous != (object)m_closestTwistingCircles;
+			}
+
 			Vector3D? spaceCoordsNoMouseMotion = SpaceCoordsNoMouseMotion( X, Y );
 			if( !spaceCoordsNoMouseMotion.HasValue )
 			{
@@ -1498,7 +1531,6 @@
 				return ret;
 			}
 
-			object previous = (object)m_closestTwistingCircles;
 			m_closestTwistingCircles = m_puzzle.ClosestTwistingCircles( spaceCoordsNoMouseMotion.Value );
 			object newlyFound = (object)m_closestTwistingCircles;
 
@@ -1569,12 +1601,23 @@
 
 		private void MouseMoveInternal()
 		{
-			if( this.ShowOnSurface || this.ShowAsSkew )
+			if( this.ShowAsSkew )
 				return;
 
+			if( m_findingTwistingCircles )
+				return;
+
+			m_findingTwistingCircles = true;
 			if( FindClosestTwistingCircles( m_lastX, m_lastY ) )
+			{
+				if( this.ShowOnSurface )
+					InvalidateTextures();
+
 				m_glControl.Invalidate();
+			}
+			m_findingTwistingCircles = false;
 		}
+		private bool m_findingTwistingCircles = false;
 
 		private void MouseLeave( object sender, System.EventArgs e )
 		{

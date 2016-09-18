@@ -242,6 +242,11 @@
 			set { m_spinning = value; }
 		}
 
+		public bool IsDragging
+		{
+			get { return m_dragging; }
+		}
+
 		/// <summary>
 		/// The control we'll be handling mouse input for.
 		/// </summary>

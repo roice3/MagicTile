@@ -36,7 +36,7 @@
 					{
 						Vector3D temp = new Vector3D( c.Center.X + radius.X, c.Center.Y + radius.Y );
 						Vector3D transformed = transform( temp );
-						GL.Vertex2( transformed.X, transformed.Y );
+						GL.Vertex3( transformed.X, transformed.Y, transformed.Z );
 					}
 				}
 			}
