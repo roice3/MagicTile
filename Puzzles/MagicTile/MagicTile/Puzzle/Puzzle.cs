@@ -212,7 +212,7 @@
 			if( callback.Cancelled )
 				return;
 			callback.Status( "adding in cells..." );
-			foreach( Tile t in tiling.Tiles )
+			foreach( Tile t in MasterCandidates( tiling ) )
 			{
 				// Have we already done this tile?
 				if( completed.ContainsKey( t.Center ) )
@@ -282,6 +282,21 @@
 			callback.Status( "Number of tiles:" + tiling.Tiles.Count() );
 			callback.Status( "Number of cells:" + count );
 			callback.Status( "Number of stickers per cell:" + tStickers.Count );
+		}
+
+		private IEnumerable<Tile> MasterCandidates( Tiling tiling )
+		{
+			IEnumerable<Tile> masterCandidates = tiling.Tiles;
+
+			// Hack to make the fundamental region look better for the 4C Klein bottle.
+			if( Config.Geometry == Geometry.Euclidean &&
+				Config.P == 4 && Config.Q == 4 && Config.ExpectedNumColors == 4 )
+			{
+				Tile[] allTiles = tiling.Tiles.ToArray();
+				masterCandidates = new Tile[] { allTiles[0], allTiles[1], allTiles[2], allTiles[5] };
+			}
+
+			return masterCandidates;
 		}
 
 		private CircleNE SetupTemplateSlicingCircle( Tile template, Distance d, Mobius m )
