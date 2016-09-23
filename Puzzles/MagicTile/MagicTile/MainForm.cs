@@ -388,6 +388,11 @@
 				UpdateNumPuzzles( mb.NumPuzzles, mb.NumTilings );
 			}
 
+			if( e.KeyCode == Keys.F6 )
+			{
+				m_settings.SurfaceDisplay = !m_settings.SurfaceDisplay;
+			}
+
 			if( e.KeyCode == Keys.F12 )
 			{
 				m_renderer.SaveToSvg();
@@ -778,7 +783,9 @@
 				"\n  Alt-Right Click: Apply selected macro in reverse" +
 				"\n\nIRP:" +
 				"\n  x,y,z keys: Remove Layers" +
-				"\n  X,Y,Z keys: Add Layers";
+				"\n  X,Y,Z keys: Add Layers" +
+				"\n\nOther:" +
+				"\n  F6: Toggles surface display";
 
 			string caption = "Mouse Commands";
 			MessageBox.Show( this, text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information );

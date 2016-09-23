@@ -32,6 +32,7 @@
       </Puzzle>
       <Puzzle>
          <ID>Puzzle.{6,3}.Klein.F.9</ID>
+         <DisplayName>Klein Bottle Rubik</DisplayName>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>

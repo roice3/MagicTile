@@ -223,7 +223,7 @@
 				if( string.IsNullOrEmpty( puzzleSpecific.DisplayName ) )
 					config.MenuName = puzzleSpecific.AutoDisplayName();
 				else
-					config.MenuName = puzzleSpecific.AutoDisplayName() + " (" + puzzleSpecific.DisplayName + ")";
+					config.MenuName = puzzleSpecific.DisplayName + " (" + puzzleSpecific.AutoDisplayName() + ")";
 				config.DisplayName = this.ClassDisplayName + " " + config.MenuName;
 
 				puzzles.Add( config );

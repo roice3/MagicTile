@@ -46,16 +46,24 @@
 			// Load the menu config from a file.
 			try
 			{
-				LoadMenu( standard.ToArray() );
+				// Start here menu item.
+				TreeNode startHereNode;
+				ToolStripMenuItem startHereMenuItem;
+				AddSection( "Start Here!", out startHereNode, out startHereMenuItem );
+				XElement xStartHere;
 
+				// Full configured menu.
+				LoadMenu( standard.ToArray(), out xStartHere );
+
+				// Now we can add in the "start here" items.
+				SetupStartHereItems( xStartHere, startHereNode, startHereMenuItem );
+
+				// User puzzles.
 				if( user.Count() > 0 )
 				{
-					TreeNode userNode = new TreeNode();
-					ToolStripMenuItem userMenuItem = new ToolStripMenuItem();
-					userNode.Text = userMenuItem.Text = "User";
-					m_tree.Nodes.Add( userNode );
-					m_puzzleRoot.DropDownItems.Add( new ToolStripSeparator() );
-					m_puzzleRoot.DropDownItems.Add( userMenuItem );
+					TreeNode userNode;
+					ToolStripMenuItem userMenuItem;
+					AddSection( "User", out userNode, out userMenuItem );
 
 					foreach( PuzzleConfigClass configClass in user )
 					{
@@ -75,7 +83,52 @@
 			m_tree.EndUpdate();
 		}
 
-		private void LoadMenu( PuzzleConfigClass[] standard )
+		private void AddSection( string name, out TreeNode node, out ToolStripMenuItem menuItem )
+		{
+			node = new TreeNode();
+			menuItem = new ToolStripMenuItem();
+			node.Text = menuItem.Text = name;
+			m_tree.Nodes.Add( node );
+			m_puzzleRoot.DropDownItems.Add( new ToolStripSeparator() );
+			m_puzzleRoot.DropDownItems.Add( menuItem );
+		}
+
+		private void SetupStartHereItems( XElement xStartHere, TreeNode startHereNode, ToolStripMenuItem startHereMenuItem )
+		{
+			SetupStartHereGroup( xStartHere, startHereNode, startHereMenuItem );
+
+			foreach( XElement xChild in xStartHere.Elements() )
+			{
+				if( xChild.Name == "Group" )
+				{
+					string groupName = GroupName( xChild );
+					TreeNode groupNode;
+					ToolStripMenuItem groupMenuItem;
+					AddGroup( null, 1, groupName, startHereNode, startHereMenuItem, out groupNode, out groupMenuItem );
+
+					SetupStartHereGroup( xChild, groupNode, groupMenuItem );
+				}
+			}
+		}
+
+		private void SetupStartHereGroup( XElement xElement, TreeNode node, ToolStripMenuItem menuItem )
+		{
+			foreach( XElement xChild in xElement.Elements() )
+			{
+				if( xChild.Name == "Group" )
+					continue;
+
+				string id = xChild.Elements( "ID" ).First().Value;
+				PuzzleConfig config;
+				if( !m_puzzleIds.TryGetValue( id, out config ) )
+					continue;
+
+				string name = xChild.Elements( "DisplayName" ).First().Value;
+				AddPuzzleRef( name, config, node, menuItem );
+			}
+		}
+
+		private void LoadMenu( PuzzleConfigClass[] standard, out XElement xStartHere )
 		{
 			// Uncomment line below to write out a MediaWiki file with tables for all puzzles.
 			StreamWriter sw = null;
@@ -84,6 +137,7 @@
 			{
 				XElement xRoot = XElement.Load( reader );
 				XElement[] children = xRoot.Elements().ToArray();
+				xStartHere = children[0].Elements( "Start" ).First();
 				int level = 0;
 				BuildMenuRecursive( sw, level, children[0], standard, null, m_puzzleRoot );
 			}
@@ -110,6 +164,11 @@
 					AddGroup( sw, level, configClass.ClassDisplayName, parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
 					HorizontalRule( sw );
 					AddPuzzleClass( sw, level, configClass, groupNode, groupMenuItem );
+				}
+				else if( xChild.Name == "Start" )
+				{
+					// Nothing for now.
+					// We need to load all puzzles first before filling out the "start here" menu.
 				}
 				else
 				{
@@ -248,7 +307,7 @@
 			else
 			{
 				NumPuzzles++;
-				m_puzzleIds.Add( config.ID );
+				m_puzzleIds[config.ID] = config;
 				if( NumPuzzles != m_puzzleIds.Count )
 				{
 					System.Diagnostics.Debug.Assert( false );
@@ -257,7 +316,23 @@
 			}
 		}
 
-		private HashSet<string> m_puzzleIds = new HashSet<string>();
+		private void AddPuzzleRef( string displayName, PuzzleConfig config, TreeNode parentTreeNode, ToolStripMenuItem parentMenuItem )
+		{
+			TreeNode newNode = new TreeNode();
+			ToolStripMenuItem menuItem = new ToolStripMenuItem();
+
+			menuItem.Text = config.DisplayName;
+			menuItem.Tag = config;
+			menuItem.Click += new System.EventHandler( m_handler );
+
+			newNode.Text = displayName;
+			newNode.Tag = config;
+
+			parentMenuItem.DropDownItems.Add( menuItem );
+			parentTreeNode.Nodes.Add( newNode );
+		}
+
+		private Dictionary<string, PuzzleConfig> m_puzzleIds = new Dictionary<string, PuzzleConfig>();
 
 		#region MediaWiki
 

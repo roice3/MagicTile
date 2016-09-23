@@ -24,6 +24,7 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
+         <DisplayName>Torus Rubik</DisplayName>
          <ID>Puzzle.{6,3}.F.7</ID>
          <SlicingCircles>
             <EdgeCentered/>

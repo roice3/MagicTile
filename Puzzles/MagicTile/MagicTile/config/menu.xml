@@ -1,5 +1,51 @@
 <Menu>
    <Puzzle>
+      <Start>
+         <Ref>
+            <ID>RubikCube</ID>
+            <DisplayName>Rubik's Cube</DisplayName>
+         </Ref>
+         <Ref>
+            <ID>Puzzle.{6,3}.F.7</ID>
+            <DisplayName>Torus Rubik</DisplayName>
+         </Ref>
+         <Ref>
+            <DisplayName>Klein Bottle Rubik</DisplayName>
+            <ID>Puzzle.{6,3}.Klein.F.9</ID>
+         </Ref>
+         <Ref>
+            <ID>Puzzle.{7,3}.Classic</ID>
+            <DisplayName>Hyperbolic Rubik</DisplayName>
+         </Ref>
+         <Group Name="Square Face Turning">
+            <Ref>
+               <ID>RubikCube</ID>
+               <DisplayName>Sphere (Rubik's Cube)</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{4,4}.9 T0.01 F0.33:0:1</ID>
+               <DisplayName>Torus</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{4,4}.9.Non T0.01 F0.33:0:1</ID>
+               <DisplayName>Klein Bottle</DisplayName>
+            </Ref>
+         </Group>
+         <Group Name="Harlequin">
+            <Ref>
+               <ID>RubikCube</ID>
+               <DisplayName>Sphere (Rubik's Cube)</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{4,4}.9 T0.01 F0.33:0:1</ID>
+               <DisplayName>Torus</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{4,4}.9.Non T0.01 F0.33:0:1</ID>
+               <DisplayName>Klein Bottle</DisplayName>
+            </Ref>
+         </Group>
+      </Start>
       <Elliptical>
          <Sphere>
             <Item>{3,3}.4</Item>
