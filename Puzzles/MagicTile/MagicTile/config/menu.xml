@@ -49,20 +49,36 @@
          </Group>
          <Group Name="Harlequin (Easy)">
             <Ref>
+               <ID>{5,3}.12 T0.015 E1:0:0</ID>
+               <DisplayName>Sphere - Dodecahedron</DisplayName>
+            </Ref>
+            <Ref>
                <ID>{3,5}.20 T0.015 E0:1:0</ID>
-               <DisplayName>Sphere</DisplayName>
+               <DisplayName>Sphere - Icosahedron</DisplayName>
             </Ref>
             <Ref>
-               <ID>{6,3}.7 T0.01 E0:1:0</ID>
-               <DisplayName>Torus</DisplayName>
+               <ID>{6,3}.7 T0.01 E1:0:0</ID>
+               <DisplayName>Torus - Hexagons</DisplayName>
             </Ref>
             <Ref>
-               <ID>{6,3}.9 T0.01 E0:1:0</ID>
-               <DisplayName>Klein Bottle</DisplayName>
+               <ID>{3,6}.8 T0.01 E0:1:0</ID>
+               <DisplayName>Torus - Triangles</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{6,3}.9 T0.01 E1:0:0</ID>
+               <DisplayName>Klein Bottle - Hexagons</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{3,6}.8.Non T0.01 E0:1:0</ID>
+               <DisplayName>Klein Bottle - Triangles</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{7,3}.24 T0.01 E1:0:0</ID>
+               <DisplayName>Hyperbolic - Heptagons</DisplayName>
             </Ref>
             <Ref>
                <ID>{3,7}.56 T0.01 E0:1:0</ID>
-               <DisplayName>Hyperbolic</DisplayName>
+               <DisplayName>Hyperbolic - Triangles</DisplayName>
             </Ref>
          </Group>
          <Group Name="Square Face Turning (Medium)">
