@@ -258,14 +258,20 @@
 			foreach( CircleNE slicingCircle in twistData.CirclesForSliceMask( this.SliceMaskEnsureSlice ) )
 			{
 				CircleNE toDraw = slicingCircle.Clone();
-				int lod = LOD( toDraw, stateCalcCell: false );
-				if( -1 == lod )
-					continue;
+				System.Func<Vector3D,Vector3D> t = null;
+
+				if( additionalTransform == null )
+				{
+					int lod = LOD( toDraw, stateCalcCell: false );
+					if( -1 == lod )
+						continue;
+
+					t = GrabModelTransform();
+				}
+				else
+					t = v => additionalTransform.Apply( v );
 
 				var c = m_settings.ColorTwistingCircles;
-				var t = GrabModelTransform();
-				if( additionalTransform != null )
-					t = v => additionalTransform.Apply( v );
 
 				// Various special casing for different situations.
 				/*if( this.ShowOnSurface )
