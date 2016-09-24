@@ -10,6 +10,7 @@
 	using System.Threading;
 	using System.Threading.Tasks;
 	using System.Windows.Forms;
+	using R3.Geometry;
 
 	public partial class MainForm : Form, IStatusCallback
 	{
@@ -391,6 +392,18 @@
 			if( e.KeyCode == Keys.F6 )
 			{
 				m_settings.SurfaceDisplay = !m_settings.SurfaceDisplay;
+			}
+
+			if( e.KeyCode == Keys.F7 )
+			{
+				if( m_puzzle != null && m_puzzle.Config != null )
+				{
+					if( m_puzzle.Config.Geometry == Geometry.Spherical )
+						m_settings.SphericalModel = (SphericalModel)((int)(m_settings.SphericalModel + 1) % 3);
+
+					if( m_puzzle.Config.Geometry == Geometry.Hyperbolic )
+						m_settings.HyperbolicModel = (HModel)(((int)m_settings.HyperbolicModel + 1) % 2);
+				}
 			}
 
 			if( e.KeyCode == Keys.F12 )
@@ -785,7 +798,8 @@
 				"\n  x,y,z keys: Remove Layers" +
 				"\n  X,Y,Z keys: Add Layers" +
 				"\n\nOther:" +
-				"\n  F6: Toggles surface display";
+				"\n  F6: Toggles surface display" +
+				"\n  F7: Cycles projection models for spherical and hyperbolic puzzles";
 
 			string caption = "Mouse Commands";
 			MessageBox.Show( this, text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information );
