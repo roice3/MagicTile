@@ -19,6 +19,10 @@
          </Ref>
          <Group Name="Classics">
             <Ref>
+               <ID>{3,3}.4 T0.025 V0:0:0.55 V0:0:1</ID>
+               <DisplayName>Pyraminx</DisplayName>
+            </Ref>
+            <Ref>
                <ID>{4,3}.6 T0.025 F1:0:1</ID>
                <DisplayName>Pocket Cube</DisplayName>
             </Ref>

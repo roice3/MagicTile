@@ -70,6 +70,18 @@
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
+      <Puzzle>
+         <DisplayName>Pyraminx</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered/>
+            <Thickness>0.025</Thickness>
+            <VertexCentered>
+               <Distance>0:0:0.55:0</Distance>
+               <Distance>0:0:1:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
       <Mixed/>
       <Puzzle>
          <DisplayName>Jing's Pyraminx</DisplayName>
