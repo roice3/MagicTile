@@ -17,7 +17,21 @@
             <ID>Puzzle.{7,3}.Classic</ID>
             <DisplayName>Hyperbolic Rubik</DisplayName>
          </Ref>
+         <Group Name="Classics">
+            <Ref>
+               <ID>RubikCube</ID>
+               <DisplayName>Rubik's Cube</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{5,3}.12 T0.015 F0.67:0:1</ID>
+               <DisplayName>Megaminx</DisplayName>
+            </Ref>
+         </Group>
          <Group Name="Square Face Turning">
+            <Ref>
+               <ID>{4,3}.3 T0.025 F0.67:0:1</ID>
+               <DisplayName>Boy's Surface</DisplayName>
+            </Ref>
             <Ref>
                <ID>RubikCube</ID>
                <DisplayName>Sphere (Rubik's Cube)</DisplayName>
@@ -29,20 +43,28 @@
             <Ref>
                <ID>{4,4}.9.Non T0.01 F0.33:0:1</ID>
                <DisplayName>Klein Bottle</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>Puzzle.{4,5}.F.5</ID>
+               <DisplayName>Hyperbolic</DisplayName>
             </Ref>
          </Group>
          <Group Name="Harlequin">
             <Ref>
-               <ID>RubikCube</ID>
-               <DisplayName>Sphere (Rubik's Cube)</DisplayName>
+               <ID>{3,5}.20 T0.015 E0:1:0</ID>
+               <DisplayName>Sphere</DisplayName>
             </Ref>
             <Ref>
-               <ID>{4,4}.9 T0.01 F0.33:0:1</ID>
+               <ID>{4,4}.9 T0.01 E0:1:0</ID>
                <DisplayName>Torus</DisplayName>
             </Ref>
             <Ref>
-               <ID>{4,4}.9.Non T0.01 F0.33:0:1</ID>
+               <ID>{4,4}.9.Non T0.01 E0:1:0</ID>
                <DisplayName>Klein Bottle</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{3,7}.56 T0.01 E0:1:0</ID>
+               <DisplayName>Hyperbolic</DisplayName>
             </Ref>
          </Group>
       </Start>
