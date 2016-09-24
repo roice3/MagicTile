@@ -51,6 +51,7 @@
       </Puzzle>
       <Puzzle>
          <DisplayName>Professor's Cube</DisplayName>
+         <ID>ProfessorsCube</ID>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>

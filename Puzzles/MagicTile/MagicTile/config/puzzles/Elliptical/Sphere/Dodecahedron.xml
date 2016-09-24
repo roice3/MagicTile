@@ -61,6 +61,7 @@
       </Puzzle>
       <Puzzle>
          <DisplayName>Gigaminx</DisplayName>
+         <ID>Gigaminx</ID>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>

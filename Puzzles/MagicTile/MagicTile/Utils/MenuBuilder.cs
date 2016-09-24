@@ -37,7 +37,15 @@
 			showPuzzleTree.Text = "Show Puzzle Tree";
 			showPuzzleTree.Click += new System.EventHandler( m_showTree ); 
 			m_puzzleRoot.DropDownItems.Add( showPuzzleTree );
+
 			m_puzzleRoot.DropDownItems.Add( new ToolStripSeparator() );
+			ToolStripMenuItem f6 = new ToolStripMenuItem(), f7 = new ToolStripMenuItem();
+			f6.Text = "F6 - Toggles Surface View";
+			f7.Text = "F7 - Cycles Model for Spherical/Hyperbolic Puzzles";
+			f6.Enabled = false;
+			f7.Enabled = false;
+			m_puzzleRoot.DropDownItems.Add( f6 );
+			m_puzzleRoot.DropDownItems.Add( f7 );
 
 			// Load the puzzles.
 			IEnumerable<PuzzleConfigClass> standard, user;
@@ -321,7 +329,7 @@
 			TreeNode newNode = new TreeNode();
 			ToolStripMenuItem menuItem = new ToolStripMenuItem();
 
-			menuItem.Text = config.DisplayName;
+			menuItem.Text = displayName;
 			menuItem.Tag = config;
 			menuItem.Click += new System.EventHandler( m_handler );
 

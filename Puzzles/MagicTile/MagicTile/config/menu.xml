@@ -19,15 +19,53 @@
          </Ref>
          <Group Name="Classics">
             <Ref>
+               <ID>{4,3}.6 T0.025 F1:0:1</ID>
+               <DisplayName>Pocket Cube</DisplayName>
+            </Ref>
+            <Ref>
                <ID>RubikCube</ID>
                <DisplayName>Rubik's Cube</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{4,3}.6 T0.025 F0.5:0:1</ID>
+               <DisplayName>Rubik's Revenge</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>ProfessorsCube</ID>
+               <DisplayName>Professor's Cube</DisplayName>
             </Ref>
             <Ref>
                <ID>{5,3}.12 T0.015 F0.67:0:1</ID>
                <DisplayName>Megaminx</DisplayName>
             </Ref>
+            <Ref>
+               <ID>Gigaminx</ID>
+               <DisplayName>Gigaminx</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>PyraminxCrystal</ID>
+               <DisplayName>Pyraminx Crystal</DisplayName>
+            </Ref>
          </Group>
-         <Group Name="Square Face Turning">
+         <Group Name="Harlequin (Easy)">
+            <Ref>
+               <ID>{3,5}.20 T0.015 E0:1:0</ID>
+               <DisplayName>Sphere</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{6,3}.7 T0.01 E0:1:0</ID>
+               <DisplayName>Torus</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{6,3}.9 T0.01 E0:1:0</ID>
+               <DisplayName>Klein Bottle</DisplayName>
+            </Ref>
+            <Ref>
+               <ID>{3,7}.56 T0.01 E0:1:0</ID>
+               <DisplayName>Hyperbolic</DisplayName>
+            </Ref>
+         </Group>
+         <Group Name="Square Face Turning (Medium)">
             <Ref>
                <ID>{4,3}.3 T0.025 F0.67:0:1</ID>
                <DisplayName>Boy's Surface</DisplayName>
@@ -46,24 +84,6 @@
             </Ref>
             <Ref>
                <ID>Puzzle.{4,5}.F.5</ID>
-               <DisplayName>Hyperbolic</DisplayName>
-            </Ref>
-         </Group>
-         <Group Name="Harlequin">
-            <Ref>
-               <ID>{3,5}.20 T0.015 E0:1:0</ID>
-               <DisplayName>Sphere</DisplayName>
-            </Ref>
-            <Ref>
-               <ID>{4,4}.9 T0.01 E0:1:0</ID>
-               <DisplayName>Torus</DisplayName>
-            </Ref>
-            <Ref>
-               <ID>{4,4}.9.Non T0.01 E0:1:0</ID>
-               <DisplayName>Klein Bottle</DisplayName>
-            </Ref>
-            <Ref>
-               <ID>{3,7}.56 T0.01 E0:1:0</ID>
                <DisplayName>Hyperbolic</DisplayName>
             </Ref>
          </Group>
