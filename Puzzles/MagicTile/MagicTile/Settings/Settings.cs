@@ -49,6 +49,7 @@
 			FocalLength = 1;
 			SphericalModel = SphericalModel.Sterographic;
 			HyperbolicModel = HModel.Poincare;
+			SurfaceDisplay = false;
 		}
 
 		public static void Save( Settings settings )

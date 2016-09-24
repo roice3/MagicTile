@@ -3,7 +3,7 @@
       <Start>
          <Ref>
             <ID>RubikCube</ID>
-            <DisplayName>Rubik's Cube</DisplayName>
+            <DisplayName>Rubik's Cube (F6 Toggles Surface View)</DisplayName>
          </Ref>
          <Ref>
             <ID>Puzzle.{6,3}.F.7</ID>
