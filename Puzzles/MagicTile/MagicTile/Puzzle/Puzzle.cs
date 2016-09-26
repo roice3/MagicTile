@@ -288,14 +288,21 @@
 		{
 			IEnumerable<Tile> masterCandidates = tiling.Tiles;
 
-			// Hack to make the fundamental region look better for the 4C Klein bottle.
-			if( Config.Geometry == Geometry.Euclidean &&
-				Config.P == 4 && Config.Q == 4 && Config.ExpectedNumColors == 4 )
+			// Hack to make the fundamental region look better for some Klein bottle puzzles.
+			// (to match Mathologer video).
+			if( Config.Geometry == Geometry.Euclidean )
 			{
-				Tile[] allTiles = tiling.Tiles.ToArray();
-				masterCandidates = new Tile[] { allTiles[0], allTiles[1], allTiles[2], allTiles[5] };
-			}
+				if( Config.P == 4 && Config.Q == 4 && Config.ExpectedNumColors == 4 )
+				{
+					masterCandidates = tiling.Tiles.Where( ( t, index ) => index < 3 || index == 5 ).ToArray();
+				}
 
+				if( Config.P == 6 && Config.Q == 3 && Config.ExpectedNumColors == 9 )
+				{
+					masterCandidates = tiling.Tiles.Where( ( t, index ) => index < 8 || index == 15 ).ToArray();
+				}
+			}
+	
 			return masterCandidates;
 		}
 
