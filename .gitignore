@@ -43,15 +43,15 @@ Temporary Items
 .apdisk
 
 OpenTK
-Puzzles/MagicTile/.vs/
-Puzzles/MagicTile/MagicTile.suo
-Puzzles/MagicTile/MagicTile/bin/Debug
-Puzzles/MagicTile/MagicTile/bin/Release
-Puzzles/MagicTile/MagicTile/obj
-Puzzles/MagicTile/packages
-Puzzles/MagicTile/MagicTile/config/user
+.vs/
+MagicTile/bin/Debug
+MagicTile/bin/Release
+MagicTile/obj
+packages
+MagicTile/config/user
 R3/R3.Core/bin/Debug
 R3/R3.Core/bin/Release
 R3/R3.Core/obj
 *.psess
 *.vspx
+*.suo
