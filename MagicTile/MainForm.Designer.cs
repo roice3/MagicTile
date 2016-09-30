@@ -42,6 +42,7 @@
 			this.macroToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuShowMacroPane = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+			this.tipSeeWebsiteForInstructionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.startMacroDefinitionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStopRecordingMacro = new System.Windows.Forms.ToolStripMenuItem();
 			this.applyMacroToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -218,6 +219,13 @@
 			// 
 			this.toolStripSeparator4.Name = "toolStripSeparator4";
 			this.toolStripSeparator4.Size = new System.Drawing.Size(329, 6);
+			// 
+			// tipSeeWebsiteForInstructionsToolStripMenuItem
+			// 
+			this.tipSeeWebsiteForInstructionsToolStripMenuItem.Enabled = false;
+			this.tipSeeWebsiteForInstructionsToolStripMenuItem.Name = "tipSeeWebsiteForInstructionsToolStripMenuItem";
+			this.tipSeeWebsiteForInstructionsToolStripMenuItem.Size = new System.Drawing.Size(332, 22);
+			this.tipSeeWebsiteForInstructionsToolStripMenuItem.Text = "Tip! See website for macro instructions";
 			// 
 			// startMacroDefinitionToolStripMenuItem
 			// 
