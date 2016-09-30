@@ -190,6 +190,7 @@
 			this.macroToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuShowMacroPane,
             this.toolStripSeparator4,
+            this.tipSeeWebsiteForInstructionsToolStripMenuItem,
             this.startMacroDefinitionToolStripMenuItem,
             this.menuStopRecordingMacro,
             this.applyMacroToolStripMenuItem,
@@ -714,6 +715,7 @@
 		private System.Windows.Forms.ToolStripMenuItem applyMacroToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem applyMacroReversedToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+		private System.Windows.Forms.ToolStripMenuItem tipSeeWebsiteForInstructionsToolStripMenuItem;
 	}
 }
 
