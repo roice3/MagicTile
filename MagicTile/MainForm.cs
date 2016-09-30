@@ -249,7 +249,7 @@
 			puzzle.State.UpdateColors( m_settings );
 			m_loader.ClearFilename();
 			m_renderer.PuzzleUpdated( m_puzzle );
-			this.Text = "MagicTile v2 - " + m_puzzle.Config.DisplayName;
+			this.Text = "MagicTile - " + m_puzzle.Config.DisplayName;
 
 			this.Cursor = Cursors.Default;
 
@@ -808,9 +808,8 @@
 		private void menuAbout_Click( object sender, EventArgs e )
 		{
 			string text =
-				"MagicTile Version 2   \n" +
-				"by Roice Nelson\n" +
-				"www.gravitation3d.com/magictile   " +
+				"MagicTile by Roice Nelson\n" +
+				"www.roice3.org/magictile   " +
 				"\n\nSpecial thanks to:\n" +
 				"  Melinda Green, for IRP data and encouragement\n" +
 				"  Nan Ma, for excellent feedback and usage testing\n" +
