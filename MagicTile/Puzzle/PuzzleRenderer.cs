@@ -807,7 +807,7 @@
 				// Read Pixel under mouse cursor
 				Byte4 pixel = new Byte4();
 				GL.ReadPixels( X, m_glControl.Height - Y, 1, 1, PixelFormat.Rgba, PixelType.UnsignedByte, ref pixel );
-				if( pixel.B != 0 )
+				if( pixel.B != 0 && m_puzzle.AllTwistData.Count > 0 )
 				{
 					int twistDataIndex = pixel.R;
 					m_closestTwistingCircles = m_puzzle.AllTwistData[twistDataIndex].TwistDataForStateCalcs.First();
@@ -1287,8 +1287,12 @@
 				var td = m_puzzle.SurfaceElementTwistData1[i / 3];
 				if( m_surface == Surface.Sphere && !m_lowerHemisphere )
 					td = m_puzzle.SurfaceElementTwistData2[i / 3];
-				int orientation = backFacing ^ td.Reverse ? 1 : 0;
-				Color c = Color.FromArgb( td.IdentifiedTwistData.Index, orientation, 1 );
+				Color c = Color.Black;
+				if( td != null )
+				{
+					int orientation = backFacing ^ td.Reverse ? 1 : 0;
+					c = Color.FromArgb( td.IdentifiedTwistData.Index, orientation, 1 );
+				}
 
 				vboVertices.Add( new VertexPositionColor( (float)vert.X, (float)vert.Y, (float)vert.Z, c ) );
 				vboElements.Add( (short)vboElements.Count );
