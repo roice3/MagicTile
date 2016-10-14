@@ -73,6 +73,7 @@
 			m_drawSurface.MouseDown += new MouseEventHandler( this.MouseDown );
 			m_drawSurface.MouseMove += new MouseEventHandler( this.MouseMove );
 			m_drawSurface.MouseUp += new MouseEventHandler( this.MouseUp );
+			m_drawSurface.MouseWheel += new MouseEventHandler( MouseWheel );
 		}
 
 		public void SetClickHandler( Action<ClickData> clickHandler )
@@ -140,6 +141,22 @@
 		}
 
 		private readonly Stopwatch m_stopWatch = new Stopwatch();
+
+		private void MouseWheel( object sender, MouseEventArgs e )
+		{
+			int amount = e.Delta * SystemInformation.MouseWheelScrollLines / 120;
+			int numberOfPixelsToMove = amount;
+			if( numberOfPixelsToMove == 0 )
+				return;
+
+			if( m_dragHandler == null )
+				return;
+
+			DragData dragData = new DragData();
+			dragData.YPercent = (float)(numberOfPixelsToMove) / (float)m_drawSurface.Height;
+			dragData.Button = MouseButtons.Right;
+			m_dragHandler( dragData );
+		}
 
 		private void MouseUp( Object sender, MouseEventArgs e )
 		{
