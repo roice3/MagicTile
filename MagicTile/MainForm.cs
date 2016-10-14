@@ -150,6 +150,10 @@
 				menuItem.Text = scramble.ToString();
 				menuItem.Tag = scramble;
 				menuItem.Click += new System.EventHandler( this.menuScramble_Click );
+				if( scramble == 1 )
+					menuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D1)));
+				if( scramble == 5 )
+					menuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D5)));
 				this.scrambleToolStripMenuItem.DropDownItems.Add( menuItem );
 			}
 		}
@@ -779,13 +783,6 @@
 
 		private void menuMouseCommands_Click( object sender, EventArgs e )
 		{
-			/*string text =
-				"\nClick and closest twisting circle will twist (left/right clicking controls twist direction).   \n\n" +
-				//"Hold down a number key (or a combination of them) while twisting to control slices.\n\n" +
-				"Dragging the mouse with the left button down will pan the view.\n\n" +
-				"Dragging the mouse with the middle button down will rotate the view.\n\n" +
-				"Dragging the mouse with the right button down will zoom the view.\n\n";*/
-
 			string text =
 				"\n2D Navigation (dragging with mouse):" +
 				"\n  Left Button: Panning" +
