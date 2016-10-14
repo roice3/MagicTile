@@ -783,36 +783,8 @@
 
 		private void menuMouseCommands_Click( object sender, EventArgs e )
 		{
-			string text =
-				"\n2D Navigation (dragging with mouse):" +
-				"\n  Left Button: Panning" +
-				"\n  Middle Button: Rotation" +
-				"\n  Right Button: Zooming" +
-				"\n\n3D Navigation:" +
-				"\n  Left Button: Rotation" +
-				"\n  Right Button: Zooming" +
-				"\n\n4D Navigation:" +
-				"\n  Shift+Left Button: 4D Rotation (xw and yw)" +
-				"\n  Ctrl+Left Button: 4D Rotation (zw) and 3D Rolling" +
-				"\n  Shift+Right Button: 4D Zooming (4D camera distance)" +
-				"\n\nTwisting" +
-				"\n  Right Click: Twist a tile clockwise" +
-				"\n  Left Click: Twist a tile counterclockwise" +
-				"\n  Slice Mask: Hold down number keys while twisting" +
-				"\n\nMacros:" +
-				"\n  Ctrl-Alt-Left Click: Start macro definition" +
-				"\n  Ctrl-m: End macro definition" +
-				"\n  Alt-Left Click: Apply selected macro" +
-				"\n  Alt-Right Click: Apply selected macro in reverse" +
-				"\n\nIRP:" +
-				"\n  x,y,z keys: Remove Layers" +
-				"\n  X,Y,Z keys: Add Layers" +
-				"\n\nOther:" +
-				"\n  F6: Toggles surface display" +
-				"\n  F7: Cycles projection models for spherical and hyperbolic puzzles";
-
-			string caption = "Mouse Commands";
-			MessageBox.Show( this, text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information );
+			Commands commands = new Commands();
+			commands.Show();
 		}
 
 		private void menuAbout_Click( object sender, EventArgs e )
