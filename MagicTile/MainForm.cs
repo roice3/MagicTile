@@ -644,6 +644,19 @@
 
 		private void m_btnDelete_Click( object sender, EventArgs e )
 		{
+			DeleteSelectedMacro();
+		}
+
+		private void m_macroListView_KeyDown( object sender, KeyEventArgs e )
+		{
+			if( e.KeyCode == Keys.Delete )
+			{
+				DeleteSelectedMacro();
+			}
+		}
+
+		private void DeleteSelectedMacro()
+		{
 			MacroItem i = SelectedMacroItem();
 			if( i == null )
 				return;

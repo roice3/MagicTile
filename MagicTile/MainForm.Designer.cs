@@ -580,6 +580,7 @@
 			this.m_macroListView.UseCompatibleStateImageBehavior = false;
 			this.m_macroListView.View = System.Windows.Forms.View.Details;
 			this.m_macroListView.SelectedIndexChanged += new System.EventHandler(this.m_macroListView_SelectedIndexChanged);
+			this.m_macroListView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.m_macroListView_KeyDown);
 			// 
 			// columnHeaderName
 			// 
