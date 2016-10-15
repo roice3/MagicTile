@@ -75,7 +75,8 @@
 			return 
 				this.IdentifiedTwistData == other.IdentifiedTwistData &&
 				this.LeftClick == other.LeftClick &&
-				this.SliceMask == other.SliceMask;
+				this.SliceMask == other.SliceMask &&
+				this.SliceMaskEarthquake == other.SliceMaskEarthquake;
 		}
 
 		/// <summary>

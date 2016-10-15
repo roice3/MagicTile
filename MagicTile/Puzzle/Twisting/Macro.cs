@@ -94,11 +94,11 @@
 		/// </summary>
 		public Macro Transform( Cell clickedCell, Vector3D clickedPoint, Puzzle puzzle, bool mouseMotionReflected )
 		{
-			// Did we have an odd number of view reflections?
-			bool viewReflected = this.ViewReflected ^ mouseMotionReflected;
-
 			Macro m = this.CloneAllButTwists();
 			m.SetupMobius( clickedCell, clickedPoint, puzzle, mouseMotionReflected );
+
+			// Did we have an odd number of view reflections?
+			bool viewReflected = this.ViewReflected ^ m.ViewReflected;
 
 			Isometry iso1 = new Isometry( m.Mobius, null );
 			Isometry iso2 = new Isometry( this.Mobius, null );
@@ -115,8 +115,9 @@
 				//		 but that led to issues because sometimes it would get transformed 
 				//		 to very near the disk boundary. We'd have run out of cells to 
 				//		 find the correct closest, and the transformed macros got all messed up.
-				TwistData tdOriginal = t.IdentifiedTwistData.TwistDataForStateCalcs.OrderBy(
-					td => combined.Apply( td.Center ).MagSquared() ).First();
+				TwistData tdOriginal = t.IdentifiedTwistData.TwistDataForStateCalcs
+					.OrderBy( td => combined.Apply( td.Center ).MagSquared() )
+					.First();
 				Vector3D newCenter = combined.Apply( tdOriginal.Center );
 				TwistData tdNew = puzzle.ClosestTwistingCircles( newCenter );
 

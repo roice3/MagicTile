@@ -25,8 +25,8 @@
 			m_renderToTexture = new RenderToTexture();
 			this.TwistHandler = new TwistHandler( m_glControl, status, settings, m_renderToTexture );
 
-			this.m_glControl.Resize += new System.EventHandler( this.m_glControl_Resize );
-			this.m_glControl.MouseMove += new MouseEventHandler( this.MouseMove );
+			this.m_glControl.Resize += new System.EventHandler( m_glControl_Resize );
+			this.m_glControl.MouseMove += new MouseEventHandler( MouseMove );
 			this.m_glControl.MouseLeave += new System.EventHandler( MouseLeave );
 
 			m_status = status;
