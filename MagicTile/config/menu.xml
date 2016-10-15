@@ -51,7 +51,7 @@
                <DisplayName>Pyraminx Crystal</DisplayName>
             </Ref>
          </Group>
-         <Group Name="Harlequin (Easy)">
+         <Group Name="Edge Turning (Easy)">
             <Ref>
                <ID>{5,3}.12 T0.015 E1:0:0</ID>
                <DisplayName>Sphere - Dodecahedron</DisplayName>
