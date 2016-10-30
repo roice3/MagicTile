@@ -1,19 +1,19 @@
 <PuzzleConfigClass>
-   <ClassDisplayName>{3,5} 8-Color Orbifold</ClassDisplayName>
-   <ClassID>{3,5}.8</ClassID>
-   <ExpectedNumColors>8</ExpectedNumColors>
+   <ClassDisplayName>{3,4} 4-Color Orbifold A</ClassDisplayName>
+   <ClassID>{3,4}.4.orbA</ClassID>
+   <ExpectedNumColors>4</ExpectedNumColors>
    <Identifications>
       <Identification>
-         <EdgeSet>1:2</EdgeSet>
-         <EndRotation>1</EndRotation>
-         <InPlaceReflection>true</InPlaceReflection>
-         <InitialEdgeSet>1</InitialEdgeSet>
+         <EdgeSet>1</EdgeSet>
+         <EndRotation>0</EndRotation>
+         <InPlaceReflection>false</InPlaceReflection>
+         <InitialEdgeSet>0</InitialEdgeSet>
          <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
       </Identification>
    </Identifications>
-   <NumTiles>20</NumTiles>
+   <NumTiles>8</NumTiles>
    <P>3</P>
-   <Q>5</Q>
+   <Q>4</Q>
    <Specific>
       <Puzzle>
          <SlicingCircles>

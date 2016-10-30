@@ -1,13 +1,13 @@
 <PuzzleConfigClass>
-   <ClassDisplayName>{3,5} 8-Color Orbifold</ClassDisplayName>
-   <ClassID>{3,5}.8</ClassID>
-   <ExpectedNumColors>8</ExpectedNumColors>
+   <ClassDisplayName>{3,5} 4-Color Orbifold</ClassDisplayName>
+   <ClassID>{3,5}.4.orb</ClassID>
+   <ExpectedNumColors>4</ExpectedNumColors>
    <Identifications>
       <Identification>
-         <EdgeSet>1:2</EdgeSet>
+         <EdgeSet>1</EdgeSet>
          <EndRotation>1</EndRotation>
-         <InPlaceReflection>true</InPlaceReflection>
-         <InitialEdgeSet>1</InitialEdgeSet>
+         <InPlaceReflection>false</InPlaceReflection>
+         <InitialEdgeSet>0</InitialEdgeSet>
          <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
       </Identification>
    </Identifications>
@@ -15,16 +15,7 @@
    <P>3</P>
    <Q>5</Q>
    <Specific>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered>
-               <Distance>1:0:0:0</Distance>
-            </FaceCentered>
-            <Thickness>0.015</Thickness>
-            <VertexCentered/>
-         </SlicingCircles>
-      </Puzzle>
+      <!--Only mixed puzzles work-->
       <Puzzle>
          <DisplayName>Trivial Tips</DisplayName>
          <SlicingCircles>
@@ -71,18 +62,6 @@
             <Thickness>0.015</Thickness>
             <VertexCentered>
                <Distance>1:0:0:0</Distance>
-            </VertexCentered>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered>
-               <Distance>0:0:.8:0</Distance>
-            </FaceCentered>
-            <Thickness>0.015</Thickness>
-            <VertexCentered>
-               <Distance>0.8:0:0:0</Distance>
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>

@@ -133,6 +133,29 @@
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered/>
+            <Thickness>0.015</Thickness>
+            <VertexCentered>
+               <Distance>1.3:0:0:0</Distance>
+               <Distance>1.6:0:0:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered/>
+            <Thickness>0.015</Thickness>
+            <VertexCentered>
+               <Distance>1.3:0:0:0</Distance>
+               <Distance>1.5:0:0:0</Distance>
+               <Distance>1.7:0:0:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
       <Mixed/>
       <Puzzle>
          <SlicingCircles>
