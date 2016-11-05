@@ -1036,7 +1036,7 @@
 					if( InfinitySafe( identified.Center ) == InfinitySafe( td.Center ) )
 					{
 						// As noted above, we must also have opposite orientation to be allowed.
-						if( identified.Reverse ^ td.Reverse )
+						if( anti.Reverse ^ td.Reverse )
 							continue;
 					}
 
