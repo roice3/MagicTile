@@ -115,17 +115,19 @@
             <Item>{3,5}.20</Item>
             <Item>{4,3}.6</Item>
             <Item>{5,3}.12</Item>
-            <Item>{3,5}.4.orb</Item>
-            <Item>{3,5}.8</Item>
-            <Item>{3,4}.4.orbA</Item>
-            <Item>{3,4}.4.orbB</Item>
-            <Item>{5,3}.4.orb</Item>
          </Sphere>
          <Group Name="Projective Plane">
             <Item>{3,4}.4</Item>
             <Item>{3,5}.10</Item>
             <Item>{4,3}.3</Item>
             <Item>{5,3}.6</Item>
+         </Group>
+         <Group Name="Orbifold">
+            <Item>{3,4}.4.orbA</Item>
+            <Item>{3,4}.4.orbB</Item>
+            <Item>{3,5}.4.orb</Item>
+            <Item>{3,5}.8</Item>
+            <Item>{5,3}.4.orb</Item>
          </Group>
       </Elliptical>
       <Euclidean>
