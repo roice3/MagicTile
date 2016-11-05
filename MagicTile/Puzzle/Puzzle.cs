@@ -1019,15 +1019,26 @@
 				}
 
 				// Puzzles with non-regular colorings can be really weird with slicing,
-				// e.g. the {3,5} 8C.  We just won't allow slicing if the anti-twist has any
+				// e.g. the {3,5} 8C.  We just won't allow slicing if the antipodal-twist has any
 				// identified twists that are not it or us (This will still allow hemi-puzzles to have slices).
+				//
+				// Another weirdness encountered with the {3,4} 4CA...  The identified antipodal twist had the
+				// same twisting orientation, which makes the orientation of a slice-2 twist undefined.  
+				// We need to avoid that situation too.
 				bool allowed = true;
 				foreach( TwistData identified in anti.IdentifiedTwistData.TwistDataForDrawing )
 				{
-					if( identified == anti )	// It
+					// It
+					if( identified == anti )
 						continue;
-					if( InfinitySafe( identified.Center ) == InfinitySafe( td.Center ) )	// Us
-						continue;
+
+					// Us
+					if( InfinitySafe( identified.Center ) == InfinitySafe( td.Center ) )
+					{
+						// As noted above, we must also have opposite orientation to be allowed.
+						if( identified.Reverse ^ td.Reverse )
+							continue;
+					}
 
 					allowed = false;
 					break;
