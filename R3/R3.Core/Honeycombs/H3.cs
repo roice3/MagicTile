@@ -685,8 +685,7 @@
 				}
 			}
 
-			//if( m_settings.Output == Output.POVRay )
-			if( false )
+			if( m_settings.Output == Output.POVRay )
 			{
 				// Wiki
 				m_settings.Ball_MinLength = 0.0018;	// 534
@@ -1185,8 +1184,6 @@
 
 		private static bool CellOk( Cell cell )
 		{
-			return true;
-
 			bool idealVerts = cell.IdealVerts;
 
 			// ZZZ - maybe criterion should be total perimeter?

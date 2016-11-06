@@ -142,18 +142,6 @@
 			AddSymmetryTriangles( mesh, tiling, boundary.Drawn );
 			//AddSymmetryTriangles( mesh, tiling, null );
 			return mesh;
-
-			HashSet<Vector3D> completed = new HashSet<Vector3D>();
-			int count = 0;
-			foreach( Tile tile in tiling.Tiles )
-			{
-				MeshEdges( mesh, tile, completed, null );
-				count++;
-				if( count >= maxTiles )
-					break;
-			}
-
-			return mesh;
 		}
 
 		private static int m_divisions = 75;

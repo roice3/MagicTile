@@ -103,8 +103,7 @@
 
 			private void Setup()
 			{
-				//if( Output == H3.Output.STL )
-				if( true )
+				if( Output == H3.Output.STL )
 				{
 					Iterations = 2;
 					MaxTiles = 500;

@@ -25,7 +25,6 @@
 
 			// The above is actually a map to R^3, but we want a surface in S^3
 			return Sterographic.R3toS3( v );
-			return v;
 		}
 
 		/// <summary>
