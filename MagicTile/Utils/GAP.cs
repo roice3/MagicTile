@@ -1,5 +1,6 @@
 ﻿namespace MagicTile.Utils
 {
+	using R3.Geometry;
 	using System.Collections.Generic;
 	using System.IO;
 	using System.Linq;
@@ -21,6 +22,22 @@
 			}
 		}
 
+		class Generator
+		{
+			public List<Cycle> Cycles { get; set; }
+
+			public override string ToString()
+			{
+				string result = "";
+				foreach( Cycle c in Cycles )
+				{
+					string cycleString = c.ToString();
+					result += cycleString;
+				}
+				return result;
+			}
+		}
+
 		public static void SaveScript( Puzzle puzzle )
 		{
 			string filename = Loader.GetSaveFileName( m_filter );
@@ -33,21 +50,15 @@
 			State state = new State( puzzle.State.NumCells, puzzle.State.NumStickers );
 			state.LoadFromXml( xState );
 
-			// Get all the cycles.
-			HashSet<Sticker> completedStickers = new HashSet<Sticker>();
-			HashSet<TwistData> completedTD = new HashSet<TwistData>();
-			List<Cycle> cycles = new List<Cycle>();
+			// Get all the generators.
+			List<Generator> generators = new List<Generator>();
 			foreach( IdentifiedTwistData itd in puzzle.AllTwistData )
 			{
 				TwistData td = itd.TwistDataForStateCalcs.First();
 
-				// We need to do this because we get repeats on or
-				// near the boundary of the fundamental region of tiles.
-				//if( completedTD.Contains( td ) )
-				//	continue;
-				completedTD.Add( td );
-
-				for( int slice=0; slice<1; slice++ )
+				// NOTE: We use NumSlicesNoOpp rather than NumSlices on purpose,
+				// to avoid problems in the group definition for spherical puzzles.
+				for( int slice=0; slice<td.NumSlicesNoOpp; slice++ )
 				{
 					SingleTwist twist = new SingleTwist()
 					{
@@ -59,12 +70,8 @@
 					var updated = Puzzle.UpdateState( puzzle.Config, state, twist );
 					HashSet<Sticker> allStickers = new HashSet<Sticker>( updated.Keys.ToArray() );
 
-					// We may have already done this one (say on spherical puzzles).
-					//if( completedStickers.Contains( allStickers.First() ) )
-					//	continue;
-					foreach( Sticker s in allStickers )
-						completedStickers.Add( s );
-
+					List<Cycle> cycles = new List<Cycle>();
+					HashSet<List<int>> completedCycles = new HashSet<List<int>>( new SkewPolyhedron.CycleEqualityComparer() );
 					int numCycles = updated.Count / td.Order;
 					for( int c = 0; c < numCycles; c++ )
 					{
@@ -80,8 +87,14 @@
 							allStickers.Remove( next );
 							start = next;
 						}
+
+						// On hyperbolic puzzles, we can get duplicates.
+						if( !completedCycles.Add( cycle ) )
+							continue;
 						cycles.Add( new Cycle( cycle.ToArray() ) );
 					}
+
+					generators.Add( new Generator() { Cycles = cycles } );
 				}
 			}
 
@@ -89,10 +102,12 @@
 			using( StreamWriter sw = new StreamWriter( filename ) )
 			{
 				sw.WriteLine( "puzzle := Group(" );
-				SaveCycleList( sw, cycles );
+				SaveCycleList( sw, generators );
 				sw.WriteLine( ");" );
-				sw.WriteLine( "Print( Size( puzzle ) );" );
-				sw.WriteLine( "Print( Collected( Factors( Size( puzzle ) ) ) );" );
+				sw.WriteLine( "size := Size( puzzle );" );
+				sw.WriteLine( "Print( size );" );
+				sw.WriteLine( "Print( \"\\n\" );" );
+				sw.WriteLine( "Print( Collected( Factors( size ) ) );" );
 				//sw.WriteLine( "Print( StructureDescription( puzzle ) );" );
 			}
 		}
@@ -103,28 +118,13 @@
 			return 1 + s.CellIndex * state.NumStickers + s.StickerIndex;
 		}
 
-		private static void SaveCycleList( StreamWriter sw, List<Cycle> cycles )
+		private static void SaveCycleList( StreamWriter sw, List<Generator> generators )
 		{
-			string line = "";
-			int count = 0;
-			foreach( Cycle c in cycles )
+			for( int g = 0; g < generators.Count; g++ )
 			{
-				string cycleString = c.ToString();
-				line += cycleString;
-				count++;
-
-				if( count >= 5 )
-				{
-					if( c != cycles.Last() )
-						line += ",";
-					sw.WriteLine( line );
-					line = "";
-					count = 0;
-				}
-			}
-
-			if( line != "" )
-			{
+				string line = generators[g].ToString();
+				if( g != generators.Count - 1 )
+					line += ",";
 				sw.WriteLine( line );
 			}
 		}

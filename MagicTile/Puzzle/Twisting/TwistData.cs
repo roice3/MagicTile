@@ -177,6 +177,12 @@
 		private int m_numSlices = -1;
 
 		/// <summary>
+		/// The number of slices, excluding antipodal slices.
+		/// This is here to help with the GAP script output functionality.
+		/// </summary>
+		public int NumSlicesNoOpp { get; set; }
+
+		/// <summary>
 		/// Affected Stickers.  The index of the outer list is the slice.
 		/// </summary>
 		private List<StickerList> AffectedStickers { get; set; }

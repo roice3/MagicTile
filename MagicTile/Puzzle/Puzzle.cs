@@ -1000,11 +1000,12 @@
 		/// </summary>
 		private void AddOppTwisters( Dictionary<Vector3D, TwistData> twistDataMap )
 		{
-			if( !IsSpherical )
-				return;
-
 			foreach( TwistData td in twistDataMap.Values )
 			{
+				td.NumSlicesNoOpp = td.Circles.Length;
+				if( !IsSpherical )
+					continue;
+
 				CircleNE firstCircle = td.Circles.First();
 				Vector3D antipode = firstCircle.ReflectPoint( td.Center );
 				antipode = InfinitySafe( antipode );
