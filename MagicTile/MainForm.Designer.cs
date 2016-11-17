@@ -88,6 +88,8 @@
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.m_status = new System.Windows.Forms.ToolStripStatusLabel();
 			this.m_status2 = new System.Windows.Forms.ToolStripStatusLabel();
+			this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+			this.menuGap = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.m_splitContainer)).BeginInit();
 			this.m_splitContainer.Panel1.SuspendLayout();
@@ -137,7 +139,9 @@
 			this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuOpen,
             this.menuSave,
-            this.menuSaveAs});
+            this.menuSaveAs,
+            this.toolStripSeparator6,
+            this.menuGap});
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
 			this.fileToolStripMenuItem.Text = "File";
@@ -146,7 +150,7 @@
 			// 
 			this.menuOpen.Name = "menuOpen";
 			this.menuOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-			this.menuOpen.Size = new System.Drawing.Size(155, 22);
+			this.menuOpen.Size = new System.Drawing.Size(166, 22);
 			this.menuOpen.Text = "Open...";
 			this.menuOpen.Click += new System.EventHandler(this.menuOpen_Click);
 			// 
@@ -154,14 +158,14 @@
 			// 
 			this.menuSave.Name = "menuSave";
 			this.menuSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-			this.menuSave.Size = new System.Drawing.Size(155, 22);
+			this.menuSave.Size = new System.Drawing.Size(166, 22);
 			this.menuSave.Text = "Save";
 			this.menuSave.Click += new System.EventHandler(this.menuSave_Click);
 			// 
 			// menuSaveAs
 			// 
 			this.menuSaveAs.Name = "menuSaveAs";
-			this.menuSaveAs.Size = new System.Drawing.Size(155, 22);
+			this.menuSaveAs.Size = new System.Drawing.Size(166, 22);
 			this.menuSaveAs.Text = "Save As...";
 			this.menuSaveAs.Click += new System.EventHandler(this.menuSaveAs_Click);
 			// 
@@ -176,7 +180,7 @@
 			// menuShowPuzzleTree
 			// 
 			this.menuShowPuzzleTree.Name = "menuShowPuzzleTree";
-			this.menuShowPuzzleTree.Size = new System.Drawing.Size(164, 22);
+			this.menuShowPuzzleTree.Size = new System.Drawing.Size(165, 22);
 			this.menuShowPuzzleTree.Text = "Show Puzzle Tree";
 			this.menuShowPuzzleTree.Click += new System.EventHandler(this.menuShowPuzzleTree_Click);
 			// 
@@ -620,15 +624,27 @@
 			// m_status
 			// 
 			this.m_status.Name = "m_status";
-			this.m_status.Size = new System.Drawing.Size(39, 17);
+			this.m_status.Size = new System.Drawing.Size(40, 17);
 			this.m_status.Text = "Twists";
 			// 
 			// m_status2
 			// 
 			this.m_status2.Name = "m_status2";
-			this.m_status2.Size = new System.Drawing.Size(752, 17);
+			this.m_status2.Size = new System.Drawing.Size(751, 17);
 			this.m_status2.Spring = true;
 			this.m_status2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			// 
+			// toolStripSeparator6
+			// 
+			this.toolStripSeparator6.Name = "toolStripSeparator6";
+			this.toolStripSeparator6.Size = new System.Drawing.Size(163, 6);
+			// 
+			// menuGap
+			// 
+			this.menuGap.Name = "menuGap";
+			this.menuGap.Size = new System.Drawing.Size(166, 22);
+			this.menuGap.Text = "Save GAP Script...";
+			this.menuGap.Click += new System.EventHandler(this.menuGap_Click);
 			// 
 			// MainForm
 			// 
@@ -726,6 +742,8 @@
 		private System.Windows.Forms.ToolStripMenuItem applyMacroReversedToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
 		private System.Windows.Forms.ToolStripMenuItem tipSeeWebsiteForInstructionsToolStripMenuItem;
+		private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+		private System.Windows.Forms.ToolStripMenuItem menuGap;
 	}
 }
 

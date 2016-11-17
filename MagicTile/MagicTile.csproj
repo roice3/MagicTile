@@ -107,6 +107,7 @@
     <Compile Include="Puzzle\Twisting\TwistHandler.cs" />
     <Compile Include="Puzzle\Twisting\TwistHistory.cs" />
     <Compile Include="Utils\Error.cs" />
+    <Compile Include="Utils\GAP.cs" />
     <Compile Include="Utils\GLUtils.cs" />
     <Compile Include="Utils\MenuBuilder.cs" />
     <Compile Include="Program.cs" />

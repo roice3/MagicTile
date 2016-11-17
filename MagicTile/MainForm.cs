@@ -783,9 +783,9 @@
 
 		private void menuMouseCommands_Click( object sender, EventArgs e )
 		{
-			Commands commands = new Commands();
-			commands.Show();
+			m_commandsWindow.Show();
 		}
+		Commands m_commandsWindow = new Commands();
 
 		private void menuAbout_Click( object sender, EventArgs e )
 		{
@@ -803,6 +803,23 @@
 				"  The 4D_Cubing Yahoo group";
 			string caption = "About";
 			MessageBox.Show( this, text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information );
+		}
+
+		private void menuGap_Click( object sender, EventArgs e )
+		{
+			if( !this.AllowUI )
+				return;
+
+			try
+			{
+				GAP.SaveScript( m_puzzle );
+			}
+			catch( Exception ex )
+			{
+				string text = "Perfection is for the Gods, and Roice is a mere mortal.\n\n" + ex.Message;
+				string caption = "Sorry";
+				MessageBox.Show( this, text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
 		}
 	}
 }

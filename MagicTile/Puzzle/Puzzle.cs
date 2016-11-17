@@ -1849,23 +1849,33 @@
 		/// </summary>
 		public void UpdateState( SingleTwist twist )
 		{
+			UpdateState( Config, State, twist );
+		}
+
+		/// <summary>
+		/// Update the state based on a twist.
+		/// </summary>
+		/// <returns>A map of just the updated stickers (old sticker mapped to new)</returns>
+		public static Dictionary<Sticker,Sticker> UpdateState( PuzzleConfig config, State state, SingleTwist twist )
+		{
 			// Maps from old sticker position to sticker hash.
 			Dictionary<Vector3D, Sticker> oldMap = new Dictionary<Vector3D, Sticker>();
 
 			// Maps from sticker to new sticker position.
 			Dictionary<Sticker, Vector3D> newMap = new Dictionary<Sticker, Vector3D>();
 
-			bool earthquake = Config.Earthquake;
+			bool earthquake = config.Earthquake;
 			IdentifiedTwistData identifiedTwistData = twist.IdentifiedTwistData;
 			double rotation = earthquake ? 1.0 : twist.Magnitude;
 			if( !twist.LeftClick )
 				rotation *= -1;
 
+			bool isSpherical = config.Geometry == Geometry.Spherical;
 			int count = 0;
 			foreach( TwistData twistData in twist.StateCalcTD )
 			{
 				count++;
-				Mobius mobius = twistData.MobiusForTwist( Config.Geometry, twist, rotation,
+				Mobius mobius = twistData.MobiusForTwist( config.Geometry, twist, rotation,
 					earthquake, count > identifiedTwistData.TwistDataForStateCalcs.Count );
 
 				foreach( List<Sticker> list in twistData.AffectedStickersForSliceMask( twist.SliceMask ) )
@@ -1873,22 +1883,23 @@
 				{
 					// Old map
 					Vector3D center = sticker.Poly.Center;
-					if( IsSpherical && Infinity.IsInfinite( center ) )
+					if( isSpherical && Infinity.IsInfinite( center ) )
 						center = Infinity.InfinityVector;
 					oldMap[center] = sticker;
 
 					// New map
 					Vector3D transformed;
-					if( IsSpherical && Infinity.IsInfinite( center ) )
+					if( isSpherical && Infinity.IsInfinite( center ) )
 						transformed = mobius.ApplyToInfinite();
 					else
 						transformed = mobius.Apply( center );
-					if( IsSpherical && Infinity.IsInfinite( transformed ) )
+					if( isSpherical && Infinity.IsInfinite( transformed ) )
 						transformed = Infinity.InfinityVector;
 					newMap[sticker] = transformed;
 				}
 			}
 
+			Dictionary<Sticker, Sticker> updated = new Dictionary<Sticker, Sticker>();
 			foreach( KeyValuePair<Sticker, Vector3D> kvp in newMap )
 			{
 				Sticker sticker2;
@@ -1903,11 +1914,17 @@
 				Sticker sticker1 = kvp.Key;
 				
 				// Sticker has moved from sticker1 -> sticker2.
-				this.State.SetStickerColorIndex( sticker2.CellIndex, sticker2.StickerIndex,
-					this.State.GetStickerColorIndex( sticker1.CellIndex, sticker1.StickerIndex ) );
+				state.SetStickerColorIndex( sticker2.CellIndex, sticker2.StickerIndex,
+					state.GetStickerColorIndex( sticker1.CellIndex, sticker1.StickerIndex ) );
+
+				if( sticker1.CellIndex == sticker2.CellIndex &&
+					sticker1.StickerIndex == sticker2.StickerIndex )
+					continue;
+				updated[sticker1] = sticker2;
 			}
 
-			this.State.CommitChanges();
+			state.CommitChanges();
+			return updated;
 		}
 	}
 }
