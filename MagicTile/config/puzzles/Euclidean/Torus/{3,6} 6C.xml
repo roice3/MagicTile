@@ -1,17 +1,18 @@
 <PuzzleConfigClass>
-   <ClassDisplayName>{5,5} 6-Color C (Non-Orientable)</ClassDisplayName>
-   <ClassID>{5,5}.6C</ClassID>
+   <ClassDisplayName>{3,6} 6-Color</ClassDisplayName>
+   <ClassID>{3,6}.6</ClassID>
    <ExpectedNumColors>6</ExpectedNumColors>
    <Identifications>
       <Identification>
-         <EdgeSet>1:4</EdgeSet>
-         <EndRotation>3</EndRotation>
-         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
+         <EdgeSet>1:2:2</EdgeSet>
+         <EndRotation>0</EndRotation>
+         <InPlaceReflection>false</InPlaceReflection>
+         <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
       </Identification>
    </Identifications>
-   <NumTiles>5000</NumTiles>
-   <P>5</P>
-   <Q>5</Q>
+   <NumTiles>2500</NumTiles>
+   <P>3</P>
+   <Q>6</Q>
    <Specific>
       <Puzzle>
          <SlicingCircles>
@@ -19,7 +20,7 @@
             <FaceCentered>
                <Distance>0:0:1:0</Distance>
             </FaceCentered>
-            <Thickness>0.02</Thickness>
+            <Thickness>0.01</Thickness>
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
@@ -27,19 +28,9 @@
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
-               <Distance>0.33:0:1:0</Distance>
+               <Distance>0:0:1.2:0</Distance>
             </FaceCentered>
-            <Thickness>0.02</Thickness>
-            <VertexCentered/>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered>
-               <Distance>0:2:0:0</Distance>
-            </FaceCentered>
-            <Thickness>0.02</Thickness>
+            <Thickness>0.01</Thickness>
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
@@ -47,10 +38,20 @@
       <Puzzle>
          <SlicingCircles>
             <EdgeCentered>
-               <Distance>0:0:0.5:0</Distance>
+               <Distance>0:1:0:0</Distance>
             </EdgeCentered>
             <FaceCentered/>
-            <Thickness>0.02</Thickness>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered>
+               <Distance>1:0:0:0</Distance>
+            </EdgeCentered>
+            <FaceCentered/>
+            <Thickness>0.01</Thickness>
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
@@ -59,9 +60,9 @@
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered/>
-            <Thickness>0.02</Thickness>
+            <Thickness>0.01</Thickness>
             <VertexCentered>
-               <Distance>1.33:0:0:0</Distance>
+               <Distance>0:0:1:0</Distance>
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
@@ -69,63 +70,52 @@
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered/>
-            <Thickness>0.02</Thickness>
+            <Thickness>0.01</Thickness>
             <VertexCentered>
-               <Distance>0:0:1:0</Distance>
+               <Distance>1.33:0:0:0</Distance>
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
       <Mixed/>
       <Puzzle>
          <SlicingCircles>
-            <EdgeCentered>
-               <Distance>0.5:0:0:0</Distance>
-            </EdgeCentered>
-            <FaceCentered>
-               <Distance>0:0:0.5:0</Distance>
-            </FaceCentered>
-            <Thickness>0.02</Thickness>
-            <VertexCentered/>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered>
-               <Distance>0:0:0.5:0</Distance>
-            </EdgeCentered>
-            <FaceCentered>
-               <Distance>0.5:0:0:0</Distance>
-            </FaceCentered>
-            <Thickness>0.02</Thickness>
-            <VertexCentered/>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
                <Distance>0:1:0:0</Distance>
             </FaceCentered>
-            <Thickness>0.02</Thickness>
+            <Thickness>0.01</Thickness>
             <VertexCentered>
-               <Distance>0:1:0:0</Distance>
+               <Distance>1:0:0:0</Distance>
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
          <SlicingCircles>
             <EdgeCentered>
-               <Distance>0:0:0.5:0</Distance>
+               <Distance>0:1:0:0</Distance>
             </EdgeCentered>
-            <FaceCentered>
-               <Distance>0.5:0:0:0</Distance>
-            </FaceCentered>
-            <Thickness>0.02</Thickness>
+            <FaceCentered/>
+            <Thickness>0.01</Thickness>
             <VertexCentered>
-               <Distance>0.5:0:0:0</Distance>
+               <Distance>0:0:1:0</Distance>
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
    </Specific>
+   <SurfaceConfig>
+      <Basis1X>
+         <Q>2</Q>
+         <R>2</R>
+      </Basis1X>
+      <Basis1Y/>
+      <Basis2X>
+         <Q>1</Q>
+         <R>1</R>
+      </Basis2X>
+      <Basis2Y>
+         <P>3</P>
+      </Basis2Y>
+      <Surface>CliffordTorus</Surface>
+   </SurfaceConfig>
    <TileShrink>0.94</TileShrink>
 </PuzzleConfigClass>

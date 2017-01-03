@@ -448,15 +448,36 @@
 					   (inverted && !pointInside);
 			}
 		}
-		
+
+		public static bool IsPointInsideNE( CircleNE c, Vector3D testPoint )
+		{
+			return c.IsPointInsideNE( testPoint );
+		}
+
 		/// <summary>
 		/// This is an optimized version for puzzle building when not in spherical geometry,
 		/// in which case we know our circles will not be inverted.
 		/// Profiling showed the general code in IsPointInsideNE to be very slow.
+		/// For speed, this method assumes we are most likely to not be in the circle.
+		/// http://stackoverflow.com/a/7227057/5700835
 		/// </summary>
 		public bool IsPointInsideFast( Vector3D testPoint )
 		{
-			return this.IsPointInside( testPoint );
+			double r = Radius;
+			double dx = Math.Abs( testPoint.X - Center.X );
+			if( dx > r )
+				return false;
+			double dy = Math.Abs( testPoint.Y - Center.Y );
+			if( dy > r )
+				return false;
+			if( dx + dy <= r )
+				return true;
+			return (dx * dx + dy * dy <= r * r);
+		}
+
+		public static bool IsPointInsideFast( CircleNE c, Vector3D testPoint )
+		{
+			return c.IsPointInsideFast( testPoint );
 		}
 	}
 

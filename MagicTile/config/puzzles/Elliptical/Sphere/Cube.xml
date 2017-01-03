@@ -39,6 +39,7 @@
       </Puzzle>
       <Puzzle>
          <DisplayName>Rubik's Revenge</DisplayName>
+         <ID>RubikRevenge</ID>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>

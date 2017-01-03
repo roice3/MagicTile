@@ -536,9 +536,18 @@
 
 		/// <summary>
 		/// Tile identifications we need to go from master -> slave cells.
+		/// NOTE: If this is set, the GroupRelations variable should not be set.
 		/// </summary>
 		[DataMember]
 		public IdentificationList Identifications { get; set; }
+
+		/// <summary>
+		/// A more susinct way to represent the identifications, in the format here:
+		/// https://www.math.auckland.ac.nz/~conder/OrientableRegularMaps101.txt
+		/// NOTE: If this is set, the Identifications variable should not be set.
+		/// </summary>
+		[DataMember]
+		public string GroupRelations { get; set; }
 
 		/// <summary>
 		/// The number of colors we expect in the puzzle.

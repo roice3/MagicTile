@@ -101,6 +101,61 @@
 		}
 	}
 
+	public class TilingPositions
+	{
+		public HashSet<Vector3D> Positions;
+
+		public void Build( TilingConfig config )
+		{
+			Positions = new HashSet<Vector3D>();
+			Tile tile = Tiling.CreateBaseTile( config );
+
+			// Fundamental triangle definition.
+			Segment seg = tile.Boundary.Segments[0];
+			Vector3D
+				p1 = new Vector3D(),
+				p2 = seg.Midpoint,
+				p3 = seg.P1;
+
+			Circle[] mirrors = new Circle[]
+			{
+				new Circle( p1, p2 ),
+				new Circle( p1, p3 ),
+				seg.Circle
+			};
+
+			HashSet<Vector3D> starting = new HashSet<Vector3D>( new Vector3D[] { new Vector3D() } );
+			BuildInternalRecursive( mirrors, config, starting, Positions );
+		}
+
+		private void BuildInternalRecursive( Circle[] mirrors, TilingConfig config, HashSet<Vector3D> starting, HashSet<Vector3D> positions )
+		{
+			if( starting.Count == 0 )
+				return;
+
+			Geometry g = config.Geometry;
+
+			HashSet<Vector3D> added = new HashSet<Vector3D>();
+			foreach( Vector3D v in starting )
+			{
+				foreach( Circle c in mirrors )
+				{
+					Vector3D candidate = c.ReflectPoint( v );
+					if( g == Geometry.Hyperbolic && candidate.Abs() > 0.9999 )	// ZZZ - Same magic number as in Tile.cs
+						continue;
+
+					if( positions.Add( candidate ) )
+						added.Add( candidate );
+
+					if( positions.Count > config.MaxTiles - 1 )
+						return;
+				}
+			}
+
+			BuildInternalRecursive( mirrors, config, added, positions );
+		}
+	}
+
 	public class Tiling
 	{
 		public Tiling()

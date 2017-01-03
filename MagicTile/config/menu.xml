@@ -31,7 +31,7 @@
                <DisplayName>Rubik's Cube</DisplayName>
             </Ref>
             <Ref>
-               <ID>{4,3}.6 T0.025 F0.5:0:1</ID>
+               <ID>RubikRevenge</ID>
                <DisplayName>Rubik's Revenge</DisplayName>
             </Ref>
             <Ref>
@@ -132,12 +132,14 @@
       </Elliptical>
       <Euclidean>
          <Group Name="Torus">
+            <Item>{3,6}.6</Item>
             <Item>{3,6}.8</Item>
             <Item>{3,6}.14</Item>
             <Item>{4,4}.4</Item>
             <Item>{4,4}.8</Item>
             <Item>{4,4}.9</Item>
             <Item>{4,4}.16</Item>
+            <Item>{6,3}.6</Item>
             <Item>{6,3}.7</Item>
             <Item>{6,3}.16</Item>
          </Group>
@@ -146,6 +148,11 @@
             <Item>{4,4}.4.Non</Item>
             <Item>{4,4}.9.Non</Item>
             <Item>{6,3}.9</Item>
+         </Group>
+         <Group Name="Orbifold">
+            <Item>{3,6}.4.orb</Item>
+            <Item>{4,4}.5.orb</Item>
+            <Item>{4,4}.9.orb</Item>
          </Group>
       </Euclidean>
       <Hyperbolic>
@@ -176,6 +183,10 @@
             <Item>{5,5}.12</Item>
          </Group>
          <Item>{6,4}.8</Item>
+         <Group Name="{6,6}">
+            <Item>{6,6}.2</Item>
+            <Item>{6,6}.4.orb</Item>
+         </Group>
          <Group Name="{8,3}">
             <Item>{8,3}.6</Item>
             <Item>{8,3}.8</Item>

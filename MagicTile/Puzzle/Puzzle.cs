@@ -1,5 +1,6 @@
 ﻿namespace MagicTile
 {
+	using MagicTile.Utils;
 	using R3.Core;
 	using R3.Drawing;
 	using R3.Geometry;
@@ -187,6 +188,15 @@
 			callback.Status( message );
 		}
 
+		public Tiling GenTiling( int num )
+		{
+			TilingConfig tilingConfig = new TilingConfig( this.Config.P, this.Config.Q, num );
+			tilingConfig.Shrink = this.Config.TileShrink;
+			Tiling tiling = new Tiling();
+			tiling.Generate( tilingConfig );
+			return tiling;
+		}
+
 		/// <summary>
 		/// Build the puzzle.
 		/// </summary>
@@ -196,17 +206,14 @@
 
 			// Generate a tiling for use with this puzzle.
 			StatusOrCancel( callback, "creating underlying tiling..." );
-			TilingConfig tilingConfig = new TilingConfig( this.Config.P, this.Config.Q, this.Config.NumTiles );
-			tilingConfig.Shrink = this.Config.TileShrink;
-			Tiling tiling = new Tiling();
-			tiling.Generate( tilingConfig );
+			Tiling tiling = GenTiling( this.Config.NumTiles );
 			Tile template = tiling.Tiles.First();
 
 			// This will track all the tiles we've turned into cells.
 			Dictionary<Vector3D, Cell> completed = new Dictionary<Vector3D, Cell>();
 
 			StatusOrCancel( callback, "precalculating identification isometries..." );
-			PuzzleIdentifications identifications = PrecalcIdentificationIsometries( template );
+			PuzzleIdentifications identifications = PrecalcIdentificationIsometries( tiling, template );
 
 			// Add in all of our cells.
 			if( callback.Cancelled )
@@ -468,6 +475,9 @@
 				return result;
 			}
 
+			// Some slicing is complicated enough that stickers have zero area.  Remove such stickers.
+			sliced = sliced.Where( p => !Tolerance.Zero( p.SignedArea ) ).ToList();
+
 			return sliced;
 		}
 
@@ -505,15 +515,200 @@
 			public bool UseMirrored { get; set; }	// ZZZ - move to list class below?
 			public Isometry Unmirrored { get; set; }
 			public Isometry Mirrored { get; set; }
+
+			public IEnumerable<Isometry> Isometries
+			{
+				get
+				{
+					List<Isometry> useMe = new List<Isometry>();
+					if( UseMirrored )
+					{
+						useMe.Add( Unmirrored );
+						useMe.Add( Mirrored );
+					}
+					else
+					{
+						useMe.Add( Unmirrored );
+					}
+					return useMe;
+				}
+			}
 		}
 		private class PuzzleIdentifications : List<PuzzleIdentification> {}
+
+		private PuzzleIdentifications CalcIsometriesFromRelations( Tiling tiling, Tile template )
+		{
+			PuzzleIdentifications result = new PuzzleIdentifications();
+
+			// Fundamental triangle definition.
+			Segment seg = template.Boundary.Segments[0];
+			Vector3D
+				p1 = new Vector3D(),
+				p2 = seg.Midpoint,
+				p3 = seg.P1;
+			Vector3D[] source = new Vector3D[] { p1, p2, p3 };
+
+			Circle[] mirrors = new Circle[]
+			{
+				new Circle( p1, p2 ),
+				new Circle( p1, p3 ),
+				seg.Circle
+			};
+
+			Mobius id = Mobius.Identity();
+			MobiusEqualityComparer comparer = new MobiusEqualityComparer();
+
+			// Apply the reflections and get the isometries.
+			var relations = GroupPresentation.ReadRelations( Config.GroupRelations );
+			HashSet<Mobius> relationTransforms = new HashSet<Mobius>( comparer );
+			foreach( int[] reflections in relations )
+			{
+				Vector3D p1r = p1, p2r = p2, p3r = p3;
+				foreach( int reflection in reflections )
+				{
+					ReflectInMirror( mirrors, reflection, ref p1r );
+					ReflectInMirror( mirrors, reflection, ref p2r );
+					ReflectInMirror( mirrors, reflection, ref p3r );
+				}
+
+				Mobius m = new Mobius();
+				m.MapPoints( p1r, p2r, p3r, p1, p2, p3 );
+				if( !comparer.Equals( m, id ) )
+					relationTransforms.Add( m );
+			}
+
+			//
+			// We need to add in conjugations of the relations as well
+			//
+
+			Func<Vector3D, int, int, int, Vector3D> rot = ( v, n, m1, m2 ) =>
+			{
+				for( int i = 0; i < n; i++ )
+				{
+					v = mirrors[m1].ReflectPoint( v );
+					v = mirrors[m2].ReflectPoint( v );
+				}
+				return v;
+			};
+
+			int max = Config.P * Config.ExpectedNumColors * 2;
+			while( relationTransforms.Count < max )
+			{
+				for( int p = 0; p < Config.P; p++ )
+					AddConjugations( relationTransforms, source, v => rot( v, p, 0, 1 ), max );
+				/*for( int q = 0; q < Config.Q; q++ )
+					AddConjugations( relationTransforms, source, v => rot( v, q, 1, 2 ), max );
+				for( int r = 0; r < 2; r++ )
+					AddConjugations( relationTransforms, source, v => rot( v, r, 0, 2 ), max );
+				for( int i = 0; i < 3; i++ )*/
+					AddConjugations( relationTransforms, source, v => mirrors[2].ReflectPoint( v ), max );
+			}
+
+			/*
+			// We need to add in conjugations of the relations as well,
+			// which is why we are cycling through tiles here.
+			// This was my first attempt, which didn't work out well.
+			AddConjugations( tiling.Tiles.Take( 1 ).ToList(), seg, relationTransforms, idents );
+
+			List<Tile> tilesForConjugations = new List<Tile>();
+			foreach( Mobius m in idents )
+			{
+				Vector3D tileCenter = m.Apply( new Vector3D() );
+				Tile t;
+				if( tiling.TilePositions.TryGetValue( tileCenter, out t ) )
+					tilesForConjugations.Add( t );
+			}
+			AddConjugations( tilesForConjugations, seg, relationTransforms, idents );
+			*/
+
+			foreach( Mobius m in relationTransforms )
+				result.Add( SetupIdent( m ) );
+
+			return result;
+		}
+
+		private void AddConjugations( HashSet<Mobius> relationTransforms, Vector3D[] source, Func<Vector3D,Vector3D> transform, int max )
+		{
+			HashSet<Mobius> conjugations = new HashSet<Mobius>( relationTransforms, new MobiusEqualityComparer() );
+
+			Vector3D
+				p1 = source[0],
+				p2 = source[1],
+				p3 = source[2];
+
+			foreach( Mobius m in relationTransforms )
+			{
+				Vector3D[] points = new Vector3D[] {
+					p1, p2, p3,
+					m.Apply( p1 ), m.Apply( p2 ), m.Apply( p3 ) };
+
+				for( int i = 0; i < points.Length; i++ )
+					points[i] = transform( points[i] );
+
+				Mobius m2 = new Mobius();
+				m2.MapPoints( points[0], points[1], points[2], points[3], points[4], points[5] );
+				conjugations.Add( m2 );
+
+				if( conjugations.Count >= max )
+					break;
+			}
+
+			relationTransforms.UnionWith( conjugations );
+		}
+
+		private void AddConjugations( List<Tile> tiles, Segment seg, HashSet<Mobius> relationTransforms, HashSet<Mobius> idents )
+		{
+			// We need to add in conjugations of the relations as well,
+			// which is why we are cycling through tiles here.
+			foreach( Tile t in tiles )
+			{
+				foreach( Mobius m in relationTransforms )
+				foreach( Segment s in t.Boundary.Segments )
+				{
+					Vector3D p1_ = t.Boundary.Center, p2_ = s.P1, p3_ = s.P2;   // ZZZ - may not work for non-orientable maps
+					Mobius m2 = new Mobius();
+					m2.MapPoints( p1_, p2_, p3_, new Vector3D(), seg.P1, seg.P2 );
+					Mobius candidate = m2.Inverse() * m * m2;
+					//if( candidate.Apply( new Vector3D() ).Abs() > 0.9 )
+					//	continue;
+					idents.Add( candidate );
+				}
+
+				// Heuristic: go until we have four times the number of expected orientable symmetries.
+				// This is too slow.
+				//if( idents.Count > 4 * Config.ExpectedNumColors * Config.P )
+				//	break;
+			}
+		}
+
+		private PuzzleIdentification SetupIdent( Mobius m )
+		{
+			Isometry isometry = new Isometry( m, null );
+			PuzzleIdentification ident = new PuzzleIdentification();
+			ident.UseMirrored = false;
+			ident.Unmirrored = isometry;
+			return ident;
+		}
+
+		private void ReflectInMirror( Circle[] mirrors, int index, ref Vector3D point )
+		{
+			point = mirrors[index].ReflectPoint( point );
+		}
+
+		private bool UsingRelations
+		{
+			get { return !string.IsNullOrEmpty( Config.GroupRelations ); }
+		}
 
 		/// <summary>
 		/// This is here for puzzle building performance.  We pre-calculate the array of isometries to apply once, 
 		/// vs. reflecting everywhere (which is *much* more expensive).
 		/// </summary>
-		private PuzzleIdentifications PrecalcIdentificationIsometries( Tile template )
+		private PuzzleIdentifications PrecalcIdentificationIsometries( Tiling tiling, Tile template )
 		{
+			if( UsingRelations )
+				return CalcIsometriesFromRelations( tiling, template );
+
 			PuzzleIdentifications result = new PuzzleIdentifications();
 			IdentificationList identificationList = Config.Identifications;
 			if( identificationList == null || identificationList.Count == 0 )
@@ -634,13 +829,25 @@
 
 			m_masters.Add( master );
 
+			// This is to help with recentering on puzzles constructed via group relations.
+			// We need to recurse deeper for some of them, but just for the slaves of the central tile.
+			Tile template = tiling.Tiles.First();
+			TilingPositions positions = null;
+			if( master.IndexOfMaster == 0 && UsingRelations )
+			{
+				tiling = null;
+				positions = new TilingPositions();
+				positions.Build( new TilingConfig( Config.P, Config.Q, maxTiles: Config.NumTiles * 5 ) );
+			}
+
 			// Now add all the slaves for this master.
 			List<Cell> parents = new List<Cell>();
 			parents.Add( master );
-			AddSlavesRecursive( master, parents, tiling, identifications, completed );
+			AddSlavesRecursive( master, parents, tiling, positions, template, identifications, completed );
 		}
 
-		private void AddSlavesRecursive( Cell master, List<Cell> parents, Tiling tiling, PuzzleIdentifications identifications, Dictionary<Vector3D, Cell> completed )
+		private void AddSlavesRecursive( Cell master, List<Cell> parents, Tiling tiling, TilingPositions positions, Tile template,
+			PuzzleIdentifications identifications, Dictionary<Vector3D, Cell> completed )
 		{
 			// Are we done?
 			if( parents.Count == 0 || identifications.Count == 0 )
@@ -651,60 +858,62 @@
 
 			foreach( Cell parent in parents )
 			foreach( PuzzleIdentification identification in identifications )
+			foreach( Isometry identIsometry in identification.Isometries )
 			{
-				List<Isometry> useMe = new List<Isometry>();
-				if( identification.UseMirrored )
-				{
-					useMe.Add( identification.Unmirrored );
-					useMe.Add( identification.Mirrored );
-				}
-				else
-				{
-					// This commented out line was needed when we were conjugating below.
-					// Keeping it around in case we ever return to that, but rotations are a problem in that case too, and still not handled!
-					//useMe.Add( parent.Isometry.Reflection != null ? identification.Mirrored : identification.Unmirrored );
-					useMe.Add( identification.Unmirrored );
-				}
-
-				foreach( Isometry identIsometry in useMe )
-				{
-					// Conjugate to get the identification relative to this parent.
-					// NOTE: When we don't conjugate, some cells are near the boundary are missed being identified.
-					//		 I got around that by configuring the number of colors in the puzzle, and never adding more than that expected amount.
-					//		 That was maybe a good thing to do anyway.
-					// But conjugating was causing me lots of headaches because, e.g. it was causing extraneous mirroring/rotations
-					// in puzzles like the Klein bottle, which don't have symmetrical identifications.  So I took it out for now.
-					// NOTE: Later I tried conjugating for spherical puzzles, but that just produced bad puzzles (copies would have different colors adjacent).
-					//		 So I think this is right.
-					//Isometry conjugated = parent.Isometry.Inverse() * identIsometry * parent.Isometry;
-					Isometry conjugated = identIsometry;
-
-					CircleNE newVertexCircle = parent.VertexCircle.Clone();
-					newVertexCircle.Transform( conjugated );
-
-					// ZZZ - Hack for spherical.  Some centers were projecting to very large values rather than DNE.
-					if( Infinity.IsInfinite( newVertexCircle.CenterNE ) )
-						newVertexCircle.CenterNE = Vector3D.DneVector();
-
-					// In the tiling?
-					Tile tile;
-					if( !tiling.TilePositions.TryGetValue( newVertexCircle.CenterNE, out tile ) )
-						continue;
-
-					// Already done this one?
-					if( completed.ContainsKey( newVertexCircle.CenterNE ) )
-						continue;
-
-					// New! Add it.
-					Polygon boundary = parent.Boundary.Clone();
-					boundary.Transform( conjugated );
-					Cell slave = SetupCell( tiling.Tiles.First(), boundary, completed );
-					AddSlave( master, slave );
+				Cell slave = ApplyOneIsometry( master, parent, identIsometry, tiling, positions, template, completed );
+				if( slave != null )
 					added.Add( slave );
-				}
-			}
+			};
 
-			AddSlavesRecursive( master, added, tiling, identifications, completed );
+			AddSlavesRecursive( master, added, tiling, positions, template, identifications, completed );
+		}
+
+		private Cell ApplyOneIsometry( Cell master, Cell parent, Isometry identIsometry, Tiling tiling, TilingPositions positions, Tile template,
+			Dictionary<Vector3D, Cell> completed )
+		{
+			// Conjugate to get the identification relative to this parent.
+			// NOTE: When we don't conjugate, some cells near the boundary are missed being identified.
+			//		 I got around that by configuring the number of colors in the puzzle, and never adding more than that expected amount.
+			//		 That was maybe a good thing to do anyway.
+			// But conjugating was causing me lots of headaches because, e.g. it was causing extraneous mirroring/rotations
+			// in puzzles like the Klein bottle, which don't have symmetrical identifications.  So I took it out for now.
+			// NOTE: Later I tried conjugating for spherical puzzles, but that just produced bad puzzles (copies would have different colors adjacent).
+			//		 So I think this is right.
+			//Isometry conjugated = parent.Isometry.Inverse() * identIsometry * parent.Isometry;
+			Isometry conjugated = identIsometry;
+
+			// We can use the conjugates when using relations, because those are regular maps.
+			//if( UsingRelations )
+			//	conjugated = parent.Isometry.Inverse() * identIsometry * parent.Isometry;
+
+			Vector3D newCenter = parent.VertexCircle.CenterNE;
+			newCenter = conjugated.Apply( newCenter );
+
+			// ZZZ - Hack for spherical.  Some centers were projecting to very large values rather than DNE.
+			if( Infinity.IsInfinite( newCenter ) )
+				newCenter = Vector3D.DneVector();
+
+			// In the tiling?
+			Tile tile;
+			if( tiling != null && !tiling.TilePositions.TryGetValue( newCenter, out tile ) )
+			{
+				if( newCenter.Abs() < 0.4 )
+					System.Diagnostics.Trace.WriteLine( newCenter.Abs() );
+				return null;
+			}
+			if( positions != null && !positions.Positions.Contains( newCenter ) )
+				return null;
+
+			// Already done this one?
+			if( completed.ContainsKey( newCenter ) )
+				return null;
+
+			// New! Add it.
+			Polygon boundary = parent.Boundary.Clone();
+			boundary.Transform( conjugated );
+			Cell slave = SetupCell( template, boundary, completed );
+			AddSlave( master, slave );
+			return slave;
 		}
 
 		private void AddSlave( Cell master, Cell slave )
@@ -937,6 +1146,9 @@
 			// In case this has been built before.
 			m_twistDataNearTree.Reset( NearTree.GtoM( this.Config.Geometry ) );
 
+			// This is a performance optimization, to avoid doing calculation that results in loops below.
+			bool isSpherical = this.IsSpherical;
+
 			// Map to help track what is done.
 			Dictionary<Vector3D, TwistData> twistDataMap = new Dictionary<Vector3D, TwistData>();
 			if( Config.Version == Loader.VersionPreview )
@@ -952,7 +1164,7 @@
 			// For euclidean/hyperbolic, we only need to do this for the subset of twist data which will be used for state calcs.
 			foreach( IdentifiedTwistData collection in this.AllTwistData )
 			{
-				List<TwistData> collectionTwistData = IsSpherical ? 
+				List<TwistData> collectionTwistData = isSpherical ? 
 					collection.TwistDataForDrawing : 
 					collection.TwistDataForStateCalcs;
 				Parallel.For( 0, collectionTwistData.Count, i =>
@@ -961,14 +1173,14 @@
 
 					// Mark all the affected master cells.
 					foreach( Cell master in MasterCells )
-						twistData.WillAffectMaster( master, this.IsSpherical );
+						twistData.WillAffectMaster( master, isSpherical );
 
 					// Mark all the affected stickers.
 					// Again, for spherical, we have to do more than just the stateCalcCells.
-					IEnumerable<Cell> cells = IsSpherical ? this.AllCells : m_stateCalcCells;
+					IEnumerable<Cell> cells = isSpherical ? this.AllCells : m_stateCalcCells;
 					foreach( Cell cell in cells )
 					foreach( Sticker sticker in cell.Stickers )
-						twistData.WillAffectSticker( sticker, this.IsSpherical );
+						twistData.WillAffectSticker( sticker, isSpherical );
 				} );
 			}
 
@@ -1231,13 +1443,15 @@
 			// ZZZ - This ends up adding extraneous cells on {7,3}, assuming only 1/7th turn twists.
 			//		 If we allowed 3/7th turn twists, it wouldn't be extraneous though.
 			// ZZZ - Nested foreach loops are really slow here.
-			foreach( Cell slave in this.AllSlaveCells )
-			foreach( TwistData td in hotTwists )
-				if( td.WillAffectCell( slave, this.IsSpherical ) )
-				{
-					result.Add( slave );
-					break;
-				}
+			Parallel.ForEach( AllSlaveCells, slave =>
+			{
+				foreach( TwistData td in hotTwists )
+					if( td.WillAffectCell( slave, this.IsSpherical ) )
+					{
+						result.Add( slave );
+						break;
+					}
+			} );
 
 			// We have to special case things for IRP puzzles with no slicing,
 			// since StateCalc cells will then not include all cells adjacent to masters.

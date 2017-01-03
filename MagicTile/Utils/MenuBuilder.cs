@@ -78,7 +78,7 @@
 						TreeNode groupNode;
 						ToolStripMenuItem groupMenuItem;
 						AddGroup( null, 0, configClass.ClassDisplayName, userNode, userMenuItem, out groupNode, out groupMenuItem );
-						AddPuzzleClass( null, 0, configClass, groupNode, groupMenuItem );
+						AddPuzzleClass( null, null, 0, configClass, groupNode, groupMenuItem );
 					}
 				}
 			}
@@ -139,19 +139,21 @@
 		private void LoadMenu( PuzzleConfigClass[] standard, out XElement xStartHere )
 		{
 			// Uncomment line below to write out a MediaWiki file with tables for all puzzles.
-			StreamWriter sw = null;
-			//using( StreamWriter sw = new StreamWriter( "table.txt" ) )
+			StreamWriter swList = null;
+			StreamWriter swWiki = null;
+			//using( StreamWriter swList = new StreamWriter( "puzzles.txt" ) )
+			//using( StreamWriter swWiki = new StreamWriter( "table.txt" ) )
 			using( var reader = XmlReader.Create( StandardPaths.MenuFile, Persistence.ReaderSettings ) )
 			{
 				XElement xRoot = XElement.Load( reader );
 				XElement[] children = xRoot.Elements().ToArray();
 				xStartHere = children[0].Elements( "Start" ).First();
 				int level = 0;
-				BuildMenuRecursive( sw, level, children[0], standard, null, m_puzzleRoot );
+				BuildMenuRecursive( swList, swWiki, level, children[0], standard, null, m_puzzleRoot );
 			}
 		}
 
-		private void BuildMenuRecursive( StreamWriter sw, int level, XElement xElement, PuzzleConfigClass[] configs, 
+		private void BuildMenuRecursive( StreamWriter swList, StreamWriter swWiki, int level, XElement xElement, PuzzleConfigClass[] configs, 
 			TreeNode parentTreeNode, ToolStripMenuItem parentMenuItem )
 		{
 			level++;
@@ -168,10 +170,10 @@
 					TreeNode groupNode;
 					ToolStripMenuItem groupMenuItem;
 
-					Breaks( sw, 1 );
-					AddGroup( sw, level, configClass.ClassDisplayName, parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
-					HorizontalRule( sw );
-					AddPuzzleClass( sw, level, configClass, groupNode, groupMenuItem );
+					Breaks( swWiki, 1 );
+					AddGroup( swWiki, level, configClass.ClassDisplayName, parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
+					HorizontalRule( swWiki );
+					AddPuzzleClass( swList, swWiki, level, configClass, groupNode, groupMenuItem );
 				}
 				else if( xChild.Name == "Start" )
 				{
@@ -185,10 +187,10 @@
 					TreeNode groupNode;
 					ToolStripMenuItem groupMenuItem;
 
-					Breaks( sw, 3 - level );
-					AddGroup( sw, level, groupName, parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
+					Breaks( swWiki, 3 - level );
+					AddGroup( swWiki, level, groupName, parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
 
-					BuildMenuRecursive( sw, level, xChild, configs, groupNode, groupMenuItem );
+					BuildMenuRecursive( swList, swWiki, level, xChild, configs, groupNode, groupMenuItem );
 				}
 			}
 		}
@@ -221,7 +223,7 @@
 			WriteTableGroup( sw, level, groupName );
 		}
 
-		private void AddPuzzleClass( StreamWriter sw, int level, PuzzleConfigClass puzzleConfigClass,
+		private void AddPuzzleClass( StreamWriter swList, StreamWriter swWiki, int level, PuzzleConfigClass puzzleConfigClass,
 			TreeNode parentTreeNode, ToolStripMenuItem parentMenuItem )
 		{
 			level++;
@@ -236,62 +238,72 @@
 			ToolStripMenuItem groupMenuItem;
 			if( face.Length > 0 )
 			{
-				AddGroup( sw, level, "Face Twisting", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
-				StartTable( sw );
+				AddGroup( swWiki, level, "Face Twisting", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
+				StartTable( swWiki );
 				foreach( PuzzleConfig config in face )
 				{
+					if( swList != null )
+						swList.WriteLine( config.DisplayName );
 					AddPuzzle( config, groupNode, groupMenuItem, isTiling: false );
-					WriteTableEntry( sw, config.MenuName );
+					WriteTableEntry( swWiki, config.MenuName );
 				}
-				EndTable( sw );
+				EndTable( swWiki );
 			}
 
 			if( edge.Length > 0 )
 			{
-				AddGroup( sw, level, "Edge Twisting", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
-				StartTable( sw );
+				AddGroup( swWiki, level, "Edge Twisting", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
+				StartTable( swWiki );
 				foreach( PuzzleConfig config in edge )
 				{
+					if( swList != null )
+						swList.WriteLine( config.DisplayName );
 					AddPuzzle( config, groupNode, groupMenuItem, isTiling: false );
-					WriteTableEntry( sw, config.MenuName );
+					WriteTableEntry( swWiki, config.MenuName );
 				}
-				EndTable( sw );
+				EndTable( swWiki );
 			}
 
 			if( vertex.Length > 0 )
 			{
-				AddGroup( sw, level, "Vertex Twisting", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
-				StartTable( sw );
+				AddGroup( swWiki, level, "Vertex Twisting", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
+				StartTable( swWiki );
 				foreach( PuzzleConfig config in vertex )
 				{
+					if( swList != null )
+						swList.WriteLine( config.DisplayName );
 					AddPuzzle( config, groupNode, groupMenuItem, isTiling: false );
-					WriteTableEntry( sw, config.MenuName );
+					WriteTableEntry( swWiki, config.MenuName );
 				}
-				EndTable( sw );
+				EndTable( swWiki );
 			}
 
 			if( mixed.Length > 0 )
 			{
-				AddGroup( sw, level, "Mixed Twisting", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
-				StartTable( sw );
+				AddGroup( swWiki, level, "Mixed Twisting", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
+				StartTable( swWiki );
 				foreach( PuzzleConfig config in mixed )
 				{
+					if( swList != null )
+						swList.WriteLine( config.DisplayName );
 					AddPuzzle( config, groupNode, groupMenuItem, isTiling: false );
-					WriteTableEntry( sw, config.MenuName );
+					WriteTableEntry( swWiki, config.MenuName );
 				}
-				EndTable( sw );
+				EndTable( swWiki );
 			}
 
 			if( earthquake.Length > 0 )
 			{
-				AddGroup( sw, level, "Special", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
-				StartTable( sw );
+				AddGroup( swWiki, level, "Special", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
+				StartTable( swWiki );
 				foreach( PuzzleConfig config in earthquake )
 				{
+					if( swList != null )
+						swList.WriteLine( config.DisplayName );
 					AddPuzzle( config, groupNode, groupMenuItem, isTiling: false );
-					WriteTableEntry( sw, config.MenuName );
+					WriteTableEntry( swWiki, config.MenuName );
 				}
-				EndTable( sw );
+				EndTable( swWiki );
 			}
 		}
 
@@ -319,7 +331,7 @@
 				if( NumPuzzles != m_puzzleIds.Count )
 				{
 					System.Diagnostics.Debug.Assert( false );
-					throw new System.Exception( "Duplicate puzzle config IDs." );
+					//throw new System.Exception( "Duplicate puzzle config IDs." );
 				}
 			}
 		}

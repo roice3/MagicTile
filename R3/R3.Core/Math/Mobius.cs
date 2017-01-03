@@ -3,6 +3,7 @@
 	using Math = System.Math;
 
 	using R3.Geometry;
+	using System.Collections.Generic;
 	using System.Diagnostics;
 	using System.Numerics;
 	using System.Runtime.Serialization;
@@ -402,6 +403,29 @@
 			B = new Complex( Math.Round( B.Real, d ), Math.Round( B.Imaginary, d ) );
 			C = new Complex( Math.Round( C.Real, d ), Math.Round( C.Imaginary, d ) );
 			D = new Complex( Math.Round( D.Real, d ), Math.Round( D.Imaginary, d ) );
+		}
+	}
+
+	public class MobiusEqualityComparer : IEqualityComparer<Mobius>
+	{
+		public bool Equals( Mobius m1, Mobius m2 )
+		{
+			m1.Normalize(); m2.Normalize();
+			return
+				Vector3D.FromComplex( m1.A ).Equals( Vector3D.FromComplex( m2.A ) ) &&
+				Vector3D.FromComplex( m1.B ).Equals( Vector3D.FromComplex( m2.B ) ) &&
+				Vector3D.FromComplex( m1.C ).Equals( Vector3D.FromComplex( m2.C ) ) &&
+				Vector3D.FromComplex( m1.D ).Equals( Vector3D.FromComplex( m2.D ) );
+		}
+
+		public int GetHashCode( Mobius m )
+		{
+			m.Normalize();
+			return
+				Vector3D.FromComplex( m.A ).GetHashCode() ^
+				Vector3D.FromComplex( m.B ).GetHashCode() ^
+				Vector3D.FromComplex( m.C ).GetHashCode() ^
+				Vector3D.FromComplex( m.D ).GetHashCode();
 		}
 	}
 }

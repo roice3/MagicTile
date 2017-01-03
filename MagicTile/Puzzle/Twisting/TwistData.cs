@@ -235,17 +235,6 @@
 				}
 
 				return false;
-
-				/* This turned out too slow, and probably not robust too.
-				
-				if( Pants.Hexagon.Intersects( cell.Boundary ) )
-					return true;
-				
-				foreach( Polygon poly in Pants.AdjacentHexagons )
-					if( poly.Intersects( cell.Boundary ) )
-						return true;
-				
-				return false; */
 			}
 
 			foreach( CircleNE circleNE in this.Circles )
@@ -294,15 +283,14 @@
 				return;
 			}
 
+			System.Func<CircleNE, Vector3D, bool> isInside = ( c, t ) => sphericalPuzzle ? 
+				 CircleNE.IsPointInsideNE( c, t ) : CircleNE.IsPointInsideFast( c, t );
+
 			// Slices are ordered by depth.
 			// We cycle from the inner slice outward.
 			for( int slice=0; slice<this.Circles.Length; slice++ )
 			{
-				CircleNE circle = this.Circles[slice];
-				bool isInside = sphericalPuzzle ?
-					circle.IsPointInsideNE( sticker.Poly.Center ) :
-					circle.IsPointInsideFast( sticker.Poly.Center );
-				if( isInside )
+				if( isInside( Circles[slice], sticker.Poly.Center ) )
 				{
 					AffectedStickers[slice].Add( sticker );
 					return;

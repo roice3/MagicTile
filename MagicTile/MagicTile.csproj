@@ -109,6 +109,7 @@
     <Compile Include="Utils\Error.cs" />
     <Compile Include="Utils\GAP.cs" />
     <Compile Include="Utils\GLUtils.cs" />
+    <Compile Include="Utils\GroupPresentation.cs" />
     <Compile Include="Utils\MenuBuilder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
