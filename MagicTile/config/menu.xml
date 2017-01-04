@@ -164,8 +164,12 @@
             <Item>{3,8}.8.Non</Item>
             <Item>{3,8}.10.Non</Item>
          </Group>
-         <Item>{4,5}.5</Item>
+         <Group Name="{4,5}">
+            <Item>{4,5}.5</Item>
+            <Item>{4,5}.40</Item>
+         </Group>
          <Item>{4,6}.6</Item>
+         <Item>{4,7}.42</Item>
          <Item>{4,12}.12</Item>
          <Group Name="{5,4}">
             <Item>{5,4}.2</Item>
@@ -175,6 +179,7 @@
             <Item>{5,4}.12.Non</Item>
             <Item>{5,4}.16.Non</Item>
             <Item>{5,4}.24</Item>
+            <Item>{5,4}.32</Item>
          </Group>
          <Group Name="{5,5}">
             <Item>{5,5}.6</Item>
@@ -185,8 +190,12 @@
          <Item>{6,4}.8</Item>
          <Group Name="{6,6}">
             <Item>{6,6}.2</Item>
+            <Item>R3.8</Item>
             <Item>{6,6}.4.orb</Item>
+            <Item>R4.7</Item>
+            <Item>R4.8</Item>
          </Group>
+         <Item>{7,4}.24</Item>
          <Group Name="{8,3}">
             <Item>{8,3}.6</Item>
             <Item>{8,3}.8</Item>

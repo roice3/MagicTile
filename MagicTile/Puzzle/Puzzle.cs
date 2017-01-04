@@ -604,23 +604,6 @@
 					AddConjugations( relationTransforms, source, v => mirrors[2].ReflectPoint( v ), max );
 			}
 
-			/*
-			// We need to add in conjugations of the relations as well,
-			// which is why we are cycling through tiles here.
-			// This was my first attempt, which didn't work out well.
-			AddConjugations( tiling.Tiles.Take( 1 ).ToList(), seg, relationTransforms, idents );
-
-			List<Tile> tilesForConjugations = new List<Tile>();
-			foreach( Mobius m in idents )
-			{
-				Vector3D tileCenter = m.Apply( new Vector3D() );
-				Tile t;
-				if( tiling.TilePositions.TryGetValue( tileCenter, out t ) )
-					tilesForConjugations.Add( t );
-			}
-			AddConjugations( tilesForConjugations, seg, relationTransforms, idents );
-			*/
-
 			foreach( Mobius m in relationTransforms )
 				result.Add( SetupIdent( m ) );
 
@@ -654,31 +637,6 @@
 			}
 
 			relationTransforms.UnionWith( conjugations );
-		}
-
-		private void AddConjugations( List<Tile> tiles, Segment seg, HashSet<Mobius> relationTransforms, HashSet<Mobius> idents )
-		{
-			// We need to add in conjugations of the relations as well,
-			// which is why we are cycling through tiles here.
-			foreach( Tile t in tiles )
-			{
-				foreach( Mobius m in relationTransforms )
-				foreach( Segment s in t.Boundary.Segments )
-				{
-					Vector3D p1_ = t.Boundary.Center, p2_ = s.P1, p3_ = s.P2;   // ZZZ - may not work for non-orientable maps
-					Mobius m2 = new Mobius();
-					m2.MapPoints( p1_, p2_, p3_, new Vector3D(), seg.P1, seg.P2 );
-					Mobius candidate = m2.Inverse() * m * m2;
-					//if( candidate.Apply( new Vector3D() ).Abs() > 0.9 )
-					//	continue;
-					idents.Add( candidate );
-				}
-
-				// Heuristic: go until we have four times the number of expected orientable symmetries.
-				// This is too slow.
-				//if( idents.Count > 4 * Config.ExpectedNumColors * Config.P )
-				//	break;
-			}
 		}
 
 		private PuzzleIdentification SetupIdent( Mobius m )
