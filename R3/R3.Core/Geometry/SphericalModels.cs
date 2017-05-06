@@ -8,7 +8,8 @@
 	{
 		Sterographic,
 		Gnomonic,
-		Fisheye
+		Fisheye,
+		HemisphereDisks,
 	}
 
 	public class SphericalModels
@@ -37,6 +38,40 @@
 			double dot = g.Dot( g ); // X^2 + Y^2
 			double z = -1 / Math.Sqrt( dot + 1 );
 			return g*z / (z - 1);
+		}
+
+		public static Vector3D ToDisks( Vector3D p )
+		{
+			if( p.Abs() <= 1 )
+			{
+				p.X -= 1;
+				return p;
+			}
+
+			Mobius m = new Mobius();
+			m.Elliptic( Geometry.Spherical, Complex.ImaginaryOne, Math.PI );
+			p = m.Apply( p );
+			p.X += 1;
+			return p;
+		}
+
+		public static Vector3D FromDisks( Vector3D p, bool normalize = false )
+		{
+			if( p.X <= 0 )
+			{
+				p.X += 1;
+				if( normalize || p.Abs() > 1 )
+					p.Normalize();
+				return p;
+			}
+
+			p.X -= 1;
+			Mobius m = new Mobius();
+			m.Elliptic( Geometry.Spherical, Complex.ImaginaryOne, Math.PI );
+			p = m.Apply( p );
+			if( normalize || p.Abs() > 1 )
+				p.Normalize();
+			return p;
 		}
 
 		private static double m_gScale = 0.5;

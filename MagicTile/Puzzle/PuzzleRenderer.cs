@@ -228,9 +228,26 @@
 				if( m_puzzle == null )
 					return false;
 
+				if( RenderingDisks )
+					return true;
+
 				return
-					m_settings.SurfaceDisplay  && 
+					m_settings.SurfaceDisplay && 
 					m_puzzle.HasSurfaceConfig;
+			}
+		}
+
+		private bool RenderingDisks
+		{
+			get
+			{
+				// We want the surface display setting to take precedence.
+				if( m_puzzle.Config.Geometry == Geometry.Spherical &&
+					m_settings.SphericalModel == SphericalModel.HemisphereDisks &&
+					!m_settings.SurfaceDisplay )
+					return true;
+
+				return false;
 			}
 		}
 
@@ -408,7 +425,7 @@
 
 			DrawMovingStickersDirectly();
 
-			// Draw a background disk if we are using the fisheye model.
+			// Draw a background disk if needed.
 			if( m_settings.SphericalModel == SphericalModel.Fisheye )
 				FillBackgroundExceptDisk();
 
@@ -495,7 +512,7 @@
 			Mobius m = new Mobius();
 			Isometry trans = new Isometry();
 			bool clipForElliptical = false;
-			if( m_surface == Surface.Sphere || m_surface == Surface.Boys )
+			if( m_surface == Surface.Sphere || m_surface == Surface.Boys || RenderingDisks )
 			{
 				// This didn't work because the stencil testing didn't work when rendering to a texture.
 				// Maybe there is a trick I can use to make this work later.
@@ -661,7 +678,12 @@
 			if( m_puzzle.HasValidIRPConfig )
 				m_mouseMotion.ControlType = ControlType.Mouse_3D;
 			if( m_puzzle.HasSurfaceConfig || m_puzzle.HasValidSkewConfig )
+			{
 				m_mouseMotion.ControlType = ControlType.Mouse_4D;
+
+				if( RenderingDisks )
+					m_mouseMotion.ControlType = ControlType.Mouse_2D;
+			}
 		}
 
 		/// <summary>
@@ -864,7 +886,7 @@
 			using( VBO vbo = CreateSurfaceVbo() )
 				vbo.Draw();
 
-			if( m_surface == Surface.Sphere )
+			if( m_surface == Surface.Sphere || m_surface == Surface.Boys )
 			{
 				m_lowerHemisphere = false;
 				m_renderToTexture.BindTexture( SurfaceTexture2 );
@@ -1124,14 +1146,28 @@
 
 		private Vector3D SurfaceTransformedTextureVert( Vector3D v )
 		{
+			if( RenderingDisks )
+			{
+				Isometry i = m_mouseMotion.Isometry;
+				Vector3D x = new Vector3D( 1, 0 );
+				Vector3D t = i.Apply( x );
+				double rot = Euclidean2D.AngleToCounterClock( x, t );
+				v.RotateXY( m_lowerHemisphere ? rot : -rot );
+
+				Vector3D off = new Vector3D( 1, 0 );
+				if( m_lowerHemisphere )
+					v -= off;
+				else
+					v += off;
+				return v;
+			}
+
 			switch( m_surface )
 			{
 			case Surface.Sphere:
 				v = Spherical2D.PlaneToSphere( v );
 				if( !m_lowerHemisphere )
-				{
 					v.RotateAboutAxis( new Vector3D( 0, 1 ), Math.PI );
-				}
 				break;
 			case Surface.Boys:
 				v = R3.Geometry.Surface.MapToBoys( v );
@@ -1375,11 +1411,11 @@
 			}
 		}
 
-		private void SetOrtho()
+		private void SetOrtho( float scaleFactor = 1.0f )
 		{
 			m_mouseMotion.ControlType = ControlType.Mouse_2D;
 
-			float scale = (float)m_glControl.Height / (2 * m_mouseMotion.ViewScale);
+			float scale = (float)m_glControl.Height / (2 * m_mouseMotion.ViewScale * scaleFactor );
 
 			GL.MatrixMode( MatrixMode.Projection );
 			OpenTK.Matrix4 proj = OpenTK.Matrix4.CreateOrthographic( m_glControl.Width / scale, m_glControl.Height / scale, 1, -1 );
@@ -1394,6 +1430,13 @@
 		private void SetPerspective()
 		{
 			SetSkewMouseControl();
+
+			if( RenderingDisks )
+			{
+				m_mouseMotion.RotHandler4D.Current4dView = null;
+				SetOrtho( 2.0f );
+				return;
+			}
 
 			OpenTK.Matrix4d proj, modelView;
 			SetPerspective( m_glControl.Width, m_glControl.Height, m_mouseMotion.ViewLookFrom,

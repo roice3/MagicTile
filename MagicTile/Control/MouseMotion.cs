@@ -138,7 +138,12 @@
 		}
 		private Vector3D m_viewLookFrom3D;
 		private Vector3D m_viewLookFrom4D;
-		
+
+		public void ScaleLookFrom3D( double scale )
+		{
+			m_viewLookFrom3D *= scale;
+		}
+
 		public void ScaleLookFrom4D( double scale )
 		{
 			m_viewLookFrom4D *= scale;
@@ -197,6 +202,9 @@
 
 				if( m_settings.SphericalModel == SphericalModel.Fisheye )
 					return SphericalModels.StereoToGnomonic( point );
+
+				if( m_settings.SphericalModel == SphericalModel.HemisphereDisks )
+					return SphericalModels.FromDisks( point*2, normalize: true );
 			}
 
 			return point;
