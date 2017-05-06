@@ -74,7 +74,7 @@
 					GL.Begin( BeginMode.LineStrip );
 					for( int i=0; i<divisions; i++ )
 					{
-						Vector3D point = begin + inc * i;
+						Vector3D point = transform( begin + inc * i );
 						GL.Vertex2( point.X, point.Y );
 					}
 					GL.End();
