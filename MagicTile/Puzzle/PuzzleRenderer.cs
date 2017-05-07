@@ -1278,7 +1278,7 @@
 		/// </summary>
 		private void TransformSkewVert( Matrix4D rot, ref Vector3D vert )
 		{
-			if( m_settings.ConstrainToHypersphere )
+			if( m_settings.ConstrainToHypersphere && !RenderingDisks )
 				vert.Normalize();
 			vert = rot.RotateVector( vert );
 			vert = vert.ProjectTo3DSafe( m_mouseMotion.ProjectionDistance4D );
