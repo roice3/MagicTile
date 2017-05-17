@@ -69,7 +69,7 @@
 			Mobius m = new Mobius();
 			m.Elliptic( Geometry.Spherical, Complex.ImaginaryOne, Math.PI );
 			p = m.Apply( p );
-			if( normalize || p.Abs() > 1 )
+			if( normalize || p.Abs() < 1 )
 				p.Normalize();
 			return p;
 		}

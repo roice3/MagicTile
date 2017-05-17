@@ -215,7 +215,7 @@
 				RenderDirectly();
 			}
 
-			if( !(this.ShowOnSurface || this.ShowAsSkew) )
+			if( !(ShowOnSurface || ShowAsSkew) )
 				RenderClosestTwistingCircles();
 
 			m_glControl.SwapBuffers();
@@ -241,6 +241,9 @@
 		{
 			get
 			{
+				if( m_puzzle == null )
+					return false;
+
 				// We want the surface display setting to take precedence.
 				if( m_puzzle.Config.Geometry == Geometry.Spherical &&
 					m_settings.SphericalModel == SphericalModel.HemisphereDisks &&
@@ -525,6 +528,9 @@
 					m.Elliptic( Geometry.Spherical, Complex.ImaginaryOne, Math.PI );
 					trans = new Isometry( m, null );
 				}
+
+				if( RenderingDisks )
+					trans *= m_mouseMotion.Isometry;
 			}
 			else
 			{
@@ -958,7 +964,7 @@
 				vbo2.Draw();
 			}
 
-			if( m_surface == Surface.Sphere )
+			if( m_surface == Surface.Sphere || m_surface == Surface.Boys )
 			{
 				m_lowerHemisphere = false;
 				using( VBO vbo1 = CreateSurfacePickVbo( backFacing: false ) )
@@ -1148,12 +1154,6 @@
 		{
 			if( RenderingDisks )
 			{
-				Isometry i = m_mouseMotion.Isometry;
-				Vector3D x = new Vector3D( 1, 0 );
-				Vector3D t = i.Apply( x );
-				double rot = Euclidean2D.AngleToCounterClock( x, t );
-				v.RotateXY( m_lowerHemisphere ? rot : -rot );
-
 				Vector3D off = new Vector3D( 1, 0 );
 				if( m_lowerHemisphere )
 					v -= off;
@@ -1278,7 +1278,10 @@
 		/// </summary>
 		private void TransformSkewVert( Matrix4D rot, ref Vector3D vert )
 		{
-			if( m_settings.ConstrainToHypersphere && !RenderingDisks )
+			if( RenderingDisks )
+				return;
+
+			if( m_settings.ConstrainToHypersphere )
 				vert.Normalize();
 			vert = rot.RotateVector( vert );
 			vert = vert.ProjectTo3DSafe( m_mouseMotion.ProjectionDistance4D );
@@ -1562,7 +1565,7 @@
 
 			// If we are showing on the surface, we have to do a complete
 			// render for picking to figure out what is closest.
-			if( this.ShowOnSurface )
+			if( ShowOnSurface && !RenderingDisks )
 			{
 				// Don't do this when animating (spinning, twisting or dragging).  It's too slow.
 				if( TwistHandler.Twisting || 
@@ -1661,9 +1664,9 @@
 				return;
 
 			m_findingTwistingCircles = true;
-			if( FindClosestTwistingCircles( m_lastX, m_lastY ) )
+			if( FindClosestTwistingCircles( m_lastX, m_lastY ) || RenderingDisks )
 			{
-				if( this.ShowOnSurface )
+				if( ShowOnSurface )
 					InvalidateTextures();
 
 				m_glControl.Invalidate();
@@ -1727,9 +1730,8 @@
 			//
 			// From here on down, we're doing normal twisting.
 			//
-
 			bool skewReverseTwist = false;
-			if( this.ShowOnSurface || this.ShowAsSkew )
+			if( (ShowOnSurface || ShowAsSkew) && !RenderingDisks )
 			{
 				bool forPicking = true;
 				if( m_puzzle.AllTwistData.Count > 0 )	// Trying to do picking on tilings will cause issues.

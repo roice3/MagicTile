@@ -204,7 +204,7 @@
 					return SphericalModels.StereoToGnomonic( point );
 
 				if( m_settings.SphericalModel == SphericalModel.HemisphereDisks )
-					return SphericalModels.FromDisks( point*2, normalize: true );
+					return SphericalModels.FromDisks( point*2, normalize: false );
 			}
 
 			return point;
