@@ -15,6 +15,7 @@
 			Isometry = new Isometry();
 			IndexOfMaster = -1;
 			PickInfo = new PickInfo[] { };
+            Neighbors = new HashSet<Cell>();
 		}
 
 		/// <summary>
@@ -60,6 +61,11 @@
 		/// Whether or not we are a slave.
 		/// </summary>
 		public bool IsSlave { get { return Master != null; } }
+
+        /// <summary>
+        /// List of master cells that share boundary with this cell. If a master cell borders a slave cell, the master of the slave cell is in this list
+        /// </summary>
+        public HashSet<Cell> Neighbors { get; set; }
 
 		/// <summary>
 		/// This is the isometry that will take us back to the master cell.

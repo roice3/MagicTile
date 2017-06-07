@@ -229,7 +229,9 @@
 				AddMaster( t, tiling, identifications, completed );
 			}
 
-			StatusOrCancel( callback, "analyzing topology..." );
+            PopulateNeighbors();
+
+            StatusOrCancel( callback, "analyzing topology..." );
 			TopologyAnalyzer topology = new TopologyAnalyzer( this, template );
 			topology.Analyze();
 			this.Topology = topology.ToString();
@@ -291,7 +293,7 @@
 			callback.Status( "Number of stickers per cell:" + tStickers.Count );
 		}
 
-		private IEnumerable<Tile> MasterCandidates( Tiling tiling )
+        private IEnumerable<Tile> MasterCandidates( Tiling tiling )
 		{
 			IEnumerable<Tile> masterCandidates = tiling.Tiles;
 
@@ -769,8 +771,28 @@
 
 			return result;
 		}
+        
+        private void PopulateNeighbors()
+        {
+            foreach (var master in m_masters)
+            {
+                foreach (var cell in AllCells)
+                {
+                    var hasCommonEdge = master.Boundary.EdgeMidpoints
+                        .Any(masterEdgeMidPoint => cell.Boundary.EdgeMidpoints
+                            .Any(cellEdgeMidPoint => masterEdgeMidPoint == cellEdgeMidPoint));
+                    if (hasCommonEdge)
+                    {
+                        var neighborMaster = cell.IsMaster ? cell : cell.Master;
+                        master.Neighbors.Add(neighborMaster);
+                        neighborMaster.Neighbors.Add(master);
+                    }
+                }
+                Console.WriteLine($"neighbor count: {master.Neighbors.Count}");
+            }
+        }
 
-		private void AddMaster( Tile tile, Tiling tiling, PuzzleIdentifications identifications, Dictionary<Vector3D, Cell> completed )
+        private void AddMaster( Tile tile, Tiling tiling, PuzzleIdentifications identifications, Dictionary<Vector3D, Cell> completed )
 		{
 			Cell master = SetupCell( tiling.Tiles.First(), tile.Boundary, completed );
 			master.IndexOfMaster = m_masters.Count;
