@@ -228,6 +228,7 @@
 				// Add it (this will add all the slaves too).
 				AddMaster( t, tiling, identifications, completed );
 			}
+            callback.Status("Number of completed cells:" + completed.Count);
 
             StatusOrCancel(callback, "populating neighbors...");
             PopulateNeighbors();
@@ -291,7 +292,8 @@
 			callback.Status( "Number of colors:" + this.MasterCells.Count );
 			callback.Status( "Number of tiles:" + tiling.Tiles.Count() );
 			callback.Status( "Number of cells:" + count );
-			callback.Status( "Number of stickers per cell:" + tStickers.Count );
+            callback.Status( "Number of completed cells:" + completed.Count);
+            callback.Status( "Number of stickers per cell:" + tStickers.Count );
 		}
 
         private IEnumerable<Tile> MasterCandidates( Tiling tiling )
@@ -898,8 +900,8 @@
 
 		private void AddSlave( Cell master, Cell slave )
 		{
-            // Go ahead and set this.
-            slave.Master = master;
+			// Go ahead and set this.
+			slave.Master = master;
 			slave.IndexOfMaster = master.IndexOfMaster;
 
 			List<Cell> slaves;
