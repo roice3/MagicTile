@@ -1684,7 +1684,35 @@ namespace MagicTile
 			m_glControl.Invalidate();
 		}
 
-		private void PerformClick( ClickData clickData )
+	    private void PerformLightsOutClick(ClickData clickData)
+	    {
+            Vector3D? spaceCoordsNoMouseMotion;
+            Cell closest = FindClosestCell(clickData.X, clickData.Y, out spaceCoordsNoMouseMotion);
+            if (closest == null || !spaceCoordsNoMouseMotion.HasValue)
+                return;
+
+            var closestMaster = closest.MasterOrSelf;
+            Console.WriteLine(String.Join(";", m_puzzle.MasterCells.Select(c => c.IndexOfMaster)));
+            Console.WriteLine(closest.IsMaster);
+            Console.WriteLine(closestMaster.IndexOfMaster);
+            Console.WriteLine(closest.IndexOfMaster);
+            Console.WriteLine(m_puzzle.MasterCells.IndexOf(closest));
+            Console.WriteLine(m_puzzle.AllCells.ToList().IndexOf(closest));
+
+            var color = m_puzzle.State.GetStickerColor(closestMaster.IndexOfMaster, 0);
+
+            // TODO: toggle color
+            Console.WriteLine($"Before click: Master index of the closest cell is: {closestMaster.IndexOfMaster}, color is {color.Name}");
+            m_puzzle.State.ToggleStickerColorIndex(closestMaster.IndexOfMaster, 0);
+            m_puzzle.State.CommitChanges();
+            var afterColor = m_puzzle.State.GetStickerColor(closestMaster.IndexOfMaster, 0);
+
+            // TODO: toggle color
+            Console.WriteLine($"After click: Master index of the closest cell is: {closestMaster.IndexOfMaster}, color is {afterColor.Name}");
+            Render();
+        }
+
+        private void PerformClick( ClickData clickData )
 		{
 			// Handle macros.
 			if( AltDown )
@@ -1746,15 +1774,8 @@ namespace MagicTile
 
 		    if (m_closestTwistingCircles == null)
 		    {
-                Vector3D? spaceCoordsNoMouseMotion;
-                Cell closest = FindClosestCell(clickData.X, clickData.Y, out spaceCoordsNoMouseMotion);
-                if (closest == null || !spaceCoordsNoMouseMotion.HasValue)
-                    return;
-
-                // TODO: toggle color
-                Console.WriteLine($"Master index of the closest cell is: {closest.MasterOrSelf.IndexOfMaster}");
-
-		        return;
+                PerformLightsOutClick(clickData);
+                return;
 		    }
 
 			SingleTwist twist = new SingleTwist();

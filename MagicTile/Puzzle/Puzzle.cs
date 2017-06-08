@@ -229,6 +229,7 @@
 				AddMaster( t, tiling, identifications, completed );
 			}
 
+            StatusOrCancel(callback, "populating neighbors...");
             PopulateNeighbors();
 
             StatusOrCancel( callback, "analyzing topology..." );
@@ -897,8 +898,8 @@
 
 		private void AddSlave( Cell master, Cell slave )
 		{
-			// Go ahead and set this.
-			slave.Master = master;
+            // Go ahead and set this.
+            slave.Master = master;
 			slave.IndexOfMaster = master.IndexOfMaster;
 
 			List<Cell> slaves;
