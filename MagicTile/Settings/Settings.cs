@@ -312,7 +312,7 @@
 			this.FocalLength = 1;
 			this.ColorBg = Color.DarkGray;
 			this.ColorTileEdges = Color.Black;
-		    this.ColorOff = Color.Black;
+			this.ColorOff = Color.Black;
 		}
 
 		[DataMember]
@@ -333,13 +333,13 @@
 		[Category( "Coloring" )]
 		public Color ColorTileEdges { get; set; }
 
-        [DataMember]
-        [DisplayName("Off Color")]
-        [Description("The color of tile when it is turned off in lights out mode.")]
-        [Category("Coloring")]
-        public Color ColorOff { get; set; }
+		[DataMember]
+		[DisplayName("Off Color")]
+		[Description("The color of tile when it is turned off in lights out mode.")]
+		[Category("Coloring")]
+		public Color ColorOff { get; set; }
 
-        [DataMember]
+		[DataMember]
 		[DisplayName( "Color 1" )]
 		[Category( "Coloring" )]
 		public Color Color1 { get; set; }
@@ -624,8 +624,8 @@
 			ColorTwistingCircles = Color.OrangeRed;
 			ColorBg = Color.DarkGray;
 			ColorTileEdges = Color.Black;
-            ColorOff = Color.Black;
-            Color1 = Color.White;
+			ColorOff = Color.Black;
+			Color1 = Color.White;
 			Color2 = Color.Green;
 			Color3 = Color.Blue;
 			Color4 = Color.Yellow;

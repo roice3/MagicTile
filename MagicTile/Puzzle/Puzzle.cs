@@ -228,12 +228,12 @@
 				// Add it (this will add all the slaves too).
 				AddMaster( t, tiling, identifications, completed );
 			}
-            callback.Status("Number of completed cells:" + completed.Count);
+			callback.Status("Number of completed cells:" + completed.Count);
 
-            StatusOrCancel(callback, "populating neighbors...");
-            PopulateNeighbors();
+			StatusOrCancel(callback, "populating neighbors...");
+			PopulateNeighbors();
 
-            StatusOrCancel( callback, "analyzing topology..." );
+			StatusOrCancel( callback, "analyzing topology..." );
 			TopologyAnalyzer topology = new TopologyAnalyzer( this, template );
 			topology.Analyze();
 			this.Topology = topology.ToString();
@@ -292,11 +292,11 @@
 			callback.Status( "Number of colors:" + this.MasterCells.Count );
 			callback.Status( "Number of tiles:" + tiling.Tiles.Count() );
 			callback.Status( "Number of cells:" + count );
-            callback.Status( "Number of completed cells:" + completed.Count);
-            callback.Status( "Number of stickers per cell:" + tStickers.Count );
+			callback.Status( "Number of completed cells:" + completed.Count);
+			callback.Status( "Number of stickers per cell:" + tStickers.Count );
 		}
 
-        private IEnumerable<Tile> MasterCandidates( Tiling tiling )
+		private IEnumerable<Tile> MasterCandidates( Tiling tiling )
 		{
 			IEnumerable<Tile> masterCandidates = tiling.Tiles;
 
@@ -774,27 +774,27 @@
 
 			return result;
 		}
-        
-        private void PopulateNeighbors()
-        {
-            foreach (var master in m_masters)
-            {
-                foreach (var neighbor in AllCells)
-                {
-                    var hasCommonEdge = master.Boundary.EdgeMidpoints
-                        .Any(masterEdgeMidPoint => neighbor.Boundary.EdgeMidpoints
-                            .Any(cellEdgeMidPoint => masterEdgeMidPoint == cellEdgeMidPoint));
-                    if (hasCommonEdge)
-                    {
-                        master.Neighbors.Add(neighbor.MasterOrSelf);
-                        neighbor.MasterOrSelf.Neighbors.Add(master);
-                    }
-                }
-                Console.WriteLine($"Master cell {master.IndexOfMaster} neighbor count: {master.Neighbors.Count}");
-            }
-        }
 
-        private void AddMaster( Tile tile, Tiling tiling, PuzzleIdentifications identifications, Dictionary<Vector3D, Cell> completed )
+		private void PopulateNeighbors()
+		{
+			foreach (var master in m_masters)
+			{
+				foreach (var neighbor in AllCells)
+				{
+					var hasCommonEdge = master.Boundary.EdgeMidpoints
+						.Any(masterEdgeMidPoint => neighbor.Boundary.EdgeMidpoints
+							.Any(cellEdgeMidPoint => masterEdgeMidPoint == cellEdgeMidPoint));
+					if (hasCommonEdge)
+					{
+						master.Neighbors.Add(neighbor.MasterOrSelf);
+						neighbor.MasterOrSelf.Neighbors.Add(master);
+					}
+				}
+				Console.WriteLine($"Master cell {master.IndexOfMaster} neighbor count: {master.Neighbors.Count}");
+			}
+		}
+
+		private void AddMaster( Tile tile, Tiling tiling, PuzzleIdentifications identifications, Dictionary<Vector3D, Cell> completed )
 		{
 			Cell master = SetupCell( tiling.Tiles.First(), tile.Boundary, completed );
 			master.IndexOfMaster = m_masters.Count;
