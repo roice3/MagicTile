@@ -776,19 +776,18 @@
         {
             foreach (var master in m_masters)
             {
-                foreach (var cell in AllCells)
+                foreach (var neighbor in AllCells)
                 {
                     var hasCommonEdge = master.Boundary.EdgeMidpoints
-                        .Any(masterEdgeMidPoint => cell.Boundary.EdgeMidpoints
+                        .Any(masterEdgeMidPoint => neighbor.Boundary.EdgeMidpoints
                             .Any(cellEdgeMidPoint => masterEdgeMidPoint == cellEdgeMidPoint));
                     if (hasCommonEdge)
                     {
-                        var neighborMaster = cell.IsMaster ? cell : cell.Master;
-                        master.Neighbors.Add(neighborMaster);
-                        neighborMaster.Neighbors.Add(master);
+                        master.Neighbors.Add(neighbor.MasterOrSelf);
+                        neighbor.MasterOrSelf.Neighbors.Add(master);
                     }
                 }
-                Console.WriteLine($"neighbor count: {master.Neighbors.Count}");
+                Console.WriteLine($"Master cell {master.IndexOfMaster} neighbor count: {master.Neighbors.Count}");
             }
         }
 

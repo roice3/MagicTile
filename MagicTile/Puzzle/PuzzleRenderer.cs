@@ -1,4 +1,6 @@
-﻿namespace MagicTile
+﻿using System;
+
+namespace MagicTile
 {
 	using MagicTile.Control;
 	using OpenTK.Graphics.OpenGL;
@@ -1742,8 +1744,18 @@
 				FindClosestTwistingCircles( clickData.X, clickData.Y );
 			}
 
-			if( m_closestTwistingCircles == null )
-				return;
+		    if (m_closestTwistingCircles == null)
+		    {
+                Vector3D? spaceCoordsNoMouseMotion;
+                Cell closest = FindClosestCell(clickData.X, clickData.Y, out spaceCoordsNoMouseMotion);
+                if (closest == null || !spaceCoordsNoMouseMotion.HasValue)
+                    return;
+
+                // TODO: toggle color
+                Console.WriteLine($"Master index of the closest cell is: {closest.MasterOrSelf.IndexOfMaster}");
+
+		        return;
+		    }
 
 			SingleTwist twist = new SingleTwist();
 			twist.IdentifiedTwistData = m_closestTwistingCircles.IdentifiedTwistData;
