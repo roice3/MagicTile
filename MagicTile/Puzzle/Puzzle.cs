@@ -230,9 +230,6 @@
 			}
 			callback.Status("Number of completed cells:" + completed.Count);
 
-			StatusOrCancel(callback, "populating neighbors...");
-			PopulateNeighbors();
-
 			StatusOrCancel( callback, "analyzing topology..." );
 			TopologyAnalyzer topology = new TopologyAnalyzer( this, template );
 			topology.Analyze();
@@ -281,6 +278,12 @@
 
 			//TraceGraph();
 
+			if (tStickers.Count == 1)
+			{
+				StatusOrCancel(callback, "populating neighbors...");
+				PopulateNeighbors();
+			}
+
 			this.State = new State( this.MasterCells.Count, tStickers.Count );
 			this.TwistHistory = new TwistHistory();
 
@@ -292,7 +295,6 @@
 			callback.Status( "Number of colors:" + this.MasterCells.Count );
 			callback.Status( "Number of tiles:" + tiling.Tiles.Count() );
 			callback.Status( "Number of cells:" + count );
-			callback.Status( "Number of completed cells:" + completed.Count);
 			callback.Status( "Number of stickers per cell:" + tStickers.Count );
 		}
 
@@ -790,7 +792,6 @@
 						neighbor.MasterOrSelf.Neighbors.Add(master);
 					}
 				}
-				Console.WriteLine($"Master cell {master.IndexOfMaster} neighbor count: {master.Neighbors.Count}");
 			}
 		}
 
@@ -926,7 +927,6 @@
 			// This has to be recalculated, because it may not be the same as the tiling isometries.
 			//cell.Isometry = t.Isometry;
 			cell.Isometry.CalculateFromTwoPolygons( home, boundary, this.Config.Geometry );
-
 			completed[boundary.Center] = cell;
 			return cell;
 		}
