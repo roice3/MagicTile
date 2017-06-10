@@ -167,7 +167,7 @@
 		}
 		public double WaitRadius { get; set; }
 
-		public void Render()
+		public void Render(bool forceUpdateTexture = false)
 		{
 			/* Optimization is pretty tricky.
 			 * 
@@ -194,6 +194,9 @@
 			bool useTexture = !spherical || ShowOnSurface;
 			if( useTexture )
 			{
+				if(forceUpdateTexture)
+					m_renderToTexture.InvalidateAllTextures();
+
 				GenTextures();
 
 				if( this.ShowOnSurface || this.ShowAsSkew )
@@ -1695,7 +1698,7 @@
 				m_puzzle.State.ToggleStickerColorIndex(neighbor.IndexOfMaster, 0);
 			}
 			m_puzzle.State.CommitChanges();
-			Render();
+			Render(true);
 		}
 
 		private void PerformClick( ClickData clickData )
