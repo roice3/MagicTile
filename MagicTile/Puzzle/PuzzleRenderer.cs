@@ -1682,7 +1682,7 @@
 			m_glControl.Invalidate();
 		}
 
-		private void PerformLightsOutClick(ClickData clickData)
+		private void PerformTogglingClick(ClickData clickData)
 		{
 			Vector3D? spaceCoordsNoMouseMotion;
 			Cell closest = FindClosestCell(clickData.X, clickData.Y, out spaceCoordsNoMouseMotion);
@@ -1760,7 +1760,7 @@
 
 			if( m_closestTwistingCircles == null )
 			{
-				PerformLightsOutClick(clickData);
+				PerformTogglingClick(clickData);
 				return;
 			}
 
