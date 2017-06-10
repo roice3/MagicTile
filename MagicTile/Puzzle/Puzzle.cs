@@ -228,7 +228,6 @@
 				// Add it (this will add all the slaves too).
 				AddMaster( t, tiling, identifications, completed );
 			}
-			callback.Status("Number of completed cells:" + completed.Count);
 
 			StatusOrCancel( callback, "analyzing topology..." );
 			TopologyAnalyzer topology = new TopologyAnalyzer( this, template );
@@ -1305,6 +1304,8 @@
 			// Now build the near tree.
 			foreach( KeyValuePair<Vector3D, Cell> keyValuePair in cellMap )
 			{
+				// Ignore the orphaned cells in cellMap. They are not reachable from the masters list
+				if(keyValuePair.Value.IndexOfMaster == -1) continue;
 				// NearTree doesn't like NaN or +Inf
 				Vector3D center = InfinitySafe( keyValuePair.Key );
 
