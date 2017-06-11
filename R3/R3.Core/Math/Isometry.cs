@@ -146,6 +146,21 @@
 			return z;
 		}
 
+		public Vector3D ApplyInfiniteSafe( Vector3D z )
+		{
+			return Vector3D.FromComplex( ApplyInfiniteSafe( z.ToComplex() ) );
+		}
+
+		public Complex ApplyInfiniteSafe( Complex z )
+		{
+			z = Mobius.ApplyInfiniteSafe( z );
+			if( Reflection != null )
+				z = ApplyCachedCircleInversion( z );
+			if( Infinity.IsInfinite( z ) )
+				z = Infinity.InfinityVector2D.ToComplex();
+			return z;
+		}
+
 		/// <summary>
 		/// Does a circle inversion on an arbitrary circle.
 		/// </summary>
