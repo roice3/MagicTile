@@ -227,7 +227,10 @@
 			// Create our stencil, tracking max/min
 			//
 
-			Vector3D min = p.Center, max = p.Center;
+			Vector3D cen = p.Center;
+			if( Infinity.IsInfinite( cen ) )
+				cen = Infinity.LargeFiniteVector;
+			Vector3D min = cen, max = cen;
 
 			// Turn coloring off.
 			GL.ColorMask( false, false, false, false );
@@ -235,7 +238,7 @@
 			GL.PolygonMode( MaterialFace.FrontAndBack, PolygonMode.Fill );
 			GL.Begin( BeginMode.TriangleFan );
 			{
-				GL.Vertex2( p.Center.X, p.Center.Y );
+				GL.Vertex2( cen.X, cen.Y );
 
 				Vector3D[] edgePoints = p.EdgePoints;
 				for( int i = 0; i < edgePoints.Length; i++ )
