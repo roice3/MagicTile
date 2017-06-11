@@ -926,7 +926,7 @@
 		{
 			foreach( Segment s in this.Segments )
 				s.Transform( m );
-			Center = m.Apply( Center );
+			Center = m.ApplyInfiniteSafe( Center );
 		}
 
 		/// <summary>
@@ -936,7 +936,7 @@
 		{
 			foreach( Segment s in this.Segments )
 				s.Transform( isometry );
-			Center = isometry.Apply( Center );
+			Center = isometry.ApplyInfiniteSafe( Center );
 		}
 
 		/// <summary>

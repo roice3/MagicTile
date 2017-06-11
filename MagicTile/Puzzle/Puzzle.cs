@@ -845,22 +845,22 @@
 			//	conjugated = parent.Isometry.Inverse() * identIsometry * parent.Isometry;
 
 			Vector3D newCenter = parent.VertexCircle.CenterNE;
-			newCenter = conjugated.Apply( newCenter );
+			newCenter = conjugated.ApplyInfiniteSafe( newCenter );
 
 			// ZZZ - Hack for spherical.  Some centers were projecting to very large values rather than DNE.
 			if( Infinity.IsInfinite( newCenter ) )
-				newCenter = Vector3D.DneVector();
+				newCenter = Infinity.InfinityVector2D;
 
 			// In the tiling?
 			Tile tile;
 			if( tiling != null && !tiling.TilePositions.TryGetValue( newCenter, out tile ) )
 			{
-				if( newCenter.Abs() < 0.4 )
-					System.Diagnostics.Trace.WriteLine( newCenter.Abs() );
 				return null;
 			}
 			if( positions != null && !positions.Positions.Contains( newCenter ) )
+			{
 				return null;
+			}
 
 			// Already done this one?
 			if( completed.ContainsKey( newCenter ) )
@@ -1483,8 +1483,8 @@
 			}
 
 			// Setup texture coords.
-			int lod = 5;
-			SurfaceTextureCoords = TextureHelper.TextureCoords( SurfacePoly, g, 32 );
+			int lod = 6;
+			SurfaceTextureCoords = TextureHelper.TextureCoords( SurfacePoly, g, (int)Math.Pow( 2.0, lod ) );
 			SurfaceElementIndices = TextureHelper.CalcElementIndices( SurfacePoly, lod )[lod];
 
 			// For each triangle of the surface, cache the closest twisting data.

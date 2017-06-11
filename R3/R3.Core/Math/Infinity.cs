@@ -8,6 +8,7 @@
 	public static class Infinity
 	{
 		public static Vector3D InfinityVector = new Vector3D( double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity );
+		public static Vector3D InfinityVector2D = new Vector3D( double.PositiveInfinity, double.PositiveInfinity );
 		public static Vector3D LargeFiniteVector = new Vector3D( FiniteScale, FiniteScale, FiniteScale );
 
 		public const double FiniteScale = 10000;

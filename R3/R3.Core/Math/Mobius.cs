@@ -327,11 +327,31 @@
 			return ( ( A*z + B ) / ( C*z + D ) );
 		}
 
+		public Vector3D ApplyInfiniteSafe( Vector3D z )
+		{
+			return Vector3D.FromComplex( ApplyInfiniteSafe( z.ToComplex() ) );
+		}
+
+		public Complex ApplyInfiniteSafe( Complex z )
+		{
+			if( Infinity.IsInfinite( z ) )
+				return ApplyToInfinite();
+
+			Complex result = Apply( z );
+			if( Infinity.IsInfinite( result ) )
+				return Infinity.InfinityVector2D;
+
+			return result;
+		}
+
 		/// <summary>
 		/// Applies a Mobius transformation to the point at infinity.
 		/// </summary>
 		public Vector3D ApplyToInfinite()
 		{
+			if( C == 0 )
+				return Infinity.InfinityVector2D;
+
 			return Vector3D.FromComplex( A / C );
 		}
 
