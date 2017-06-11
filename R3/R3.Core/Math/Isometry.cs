@@ -156,6 +156,8 @@
 			z = Mobius.ApplyInfiniteSafe( z );
 			if( Reflection != null )
 				z = ApplyCachedCircleInversion( z );
+			if( Infinity.IsInfinite( z ) )
+				z = Infinity.InfinityVector2D.ToComplex();
 			return z;
 		}
 
