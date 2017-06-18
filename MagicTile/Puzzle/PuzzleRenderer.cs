@@ -458,10 +458,35 @@
 
 				Polygon p = sticker.Poly.Clone();
 				p.Transform( m_mouseMotion.Isometry );
-				Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
+				Color color = GetStickerColor( sticker );
 
 				GLUtils.DrawConcavePolygon( p, color, GrabModelTransform() );
 			}
+		}
+
+		private Color GetStickerColor( Sticker sticker )
+		{
+			Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
+
+			if( m_puzzle.Config.CoxeterComplex )
+			{
+				bool parity = sticker.StickerIndex % 2 == 0;
+				if( m_puzzle.MasterCells[sticker.CellIndex].Isometry.Reflected )
+					parity = !parity;
+
+				// Go around 180 degrees on the color wheel. https://stackoverflow.com/a/1165145
+				//float hue = color.GetHue();
+				//hue = (hue + 180) % 360;
+				//color = ColorUtil.HslToRgb( new Vector3D( hue, color.GetSaturation(), color.GetBrightness() ) );
+
+				// Another "reversal" option.
+				//color = Color.FromArgb( 255, 255 - color.R, 255 - color.G, 255 - color.B );
+
+				// Simple light-dark scheme.
+				color = parity ? Color.White : Color.Gray;
+			}
+
+			return color;
 		}
 
 		private void DrawMovingStickersDirectly()
@@ -487,7 +512,7 @@
 					{
 						Polygon clone = sticker.Poly.Clone();
 						clone.Transform( isometry );
-						Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
+						Color color = GetStickerColor( sticker );
 						GLUtils.DrawConcavePolygon( clone, color, GrabModelTransform() );
 					}
 				}
@@ -598,7 +623,7 @@
 					if( stickerPoly.Center.Abs() > m_ellipticalClipCutoff )
 						continue;
 
-				Color color = m_puzzle.State.GetStickerColor( master.Stickers[i].CellIndex, master.Stickers[i].StickerIndex );
+				Color color = GetStickerColor( master.Stickers[i] );
 				GLUtils.DrawPolygonSolid( stickerPoly, color );
 			}
 		}

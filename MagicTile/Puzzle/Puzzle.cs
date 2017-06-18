@@ -425,21 +425,40 @@
 			List<Tile> templateTile = new List<Tile>();
 			templateTile.Add( template );
 
-			foreach( TwistData twistData in templateSlicers )
-			foreach( CircleNE slicingCircle in twistData.Circles )
+			if( Config.CoxeterComplex )
 			{
-				// Use all edge and vertex incident tiles.
-				// ZZZ - It's easy to imagine needing to grab more than this in the future.
-				foreach( Tile t in templateTile.Concat( template.EdgeIncidences.Concat( template.VertexIndicences ) ) )
+				// templateSlicers will be empty, since we don't allow twisting.
+				// Fill it out with the slicers we want.
+				TwistData td = new TwistData();
+				Circle c = new Circle( template.Boundary.Start.Value, template.Boundary.Mid.Value );
+
+				for( int i = 0; i < Config.P; i++ )
 				{
-					CircleNE result = slicingCircle.Clone();
-					result.Transform( t.Isometry );
+					Mobius m = new Mobius();
+					m.Elliptic( Geometry.Spherical, new Complex(), Math.PI * i / Config.P );
+					CircleNE cNE = new CircleNE( c, template.Boundary.Segments[0].P2 );
+					cNE.Transform( m );
+					yield return cNE;
+				}
+			}
+			else
+			{ 
+				foreach( TwistData twistData in templateSlicers )
+				foreach( CircleNE slicingCircle in twistData.Circles )
+				{
+					// Use all edge and vertex incident tiles.
+					// ZZZ - It's easy to imagine needing to grab more than this in the future.
+					foreach( Tile t in templateTile.Concat( template.EdgeIncidences.Concat( template.VertexIndicences ) ) )
+					{
+						CircleNE result = slicingCircle.Clone();
+						result.Transform( t.Isometry );
 
-					if( complete.Contains( result ) )
-						continue;
+						if( complete.Contains( result ) )
+							continue;
 
-					complete.Add( result );
-					yield return result;
+						complete.Add( result );
+						yield return result;
+					}
 				}
 			}
 		}
@@ -451,6 +470,12 @@
 			List<Polygon> slicees = new List<Polygon>(), sliced = null;
 			slicees.Add( template.Drawn );
 			SliceRecursive( slicees, slicers, ref sliced );
+
+			if( this.Config.CoxeterComplex )
+			{
+				// Order the stickers, so we can change their colors appropriately.
+				sliced = sliced.OrderBy( p => Euclidean2D.AngleToCounterClock( p.Center, new Vector3D( 1, 0 ) ) ).ToList();
+			}
 			
 			// ZZZ - Hacky to special case this,
 			//		 but I'm not sure how the general solution will go.

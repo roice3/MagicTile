@@ -204,13 +204,20 @@
 		/// <summary>
 		/// All the puzzles we represent.
 		/// </summary>
-		public void GetPuzzles( out PuzzleConfig tiling, out PuzzleConfig[] face, out PuzzleConfig[] edge, 
+		public void GetPuzzles( out PuzzleConfig[] tilings, out PuzzleConfig[] face, out PuzzleConfig[] edge, 
 			out PuzzleConfig[] vertex, out PuzzleConfig[] mixed, out PuzzleConfig[] earthquake )
 		{
-			tiling = NonSpecific();
+			PuzzleConfig tiling = NonSpecific();
 			tiling.MenuName = "Tiling";
 			tiling.DisplayName = this.ClassDisplayName + " " + tiling.MenuName;
-			tiling.SlicingCircles = null;
+
+			PuzzleConfig coxeter = NonSpecific();
+			coxeter.CoxeterComplex = true;
+			coxeter.MenuName = "Coxeter Complex";
+			coxeter.DisplayName = this.ClassDisplayName + " " + tiling.MenuName;
+			coxeter.SlicingCircles.Thickness = 0.01;
+
+			tilings = new PuzzleConfig[] { tiling, coxeter };
 
 			List<PuzzleConfig> puzzles = new List<PuzzleConfig>();
 			foreach( PuzzleSpecific puzzleSpecific in this.PuzzleSpecificList )
@@ -260,6 +267,7 @@
 			config.SurfaceConfig = this.SurfaceConfig;
 			config.IRPConfig = this.IRPConfig;
 			config.Skew4DConfig = this.Skew4DConfig;
+			config.SlicingCircles = new SlicingCircles();
 
 			return config;
 		}

@@ -25,9 +25,11 @@
 			CircleNE c1 = c.Clone(), c2 = c.Clone();
 			Mobius m = new Mobius();
 			Vector3D pointOnCircle = c.IsLine ? c.P1 : c.Center + new Vector3D( c.Radius, 0 );
-			m.Hyperbolic2( g, c1.CenterNE, pointOnCircle, thickness / 2 );
+
+			double offset = thickness / 2;
+			m.Hyperbolic2( g, c1.CenterNE, pointOnCircle, offset );
 			c1.Transform( m );
-			m.Hyperbolic2( g, c2.CenterNE, pointOnCircle, -thickness / 2 );
+			m.Hyperbolic2( g, c2.CenterNE, pointOnCircle, -offset );
 			c2.Transform( m );
 			
 			SlicePolygonHelper( p, c1, c2, out output );
@@ -72,8 +74,6 @@
 		{
 			output = new List<Polygon>();
 
-			// ZZZ - alter Clip method to work on Polygons and use that.
-
 			// Slice it up.
 			List<Polygon> sliced1, sliced2;
 			Slicer.SlicePolygon( p, c1, out sliced1 );
@@ -96,7 +96,7 @@
 		}
 
 		/// <summary>
-		/// Slices up a polygon with a circle (line case not supported).
+		/// Slices up a polygon with a circle (or line).
 		/// </summary>
 		/// <remarks>The input polygon might get reversed</remarks>
 		public static bool SlicePolygon( Polygon p, Circle c, out List<Polygon> output )
@@ -316,7 +316,7 @@
 			Vector3D startLocation = iPoint1.Location;
 
 			int iSeg = 0;
-			Segment current = SplicedArc( parent, c, iPoints, ref pair, increment, ref iSeg );
+			Segment current = SplicedSeg( parent, c, iPoints, ref pair, increment, ref iSeg );
 			newPoly.Segments.Add( current.Clone() );
 
 			while( true )
@@ -335,7 +335,7 @@
 				Vector3D segEnd = current.P2;
 				if( iPoints.Select( p => p.Location ).Contains( segEnd ) )	// ZZZ - Performance
 				{
-					current = SplicedArc( parent, c, iPoints, ref pair, increment, ref iSeg );
+					current = SplicedSeg( parent, c, iPoints, ref pair, increment, ref iSeg );
 					newPoly.Segments.Add( current.Clone() );
 					if( current.P2.Compare( startLocation ) )
 						break;
@@ -361,7 +361,7 @@
 		}
 
 		/// <summary>
-		/// Helper to return the smaller spliced arc.
+		/// Helper to return the smaller spliced arc.  In the case of a line, this just returns the spliced line.
 		/// </summary>
 		private static Segment SmallerSplicedArc( Circle c, List<IntersectionPoint> iPoints, ref int pair, bool increment, ref int nextSegIndex )
 		{
@@ -372,9 +372,17 @@
 			Vector3D p2 = iPoint2.Location;
 			nextSegIndex = iPoint2.Index;
 
-			Segment newSeg = Segment.Arc( p1, p2, c.Center, clockwise: true );
-			if( newSeg.Angle > System.Math.PI )
-				newSeg.Clockwise = false;
+			Segment newSeg = null;
+			if( c.IsLine )
+			{
+				newSeg = Segment.Line( p1, p2 );
+			}
+			else
+			{
+				newSeg = Segment.Arc( p1, p2, c.Center, clockwise: true );
+				if( newSeg.Angle > System.Math.PI )
+					newSeg.Clockwise = false;
+			}
 
 			pair++;
 			if( pair == iPoints.Count / 2 )
@@ -384,11 +392,13 @@
 		}
 
 		/// <summary>
-		/// Helper to return a spliced arc.
+		/// Helper to return a spliced segment.
 		/// </summary>
-		private static Segment SplicedArc( Polygon parent, Circle c, List<IntersectionPoint> iPoints, ref int pair, bool increment, ref int nextSegIndex )
+		private static Segment SplicedSeg( Polygon parent, Circle c, List<IntersectionPoint> iPoints, ref int pair, bool increment, ref int nextSegIndex )
 		{
 			Segment spliced = SmallerSplicedArc( c, iPoints, ref pair, increment, ref nextSegIndex );
+			if( c.IsLine )
+				return spliced;
 
 			// This is heuristic, but works quite well.
 			if( System.Math.Abs( spliced.Angle ) < System.Math.PI * .75 )
@@ -405,7 +415,6 @@
 			Vector3D t1 = spliced.P1;
 			t1.RotateXY( spliced.Center, testAngle );
 
-			// ZZZ - I don't like relying on our weak IsPointInside method.
 			if( !parent.IsPointInsideParanoid( t1 ) )
 				spliced.Clockwise = !spliced.Clockwise;
 

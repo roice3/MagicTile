@@ -228,11 +228,12 @@
 		{
 			level++;
 
-			PuzzleConfig tiling;
+			PuzzleConfig[] tilings;
 			PuzzleConfig[] face, edge, vertex, mixed, earthquake;
-			puzzleConfigClass.GetPuzzles( out tiling, out face, out edge, out vertex, out mixed, out earthquake );
+			puzzleConfigClass.GetPuzzles( out tilings, out face, out edge, out vertex, out mixed, out earthquake );
 
-			AddPuzzle( tiling, parentTreeNode, parentMenuItem, isTiling: true );
+			AddPuzzle( tilings[0], parentTreeNode, parentMenuItem, isTiling: true );
+			AddPuzzle( tilings[1], parentTreeNode, parentMenuItem, isTiling: true );
 
 			TreeNode groupNode;
 			ToolStripMenuItem groupMenuItem;
@@ -323,7 +324,10 @@
 			parentTreeNode.Nodes.Add( newNode );
 
 			if( isTiling )
-				NumTilings++;
+			{
+				if( !config.CoxeterComplex )
+					NumTilings++;
+			}
 			else
 			{
 				NumPuzzles++;
