@@ -50,6 +50,7 @@
     <Compile Include="Algorithm\GraphRelaxation.cs" />
     <Compile Include="Control\RotationHandler4D.cs" />
     <Compile Include="Control\Mouse.cs" />
+    <Compile Include="Drawing\ColorUtil.cs" />
     <Compile Include="Drawing\Lighting.cs" />
     <Compile Include="Drawing\RenderToTexture.cs" />
     <Compile Include="Drawing\TextureHelper.cs" />

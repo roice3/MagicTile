@@ -500,6 +500,11 @@
 		public string MenuName { get; set; }
 
 		/// <summary>
+		/// Designates that we are just using this config to draw a Coxeter Complex.
+		/// </summary>
+		public bool CoxeterComplex { get; set; }
+
+		/// <summary>
 		/// The number of sides in a polygonal face.
 		/// </summary>
 		[DataMember]

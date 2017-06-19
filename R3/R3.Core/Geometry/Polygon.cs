@@ -724,6 +724,35 @@
 		}
 
 		/// <summary>
+		/// The first vertex.
+		/// </summary>
+		public Vector3D? Start
+		{
+			get
+			{
+				return Segments?.FirstOrDefault()?.P1;
+			}
+		}
+
+		/// <summary>
+		/// The middle point around the pologon.
+		/// This is an edge midpoint if the polygon has an odd number of sides.
+		/// </summary>
+		public Vector3D? Mid
+		{
+			get
+			{
+				if( Segments == null || Segments.Count == 0 )
+					return null;
+
+				int count = Segments.Count;
+				if( count % 2 == 0 )
+					return Segments[count / 2].P1;
+				return Segments[count / 2].Midpoint;
+			}
+		}
+
+		/// <summary>
 		/// Returns only the vertices of the polygon.
 		/// </summary>
 		public Vector3D[] Vertices
