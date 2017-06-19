@@ -505,6 +505,11 @@
 		public bool CoxeterComplex { get; set; }
 
 		/// <summary>
+		/// Flag to indicate we are in the toggling mode.
+		/// </summary>
+		public bool TogglingMode { get; set; }
+
+		/// <summary>
 		/// The number of sides in a polygonal face.
 		/// </summary>
 		[DataMember]

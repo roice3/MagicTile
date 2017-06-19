@@ -210,6 +210,7 @@
 			PuzzleConfig tiling = NonSpecific();
 			tiling.MenuName = "Tiling";
 			tiling.DisplayName = this.ClassDisplayName + " " + tiling.MenuName;
+			tiling.TogglingMode = true;
 
 			PuzzleConfig coxeter = NonSpecific();
 			coxeter.CoxeterComplex = true;

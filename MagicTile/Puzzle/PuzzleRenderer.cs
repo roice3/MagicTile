@@ -1786,9 +1786,13 @@
 				FindClosestTwistingCircles( clickData.X, clickData.Y );
 			}
 
-			if( m_closestTwistingCircles == null )
+			if( m_puzzle.Config.TogglingMode )
 			{
 				PerformTogglingClick(clickData);
+			}
+
+			if( m_closestTwistingCircles == null )
+			{
 				return;
 			}
 
