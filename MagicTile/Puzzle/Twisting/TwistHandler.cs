@@ -228,7 +228,10 @@
 			Cell closestMaster = cell.MasterOrSelf;
 			foreach (Cell neighbor in closestMaster.Neighbors)
 			{
-				m_puzzle.State.ToggleStickerColorIndex(neighbor.IndexOfMaster, 0);
+				if (neighbor != closestMaster || m_puzzle.Config.TogglingMode == TogglingMode.NeighborsAndSelf)
+				{
+					m_puzzle.State.ToggleStickerColorIndex(neighbor.IndexOfMaster, 0);
+				}
 			}
 			m_puzzle.State.CommitChanges();
 			m_twistHistory.Update(closestMaster);
@@ -370,7 +373,7 @@
 		/// <param name="numTwists"></param>
 		public void Scramble( int numTwists )
 		{
-			if (m_puzzle.Config.TogglingMode)
+			if (m_puzzle.Config.TogglingMode != TogglingMode.None)
 			{
 				RandomToggles(numTwists);
 				return;

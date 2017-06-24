@@ -277,7 +277,7 @@
 
 			//TraceGraph();
 
-			if (tStickers.Count == 1)
+			if (Config.TogglingMode != TogglingMode.None)
 			{
 				StatusOrCancel(callback, "populating neighbors...");
 				PopulateNeighbors();

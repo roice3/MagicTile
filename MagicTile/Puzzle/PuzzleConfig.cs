@@ -429,6 +429,13 @@
 		Bitruncated5Cell,
 	}
 
+	public enum TogglingMode
+	{
+		None,
+		NeighborsOnly,
+		NeighborsAndSelf
+	}
+
 	/// <summary>
 	/// Configuration required for generating regular 4D skew polyedra data associate with the puzzle.
 	/// </summary>
@@ -507,7 +514,7 @@
 		/// <summary>
 		/// Flag to indicate we are in the toggling mode.
 		/// </summary>
-		public bool TogglingMode { get; set; }
+		public TogglingMode TogglingMode { get; set; }
 
 		/// <summary>
 		/// The number of sides in a polygonal face.

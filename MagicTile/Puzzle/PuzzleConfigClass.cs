@@ -205,12 +205,11 @@
 		/// All the puzzles we represent.
 		/// </summary>
 		public void GetPuzzles( out PuzzleConfig[] tilings, out PuzzleConfig[] face, out PuzzleConfig[] edge, 
-			out PuzzleConfig[] vertex, out PuzzleConfig[] mixed, out PuzzleConfig[] earthquake )
+			out PuzzleConfig[] vertex, out PuzzleConfig[] mixed, out PuzzleConfig[] earthquake, out PuzzleConfig[] toggles )
 		{
 			PuzzleConfig tiling = NonSpecific();
 			tiling.MenuName = "Tiling";
 			tiling.DisplayName = this.ClassDisplayName + " " + tiling.MenuName;
-			tiling.TogglingMode = true;
 
 			PuzzleConfig coxeter = NonSpecific();
 			coxeter.CoxeterComplex = true;
@@ -219,6 +218,15 @@
 			coxeter.SlicingCircles.Thickness = 0.01;
 
 			tilings = new PuzzleConfig[] { tiling, coxeter };
+
+			toggles = new PuzzleConfig[2];
+			for (var i = 0; i < 2; i++)
+			{
+				toggles[i] = NonSpecific();
+				toggles[i].MenuName = (i == 0 ? "Toggle Neighbors Only" : "Toggle Clicked Cell And Neighbors");
+				toggles[i].TogglingMode = (i == 0 ? TogglingMode.NeighborsOnly : TogglingMode.NeighborsAndSelf);
+				toggles[i].DisplayName = ClassDisplayName + " " + toggles[i].MenuName;
+			}
 
 			List<PuzzleConfig> puzzles = new List<PuzzleConfig>();
 			foreach( PuzzleSpecific puzzleSpecific in this.PuzzleSpecificList )

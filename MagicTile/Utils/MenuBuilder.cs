@@ -229,8 +229,8 @@
 			level++;
 
 			PuzzleConfig[] tilings;
-			PuzzleConfig[] face, edge, vertex, mixed, earthquake;
-			puzzleConfigClass.GetPuzzles( out tilings, out face, out edge, out vertex, out mixed, out earthquake );
+			PuzzleConfig[] face, edge, vertex, mixed, earthquake, toggles;
+			puzzleConfigClass.GetPuzzles( out tilings, out face, out edge, out vertex, out mixed, out earthquake, out toggles );
 
 			AddPuzzle( tilings[0], parentTreeNode, parentMenuItem, isTiling: true );
 			AddPuzzle( tilings[1], parentTreeNode, parentMenuItem, isTiling: true );
@@ -305,6 +305,20 @@
 					WriteTableEntry( swWiki, config.MenuName );
 				}
 				EndTable( swWiki );
+			}
+
+			if (toggles.Length > 0)
+			{
+				AddGroup(swWiki, level, "Lights On", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem);
+				StartTable(swWiki);
+				foreach (PuzzleConfig config in toggles)
+				{
+					if (swList != null)
+						swList.WriteLine(config.DisplayName);
+					AddPuzzle(config, groupNode, groupMenuItem, isTiling: true);
+					WriteTableEntry(swWiki, config.MenuName);
+				}
+				EndTable(swWiki);
 			}
 		}
 

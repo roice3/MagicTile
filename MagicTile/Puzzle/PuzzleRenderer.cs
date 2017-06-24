@@ -1780,7 +1780,7 @@
 				FindClosestTwistingCircles( clickData.X, clickData.Y );
 			}
 
-			if( m_puzzle.Config.TogglingMode )
+			if( m_puzzle.Config.TogglingMode != TogglingMode.None )
 			{
 				PerformTogglingClick(clickData);
 			}
