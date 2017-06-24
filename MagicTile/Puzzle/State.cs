@@ -115,7 +115,7 @@
 				{
 					for (int s = 0; s < m_nStickers; s++)
 					{
-						if ( m_state[c][s] != m_originalState[c][s])
+						if (m_state[c][s] != m_originalState[c][s])
 							return false;
 					}
 				}
@@ -175,13 +175,13 @@
 			m_copy.Clear();
 			m_originalState.Clear();
 
-			for ( int c = 0; c < m_nCells; c++ )
+			for( int c = 0; c < m_nCells; c++ )
 			{
 				m_state.Add( new List<int>() );
 				m_copy.Add( new List<int>() );
 				m_originalState.Add(new List<int>());
 
-				for ( int s = 0; s < m_nStickers; s++ )
+				for( int s = 0; s < m_nStickers; s++ )
 				{
 					m_state[c].Add( c );
 					m_copy[c].Add( c );

@@ -277,7 +277,7 @@
 
 			//TraceGraph();
 
-			if (Config.TogglingMode != TogglingMode.None)
+			if (Config.IsToggling)
 			{
 				StatusOrCancel(callback, "populating neighbors...");
 				PopulateNeighbors();
@@ -801,6 +801,9 @@
 			return result;
 		}
 
+		/// <summary>
+		/// Populate Neighbors of master cells. A neighbor shares a common edge with a cell. By definition, a cell is its own neighbor
+		/// </summary>
 		private void PopulateNeighbors()
 		{
 			foreach (var master in m_masters)
@@ -951,6 +954,7 @@
 			// This has to be recalculated, because it may not be the same as the tiling isometries.
 			//cell.Isometry = t.Isometry;
 			cell.Isometry.CalculateFromTwoPolygons( home, boundary, this.Config.Geometry );
+
 			completed[boundary.Center] = cell;
 			return cell;
 		}
@@ -2072,6 +2076,11 @@
 		{
 			UpdateState( Config, State, twist );
 		}
+
+		/// <summary>
+		/// Check if puzzle is solved for both normal and toggling modes
+		/// </summary>
+		public bool IsSolved => (Config.IsToggling ? State.IsAllOn : State.IsSolved);
 
 		/// <summary>
 		/// Update the state based on a twist.

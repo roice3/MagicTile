@@ -237,15 +237,14 @@
 			m_twistHistory.Update(closestMaster);
 			if (updateStatus)
 				m_status();
-
-			if (beep && !m_twistHistory.Undoing && m_twistHistory.Scrambled && m_puzzle.State.IsAllOn)
-				System.Media.SystemSounds.Asterisk.Play();
+			if (beep)
+				BeepIfSolved();
 		}
 
 		private void BeepIfSolved()
 		{
 			// ZZZ - can beep too much.
-			if( !m_twistHistory.Undoing && m_twistHistory.Scrambled && m_puzzle.State.IsSolved )
+			if( !m_twistHistory.Undoing && m_twistHistory.Scrambled && m_puzzle.IsSolved )
 				System.Media.SystemSounds.Asterisk.Play();
 		}
 
@@ -373,7 +372,7 @@
 		/// <param name="numTwists"></param>
 		public void Scramble( int numTwists )
 		{
-			if (m_puzzle.Config.TogglingMode != TogglingMode.None)
+			if (m_puzzle.Config.IsToggling)
 			{
 				RandomToggles(numTwists);
 				return;

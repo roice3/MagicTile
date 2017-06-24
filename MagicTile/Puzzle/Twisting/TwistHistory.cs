@@ -98,11 +98,14 @@
 			m_twists.Add( twist );
 		}
 
+		/// <summary>
+		/// Add a toggling move to history
+		/// </summary>
+		/// <param name="toggleCell"></param>
 		public void Update(Cell toggleCell)
 		{
 			m_toggles.Add( toggleCell );
 		}
-
 
 		/// <summary>
 		/// Get undo rotation parameters.

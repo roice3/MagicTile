@@ -68,7 +68,9 @@
 		public Cell MasterOrSelf { get { return Master ?? this; } }
 
 		/// <summary>
-		/// List of master cells that share boundary with this cell. If a master cell borders a slave cell, the master of the slave cell is in this list
+		/// List of master cells that share boundaries with this cell. 
+		/// If a master cell borders a slave cell, the master of the slave cell is in this list.
+		/// A master cell is its own neighbor by definition
 		/// </summary>
 		public HashSet<Cell> Neighbors { get; set; }
 
