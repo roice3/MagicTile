@@ -223,7 +223,7 @@
 				m_status();
 		}
 
-		public void Toggle(Cell cell)
+		public void Toggle(Cell cell, bool updateStatus = true, bool beep = true)
 		{
 			Cell closestMaster = cell.MasterOrSelf;
 			foreach (Cell neighbor in closestMaster.Neighbors)
@@ -232,7 +232,10 @@
 			}
 			m_puzzle.State.CommitChanges();
 			m_twistHistory.Update(closestMaster);
-			if (!m_twistHistory.Undoing && m_twistHistory.Scrambled && m_puzzle.State.IsAllOn)
+			if (updateStatus)
+				m_status();
+
+			if (beep && !m_twistHistory.Undoing && m_twistHistory.Scrambled && m_puzzle.State.IsAllOn)
 				System.Media.SystemSounds.Asterisk.Play();
 		}
 
@@ -353,7 +356,7 @@
 			for (int i = 0; i < numTwists; i++)
 			{
 				var cell = allMasterCells[rand.Next(allMasterCells.Count)];
-				Toggle(cell);
+				Toggle(cell, updateStatus: false, beep: false);
 			}
 
 			m_twistHistory.Scrambles += numTwists;
