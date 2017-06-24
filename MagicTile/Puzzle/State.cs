@@ -107,6 +107,23 @@
 			}
 		}
 
+		public bool IsAllOn
+		{
+			get
+			{
+				for (int c = 0; c < m_nCells; c++)
+				{
+					for (int s = 0; s < m_nStickers; s++)
+					{
+						if ( m_state[c][s] != m_originalState[c][s])
+							return false;
+					}
+				}
+
+				return true;
+			}
+		}
+
 		public void CommitChanges()
 		{
 			for( int c = 0; c < m_nCells; c++ )

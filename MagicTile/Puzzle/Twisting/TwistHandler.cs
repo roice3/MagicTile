@@ -232,6 +232,8 @@
 			}
 			m_puzzle.State.CommitChanges();
 			m_twistHistory.Update(closestMaster);
+			if (!m_twistHistory.Undoing && m_twistHistory.Scrambled && m_puzzle.State.IsAllOn)
+				System.Media.SystemSounds.Asterisk.Play();
 		}
 
 		private void BeepIfSolved()
