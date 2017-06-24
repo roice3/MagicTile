@@ -312,7 +312,7 @@
 			this.FocalLength = 1;
 			this.ColorBg = Color.DarkGray;
 			this.ColorTileEdges = Color.Black;
-			this.ColorOff = Color.FromArgb(30, 30, 30);
+			this.ColorOff = Color.FromArgb(25, 25, 25);
 		}
 
 		[DataMember]
@@ -624,7 +624,7 @@
 			ColorTwistingCircles = Color.OrangeRed;
 			ColorBg = Color.DarkGray;
 			ColorTileEdges = Color.Black;
-			ColorOff = Color.FromArgb(30, 30, 30);
+			ColorOff = Color.FromArgb(25, 25, 25);
 			Color1 = Color.White;
 			Color2 = Color.Green;
 			Color3 = Color.Blue;
