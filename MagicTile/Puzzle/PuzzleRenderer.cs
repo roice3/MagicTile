@@ -1716,13 +1716,7 @@
 			Cell closest = FindClosestCell(clickData.X, clickData.Y, out spaceCoordsNoMouseMotion);
 			if (closest == null || !spaceCoordsNoMouseMotion.HasValue)
 				return;
-
-			Cell closestMaster = closest.MasterOrSelf;
-			foreach (Cell neighbor in closestMaster.Neighbors)
-			{
-				m_puzzle.State.ToggleStickerColorIndex(neighbor.IndexOfMaster, 0);
-			}
-			m_puzzle.State.CommitChanges();
+			this.TwistHandler.Toggle(closest);
 			Render(true);
 		}
 

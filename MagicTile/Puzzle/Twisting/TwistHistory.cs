@@ -11,12 +11,14 @@
 
 			m_twists = new TwistList();
 			m_redoTwists = new TwistList();
+			m_toggles = new List<Cell>();
 		}
 
 		public void Clear()
 		{
 			m_twists.Clear();
 			m_redoTwists.Clear();
+			m_toggles.Clear();
 			this.Scrambles = 0;
 		}
 
@@ -96,6 +98,12 @@
 			m_twists.Add( twist );
 		}
 
+		public void Update(Cell toggleCell)
+		{
+			m_toggles.Add( toggleCell );
+		}
+
+
 		/// <summary>
 		/// Get undo rotation parameters.
 		/// Calling this will set us in the "undo" state for the next rotation.
@@ -141,11 +149,16 @@
 			get { return m_twists; }
 		}
 
+		public List<Cell> AllToggles => m_toggles;
+
+		public int AllMovesCount => AllTwists.Count + AllToggles.Count;
+
 		// Whether we are in undo/redo modes.
 		private bool m_undoMode, m_redoMode;
 
 		// Our twist history.
 		private TwistList m_twists;
 		private TwistList m_redoTwists;
+		private List<Cell> m_toggles;
 	}
 }

@@ -223,6 +223,17 @@
 				m_status();
 		}
 
+		public void Toggle(Cell cell)
+		{
+			Cell closestMaster = cell.MasterOrSelf;
+			foreach (Cell neighbor in closestMaster.Neighbors)
+			{
+				m_puzzle.State.ToggleStickerColorIndex(neighbor.IndexOfMaster, 0);
+			}
+			m_puzzle.State.CommitChanges();
+			m_twistHistory.Update(closestMaster);
+		}
+
 		private void BeepIfSolved()
 		{
 			// ZZZ - can beep too much.
@@ -333,12 +344,32 @@
 		}
 		static int count = 0;
 
+		private void RandomToggles(int numTwists)
+		{
+			System.Random rand = new System.Random();
+			var allMasterCells = m_puzzle.MasterCells;
+			for (int i = 0; i < numTwists; i++)
+			{
+				var cell = allMasterCells[rand.Next(allMasterCells.Count)];
+				Toggle(cell);
+			}
+
+			m_twistHistory.Scrambles += numTwists;
+
+			InvalidateAllAndUpdateStatus();
+		}
+
 		/// <summary>
 		/// Scramble.
 		/// </summary>
 		/// <param name="numTwists"></param>
 		public void Scramble( int numTwists )
 		{
+			if (m_puzzle.Config.TogglingMode)
+			{
+				RandomToggles(numTwists);
+				return;
+			}
 			System.Random rand = new System.Random();
 			List<IdentifiedTwistData> allTwistData = m_puzzle.AllTwistData;
 			if( allTwistData.Count == 0 )
