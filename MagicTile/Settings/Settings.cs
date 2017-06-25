@@ -312,6 +312,7 @@
 			this.FocalLength = 1;
 			this.ColorBg = Color.DarkGray;
 			this.ColorTileEdges = Color.Black;
+			this.ColorOff = Color.FromArgb(25, 25, 25);
 		}
 
 		[DataMember]
@@ -331,6 +332,12 @@
 		[Description( "The color of tile edges (the small gaps between tiles), as well as slices." )]
 		[Category( "Coloring" )]
 		public Color ColorTileEdges { get; set; }
+
+		[DataMember]
+		[DisplayName("Off Color")]
+		[Description("The color of tile when it is turned off in toggling mode.")]
+		[Category("Coloring")]
+		public Color ColorOff { get; set; }
 
 		[DataMember]
 		[DisplayName( "Color 1" )]
@@ -617,6 +624,7 @@
 			ColorTwistingCircles = Color.OrangeRed;
 			ColorBg = Color.DarkGray;
 			ColorTileEdges = Color.Black;
+			ColorOff = Color.FromArgb(25, 25, 25);
 			Color1 = Color.White;
 			Color2 = Color.Green;
 			Color3 = Color.Blue;

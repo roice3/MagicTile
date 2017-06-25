@@ -223,10 +223,28 @@
 				m_status();
 		}
 
+		public void Toggle(Cell cell, bool updateStatus = true, bool beep = true)
+		{
+			Cell closestMaster = cell.MasterOrSelf;
+			foreach (Cell neighbor in closestMaster.Neighbors)
+			{
+				if (neighbor != closestMaster || m_puzzle.Config.TogglingMode == TogglingMode.NeighborsAndSelf)
+				{
+					m_puzzle.State.ToggleStickerColorIndex(neighbor.IndexOfMaster, 0);
+				}
+			}
+			m_puzzle.State.CommitChanges();
+			m_twistHistory.Update(closestMaster);
+			if (updateStatus)
+				m_status();
+			if (beep)
+				BeepIfSolved();
+		}
+
 		private void BeepIfSolved()
 		{
 			// ZZZ - can beep too much.
-			if( !m_twistHistory.Undoing && m_twistHistory.Scrambled && m_puzzle.State.IsSolved )
+			if( !m_twistHistory.Undoing && m_twistHistory.Scrambled && m_puzzle.IsSolved )
 				System.Media.SystemSounds.Asterisk.Play();
 		}
 
@@ -333,12 +351,32 @@
 		}
 		static int count = 0;
 
+		private void RandomToggles(int numTwists)
+		{
+			System.Random rand = new System.Random();
+			var allMasterCells = m_puzzle.MasterCells;
+			for (int i = 0; i < numTwists; i++)
+			{
+				var cell = allMasterCells[rand.Next(allMasterCells.Count)];
+				Toggle(cell, updateStatus: false, beep: false);
+			}
+
+			m_twistHistory.Scrambles += numTwists;
+
+			InvalidateAllAndUpdateStatus();
+		}
+
 		/// <summary>
 		/// Scramble.
 		/// </summary>
 		/// <param name="numTwists"></param>
 		public void Scramble( int numTwists )
 		{
+			if (m_puzzle.Config.IsToggling)
+			{
+				RandomToggles(numTwists);
+				return;
+			}
 			System.Random rand = new System.Random();
 			List<IdentifiedTwistData> allTwistData = m_puzzle.AllTwistData;
 			if( allTwistData.Count == 0 )

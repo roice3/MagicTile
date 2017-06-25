@@ -429,6 +429,12 @@
 		Bitruncated5Cell,
 	}
 
+	public enum TogglingMode
+	{
+		NeighborsOnly,
+		NeighborsAndSelf
+	}
+
 	/// <summary>
 	/// Configuration required for generating regular 4D skew polyedra data associate with the puzzle.
 	/// </summary>
@@ -503,6 +509,16 @@
 		/// Designates that we are just using this config to draw a Coxeter Complex.
 		/// </summary>
 		public bool CoxeterComplex { get; set; }
+
+		/// <summary>
+		/// Flag to indicate if the puzzle is in toggling mode (light on puzzle)
+		/// </summary>
+		public bool IsToggling => (TogglingMode != null);
+
+		/// <summary>
+		/// Toggling mode. Null means a normal puzzle (not toggling)
+		/// </summary>
+		public TogglingMode? TogglingMode { get; set; }
 
 		/// <summary>
 		/// The number of sides in a polygonal face.

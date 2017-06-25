@@ -348,7 +348,7 @@
 			double twists = 0, scrambles = 0, total = 0;
 			if( m_puzzle != null && m_puzzle.TwistHistory != null )
 			{
-				total = m_puzzle.TwistHistory.AllTwists.Count();
+				total = m_puzzle.TwistHistory.AllMovesCount;
 				scrambles = m_puzzle.TwistHistory.Scrambles;
 				twists = total - scrambles;
 			}

@@ -277,6 +277,12 @@
 
 			//TraceGraph();
 
+			if (Config.IsToggling)
+			{
+				StatusOrCancel(callback, "populating neighbors...");
+				PopulateNeighbors();
+			}
+
 			this.State = new State( this.MasterCells.Count, tStickers.Count );
 			this.TwistHistory = new TwistHistory();
 
@@ -793,6 +799,27 @@
 			}
 
 			return result;
+		}
+
+		/// <summary>
+		/// Populate Neighbors of master cells. A neighbor shares a common edge with a cell. By definition, a cell is its own neighbor
+		/// </summary>
+		private void PopulateNeighbors()
+		{
+			foreach (var master in m_masters)
+			{
+				foreach (var neighbor in AllCells)
+				{
+					var hasCommonEdge = master.Boundary.EdgeMidpoints
+						.Any(masterEdgeMidPoint => neighbor.Boundary.EdgeMidpoints
+							.Any(cellEdgeMidPoint => masterEdgeMidPoint == cellEdgeMidPoint));
+					if (hasCommonEdge)
+					{
+						master.Neighbors.Add(neighbor.MasterOrSelf);
+						neighbor.MasterOrSelf.Neighbors.Add(master);
+					}
+				}
+			}
 		}
 
 		private void AddMaster( Tile tile, Tiling tiling, PuzzleIdentifications identifications, Dictionary<Vector3D, Cell> completed )
@@ -2049,6 +2076,11 @@
 		{
 			UpdateState( Config, State, twist );
 		}
+
+		/// <summary>
+		/// Check if puzzle is solved for both normal and toggling modes
+		/// </summary>
+		public bool IsSolved => (Config.IsToggling ? State.IsAllOn : State.IsSolved);
 
 		/// <summary>
 		/// Update the state based on a twist.

@@ -167,7 +167,7 @@
 		}
 		public double WaitRadius { get; set; }
 
-		public void Render()
+		public void Render(bool forceUpdateTexture = false)
 		{
 			/* Optimization is pretty tricky.
 			 * 
@@ -194,6 +194,9 @@
 			bool useTexture = !spherical || ShowOnSurface;
 			if( useTexture )
 			{
+				if(forceUpdateTexture)
+					m_renderToTexture.InvalidateAllTextures();
+
 				GenTextures();
 
 				if( this.ShowOnSurface || this.ShowAsSkew )
@@ -1707,6 +1710,23 @@
 			m_glControl.Invalidate();
 		}
 
+		private void PerformTogglingClick(ClickData clickData)
+		{
+			if (this.ShowAsSkew)
+			{
+				string message = "Sorry, Lights On moves are not supported on the skew view at this time. To turn off the skew view, go to Settings -> Skew Polyhedra and set \"Show as Skew\" to False";
+				System.Windows.Forms.MessageBox.Show(message, "Unsupported", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				return;
+			}
+
+			Vector3D? spaceCoordsNoMouseMotion;
+			Cell closest = FindClosestCell(clickData.X, clickData.Y, out spaceCoordsNoMouseMotion);
+			if (closest == null || !spaceCoordsNoMouseMotion.HasValue)
+				return;
+			this.TwistHandler.Toggle(closest);
+			Render(true);
+		}
+
 		private void PerformClick( ClickData clickData )
 		{
 			// Handle macros.
@@ -1767,8 +1787,15 @@
 				FindClosestTwistingCircles( clickData.X, clickData.Y );
 			}
 
+			if( m_puzzle.Config.IsToggling)
+			{
+				PerformTogglingClick(clickData);
+			}
+
 			if( m_closestTwistingCircles == null )
+			{
 				return;
+			}
 
 			SingleTwist twist = new SingleTwist();
 			twist.IdentifiedTwistData = m_closestTwistingCircles.IdentifiedTwistData;
