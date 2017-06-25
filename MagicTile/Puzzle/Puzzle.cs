@@ -219,6 +219,7 @@
 			if( callback.Cancelled )
 				return;
 			callback.Status( "adding in cells..." );
+			var masterTileMap = new Dictionary<Cell, Tile>();
 			foreach( Tile t in MasterCandidates( tiling ) )
 			{
 				// Have we already done this tile?
@@ -227,6 +228,7 @@
 
 				// Add it (this will add all the slaves too).
 				AddMaster( t, tiling, identifications, completed );
+				masterTileMap[m_masters.Last()] = t;
 			}
 
 			StatusOrCancel( callback, "analyzing topology..." );
@@ -280,7 +282,7 @@
 			if (Config.IsToggling)
 			{
 				StatusOrCancel(callback, "populating neighbors...");
-				PopulateNeighbors();
+				PopulateNeighbors(callback, masterTileMap, completed);
 			}
 
 			this.State = new State( this.MasterCells.Count, tStickers.Count );
@@ -804,20 +806,33 @@
 		/// <summary>
 		/// Populate Neighbors of master cells. A neighbor shares a common edge with a cell. By definition, a cell is its own neighbor
 		/// </summary>
-		private void PopulateNeighbors()
+		private void PopulateNeighbors(IStatusCallback callback, Dictionary<Cell, Tile> masterTileMap, Dictionary<Vector3D, Cell> completed )
 		{
 			foreach (var master in m_masters)
 			{
-				foreach (var neighbor in AllCells)
+				master.Neighbors.Add(master);
+
+				var tile = masterTileMap[master];
+				foreach (var neighborTile in tile.EdgeIncidences)
 				{
+					var neighbor = completed[neighborTile.Center];
+					if( neighbor.IndexOfMaster < 0 ) continue; // Sometimes IndexOfMaster == -1. Not sure about the reason
+
 					var hasCommonEdge = master.Boundary.EdgeMidpoints
 						.Any(masterEdgeMidPoint => neighbor.Boundary.EdgeMidpoints
 							.Any(cellEdgeMidPoint => masterEdgeMidPoint == cellEdgeMidPoint));
-					if (hasCommonEdge)
+					if (!hasCommonEdge)
 					{
-						master.Neighbors.Add(neighbor.MasterOrSelf);
-						neighbor.MasterOrSelf.Neighbors.Add(master);
+						// Bug in EdgeIncidences?
+						var message =
+							$"Master cells #{master.IndexOfMaster} #{neighbor.IndexOfMaster} do not sharing a common edge. But the underlying tiles are considered edge incident";
+						callback.Status("\tWarning: " + message);
+						Debug.Assert(false, message);
+						continue;
 					}
+
+					master.Neighbors.Add(neighbor.MasterOrSelf);
+					neighbor.MasterOrSelf.Neighbors.Add(master);
 				}
 			}
 		}
