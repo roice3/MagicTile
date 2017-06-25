@@ -226,6 +226,7 @@
 				toggles[i].MenuName = (i == 0 ? "Toggling Neighbors" : "Toggling Clicked Tile And Neighbors");
 				toggles[i].TogglingMode = (i == 0 ? TogglingMode.NeighborsOnly : TogglingMode.NeighborsAndSelf);
 				toggles[i].DisplayName = ClassDisplayName + " " + toggles[i].MenuName;
+				toggles[i].ID = ClassID + toggles[i].MenuName;
 			}
 
 			List<PuzzleConfig> puzzles = new List<PuzzleConfig>();

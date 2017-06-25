@@ -315,7 +315,7 @@
 				{
 					if (swList != null)
 						swList.WriteLine(config.DisplayName);
-					AddPuzzle(config, groupNode, groupMenuItem, isTiling: true);
+					AddPuzzle(config, groupNode, groupMenuItem, isTiling: false);
 					WriteTableEntry(swWiki, config.MenuName);
 				}
 				EndTable(swWiki);
@@ -344,7 +344,6 @@
 				if( config.CoxeterComplex )
 				{
 					NumTilings++;
-					NumPuzzles += 2;	// This accounts for lights-on puzzles.
 				}
 			}
 			else
