@@ -792,6 +792,8 @@
 			string text =
 				"MagicTile by Roice Nelson\n" +
 				"www.roice3.org/magictile   " +
+				"\n\nWith contributions from:\n" +
+				"  Nan Ma: implemented lights-on puzzles" +
 				"\n\nSpecial thanks to:\n" +
 				"  Melinda Green, for IRP data and encouragement\n" +
 				"  Nan Ma, for excellent feedback and usage testing\n" +
