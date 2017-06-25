@@ -339,7 +339,9 @@
 
 			if( isTiling )
 			{
-				if( !config.CoxeterComplex )
+				// isTiling is true in a couple situations, so just do this once 
+				// (doesn't really matter which case we do it for)
+				if( config.CoxeterComplex )
 					NumTilings++;
 			}
 			else
