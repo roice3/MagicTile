@@ -194,7 +194,7 @@
 			if( m_geometry == Geometry.Hyperbolic &&
 				m_settings.HyperbolicModel != HModel.Poincare )
 			{
-				if( m_settings.HyperbolicModel == HModel.Klein)
+				if( m_settings.HyperbolicModel == HModel.Klein )
 					return HyperbolicModels.KleinToPoincare( point );
 
 				if( m_settings.HyperbolicModel == HModel.UpperHalfPlane )
@@ -408,6 +408,9 @@
 					float largestScale = 3.0f;
 					if( m_geometry == Geometry.Spherical )
 						largestScale *= 20;
+					if( m_geometry == Geometry.Hyperbolic &&
+						m_settings.HyperbolicModel == HModel.Orthographic )
+						largestScale *= 5;
 					if( m_viewScale < smallestScale )
 						m_viewScale = smallestScale;
 					if( m_viewScale > largestScale )
