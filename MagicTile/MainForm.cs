@@ -403,10 +403,10 @@
 				if( m_puzzle != null && m_puzzle.Config != null )
 				{
 					if( m_puzzle.Config.Geometry == Geometry.Spherical )
-						m_settings.SphericalModel = (SphericalModel)((int)(m_settings.SphericalModel + 1) % 3);
+						m_settings.SphericalModel = (SphericalModel)((int)(m_settings.SphericalModel + 1) % 4);
 
 					if( m_puzzle.Config.Geometry == Geometry.Hyperbolic )
-						m_settings.HyperbolicModel = (HModel)(((int)m_settings.HyperbolicModel + 1) % 2);
+						m_settings.HyperbolicModel = (HModel)(((int)m_settings.HyperbolicModel + 1) % 4);
 				}
 			}
 

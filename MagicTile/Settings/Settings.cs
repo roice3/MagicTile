@@ -16,7 +16,9 @@
 	public enum HModel
 	{
 		Poincare,
-		Klein
+		Klein,
+		UpperHalfPlane,
+		Orthographic,
 	}
 
 	[DataContract( Namespace = "" )]
