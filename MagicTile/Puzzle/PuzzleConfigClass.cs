@@ -214,7 +214,7 @@
 			PuzzleConfig coxeter = NonSpecific();
 			coxeter.CoxeterComplex = true;
 			coxeter.MenuName = "Coxeter Complex";
-			coxeter.DisplayName = this.ClassDisplayName + " " + tiling.MenuName;
+			coxeter.DisplayName = this.ClassDisplayName + " " + coxeter.MenuName;
 			coxeter.SlicingCircles.Thickness = 0.01;
 
 			tilings = new PuzzleConfig[] { tiling, coxeter };
