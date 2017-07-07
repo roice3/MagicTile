@@ -60,10 +60,16 @@
 			var transform = GrabModelTransform();
 
 			List<Polygon> polygons = new List<Polygon>();
+			Cell template = m_puzzle.MasterCells.First();
 			foreach( Cell cell in m_puzzle.AllCells )
 			{
-				foreach( Sticker s in cell.Stickers )
-					polygons.Add( s.Poly );
+				Cell master = cell.MasterOrSelf;
+				foreach( Sticker s in template.Stickers )
+				{
+					Polygon clone = s.Poly.Clone();
+					clone.Transform( cell.Isometry.Inverse() );
+					polygons.Add( clone );
+				}
 			}
 
 			SVG.WritePolygons( "output.svg", polygons );
