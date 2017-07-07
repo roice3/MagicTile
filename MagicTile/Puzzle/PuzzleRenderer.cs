@@ -63,7 +63,6 @@
 			Cell template = m_puzzle.MasterCells.First();
 			foreach( Cell cell in m_puzzle.AllCells )
 			{
-				Cell master = cell.MasterOrSelf;
 				foreach( Sticker s in template.Stickers )
 				{
 					Polygon clone = s.Poly.Clone();
