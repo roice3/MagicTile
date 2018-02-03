@@ -228,11 +228,12 @@
 		{
 			level++;
 
-			PuzzleConfig tiling;
-			PuzzleConfig[] face, edge, vertex, mixed, earthquake;
-			puzzleConfigClass.GetPuzzles( out tiling, out face, out edge, out vertex, out mixed, out earthquake );
+			PuzzleConfig[] tilings;
+			PuzzleConfig[] face, edge, vertex, mixed, earthquake, toggles;
+			puzzleConfigClass.GetPuzzles( out tilings, out face, out edge, out vertex, out mixed, out earthquake, out toggles );
 
-			AddPuzzle( tiling, parentTreeNode, parentMenuItem, isTiling: true );
+			AddPuzzle( tilings[0], parentTreeNode, parentMenuItem, isTiling: true );
+			AddPuzzle( tilings[1], parentTreeNode, parentMenuItem, isTiling: true );
 
 			TreeNode groupNode;
 			ToolStripMenuItem groupMenuItem;
@@ -305,6 +306,20 @@
 				}
 				EndTable( swWiki );
 			}
+
+			if (toggles.Length > 0)
+			{
+				AddGroup(swWiki, level, "Lights On", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem);
+				StartTable(swWiki);
+				foreach (PuzzleConfig config in toggles)
+				{
+					if (swList != null)
+						swList.WriteLine(config.DisplayName);
+					AddPuzzle(config, groupNode, groupMenuItem, isTiling: false);
+					WriteTableEntry(swWiki, config.MenuName);
+				}
+				EndTable(swWiki);
+			}
 		}
 
 		private void AddPuzzle( PuzzleConfig config, TreeNode parentTreeNode, ToolStripMenuItem parentMenuItem, bool isTiling )
@@ -323,7 +338,14 @@
 			parentTreeNode.Nodes.Add( newNode );
 
 			if( isTiling )
-				NumTilings++;
+			{
+				// isTiling is true in a couple situations, so just do this once 
+				// (doesn't really matter which case we do it for)
+				if( config.CoxeterComplex )
+				{
+					NumTilings++;
+				}
+			}
 			else
 			{
 				NumPuzzles++;

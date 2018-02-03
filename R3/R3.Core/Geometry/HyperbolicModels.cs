@@ -12,7 +12,8 @@
 		Pseudosphere,
 		Hyperboloid,
 		Band,
-		UpperHalfPlane
+		UpperHalfPlane,
+		Orthographic,
 	}
 
 	public class HyperbolicModels
@@ -40,6 +41,65 @@
 				dot = 1;
 			double mag = (1 - Math.Sqrt( 1 - dot )) / dot;
 			return k * mag;
+		}
+
+		private static Mobius Upper
+		{
+			get
+			{
+				Cache();
+				return m_upper;
+			}
+		}
+		private static Mobius UpperInv
+		{
+			get
+			{
+				Cache();
+				return m_upperInv;
+			}
+		}
+
+		/// <summary>
+		/// This was needed for performance.  We don't want this Mobius transform calculated repeatedly.
+		/// </summary>
+		private static void Cache()
+		{
+			if( m_cached )
+				return;
+
+			Mobius m1 = new Mobius(), m2 = new Mobius();
+			m2.Isometry( Geometry.Euclidean, 0, new Complex( 0, -1 ) );
+			m1.UpperHalfPlane();
+			m_upper = m2 * m1;
+			m_upperInv = m_upper.Inverse();
+
+			m_cached = true;
+		}
+		private static bool m_cached = false;
+		private static Mobius m_upper, m_upperInv;
+
+
+		public static Vector3D PoincareToUpper( Vector3D v )
+		{
+			v = Upper.Apply( v );
+			return v;
+		}
+
+		public static Vector3D UpperToPoincare( Vector3D v )
+		{
+			v = UpperInv.Apply( v );
+			return v;
+		}
+
+		public static Vector3D PoincareToOrtho( Vector3D v )
+		{
+			return SphericalModels.StereoToGnomonic( v );
+		}
+
+		public static Vector3D OrthoToPoincare( Vector3D v )
+		{
+			return SphericalModels.GnomonicToStereo( v );
 		}
 
 		public static void DrawElements( HyperbolicModel model, Vector3D[] textureCoords, Vector3D[] textureVerts, int[] elements, 
@@ -72,6 +132,18 @@
 						{
 							Vector3D temp = Vector3D.FromComplex( transformed );
 							Vertex( PoincareToKlein( temp ) );
+							break;
+						}
+						case HyperbolicModel.UpperHalfPlane:
+						{
+							Vector3D temp = Vector3D.FromComplex( transformed );
+							Vertex( PoincareToUpper( temp ) );
+							break;
+						}
+						case HyperbolicModel.Orthographic:
+						{
+							Vector3D temp = Vector3D.FromComplex( transformed );
+							Vertex( PoincareToOrtho( temp ) );
 							break;
 						}
 						case HyperbolicModel.Pseudosphere:

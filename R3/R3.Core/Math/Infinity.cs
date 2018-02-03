@@ -1,6 +1,7 @@
 ﻿namespace R3.Geometry
 {
 	using System.Numerics;
+	using Math = System.Math;
 
 	/// <summary>
 	/// Class with some hackish methods for dealing with points projected to infinite.
@@ -8,6 +9,7 @@
 	public static class Infinity
 	{
 		public static Vector3D InfinityVector = new Vector3D( double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity );
+		public static Vector3D InfinityVector2D = new Vector3D( double.PositiveInfinity, double.PositiveInfinity );
 		public static Vector3D LargeFiniteVector = new Vector3D( FiniteScale, FiniteScale, FiniteScale );
 
 		public const double FiniteScale = 10000;
@@ -36,7 +38,7 @@
 			return
 				double.IsNaN( input ) ||
 				double.IsInfinity( input ) ||
-				input >= InfiniteScale;
+				Math.Abs( input ) >= InfiniteScale;
 		}
 
 		public static Vector3D InfinitySafe( Vector3D input )

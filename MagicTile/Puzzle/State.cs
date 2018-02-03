@@ -12,6 +12,7 @@
 		{
 			m_state = new List<List<int>>();
 			m_copy = new List<List<int>>();
+			m_originalState = new List<List<int>>();
 			m_colors = new Dictionary<int, Color>();
 			m_nCells = nCells;
 			m_nStickers = nStickers;
@@ -92,6 +93,37 @@
 		{
 			m_copy[cell][sticker] = color;
 		}
+
+		public void ToggleStickerColorIndex(int cell, int sticker)
+		{
+			var beforeColor = m_copy[cell][sticker];
+			if (beforeColor == m_offColorIndex)
+			{
+				m_copy[cell][sticker] = m_originalState[cell][sticker];
+			}
+			else
+			{
+				m_copy[cell][sticker] = m_offColorIndex;
+			}
+		}
+
+		public bool IsAllOn
+		{
+			get
+			{
+				for (int c = 0; c < m_nCells; c++)
+				{
+					for (int s = 0; s < m_nStickers; s++)
+					{
+						if (m_state[c][s] != m_originalState[c][s])
+							return false;
+					}
+				}
+
+				return true;
+			}
+		}
+
 		public void CommitChanges()
 		{
 			for( int c = 0; c < m_nCells; c++ )
@@ -141,15 +173,19 @@
 		{
 			m_state.Clear();
 			m_copy.Clear();
+			m_originalState.Clear();
 
 			for( int c = 0; c < m_nCells; c++ )
 			{
 				m_state.Add( new List<int>() );
 				m_copy.Add( new List<int>() );
+				m_originalState.Add(new List<int>());
+
 				for( int s = 0; s < m_nStickers; s++ )
 				{
 					m_state[c].Add( c );
 					m_copy[c].Add( c );
+					m_originalState[c].Add(c);
 				}
 			}
 		}
@@ -160,12 +196,14 @@
 		// The matrix integers represent the sticker colors.
 		private List<List<int>> m_state;
 		private List<List<int>> m_copy;
+		private List<List<int>> m_originalState;
 
 		/// <summary>
 		/// Called to update our colors.
 		/// </summary>
 		public void UpdateColors( Settings settings )
 		{
+			m_colors[m_offColorIndex] = settings.ColorOff;
 			int face = 0;
 			m_colors[face++] = settings.Color1;
 			m_colors[face++] = settings.Color2;
@@ -225,5 +263,6 @@
 			m_colors[face++] = settings.Color56;
 		}
 		private Dictionary<int, Color> m_colors;
+		private int m_offColorIndex = -1;
 	}
 }

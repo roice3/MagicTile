@@ -192,8 +192,17 @@
 		private Vector3D ToStandardIfNeeded( Vector3D point )
 		{
 			if( m_geometry == Geometry.Hyperbolic &&
-				m_settings.HyperbolicModel == HModel.Klein )
-				return HyperbolicModels.KleinToPoincare( point );
+				m_settings.HyperbolicModel != HModel.Poincare )
+			{
+				if( m_settings.HyperbolicModel == HModel.Klein )
+					return HyperbolicModels.KleinToPoincare( point );
+
+				if( m_settings.HyperbolicModel == HModel.UpperHalfPlane )
+					return HyperbolicModels.UpperToPoincare( point );
+
+				if( m_settings.HyperbolicModel == HModel.Orthographic )
+					return HyperbolicModels.OrthoToPoincare( point );
+			}
 
 			if( m_geometry == Geometry.Spherical )
 			{
@@ -399,6 +408,9 @@
 					float largestScale = 3.0f;
 					if( m_geometry == Geometry.Spherical )
 						largestScale *= 20;
+					if( m_geometry == Geometry.Hyperbolic &&
+						m_settings.HyperbolicModel == HModel.Orthographic )
+						largestScale *= 5;
 					if( m_viewScale < smallestScale )
 						m_viewScale = smallestScale;
 					if( m_viewScale > largestScale )

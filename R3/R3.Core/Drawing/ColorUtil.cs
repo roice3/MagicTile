@@ -2,6 +2,7 @@
 {
 	using R3.Geometry;
 	using Math = System.Math;
+	using System.Drawing;
 
 	public static class ColorUtil
 	{
@@ -54,5 +55,13 @@
 
 			return rgb;
 		}
+
+		public static Color HslToRgb( Vector3D hsl )
+		{
+			Vector3D rgb = CHSL2RGB( hsl );
+			rgb *= 255;
+			return Color.FromArgb( 255, (int)rgb.X, (int)rgb.Y, (int)rgb.Z );
+		}
+
 	}
 }

@@ -284,6 +284,12 @@
 			CalcBoundary();
 			//TraceGraph();
 
+			if (Config.IsToggling)
+			{
+				StatusOrCancel(callback, "populating neighbors...");
+				PopulateNeighbors( tiling, completed );
+			}
+
 			this.State = new State( this.MasterCells.Count, tStickers.Count );
 			this.TwistHistory = new TwistHistory();
 
@@ -448,21 +454,40 @@
 			List<Tile> templateTile = new List<Tile>();
 			templateTile.Add( template );
 
-			foreach( TwistData twistData in templateSlicers )
-			foreach( CircleNE slicingCircle in twistData.Circles )
+			if( Config.CoxeterComplex )
 			{
-				// Use all edge and vertex incident tiles.
-				// ZZZ - It's easy to imagine needing to grab more than this in the future.
-				foreach( Tile t in templateTile.Concat( template.EdgeIncidences.Concat( template.VertexIndicences ) ) )
+				// templateSlicers will be empty, since we don't allow twisting.
+				// Fill it out with the slicers we want.
+				TwistData td = new TwistData();
+				Circle c = new Circle( template.Boundary.Start.Value, template.Boundary.Mid.Value );
+
+				for( int i = 0; i < Config.P; i++ )
 				{
-					CircleNE result = slicingCircle.Clone();
-					result.Transform( t.Isometry );
+					Mobius m = new Mobius();
+					m.Elliptic( Geometry.Spherical, new Complex(), Math.PI * i / Config.P );
+					CircleNE cNE = new CircleNE( c, template.Boundary.Segments[0].P2 );
+					cNE.Transform( m );
+					yield return cNE;
+				}
+			}
+			else
+			{ 
+				foreach( TwistData twistData in templateSlicers )
+				foreach( CircleNE slicingCircle in twistData.Circles )
+				{
+					// Use all edge and vertex incident tiles.
+					// ZZZ - It's easy to imagine needing to grab more than this in the future.
+					foreach( Tile t in templateTile.Concat( template.EdgeIncidences.Concat( template.VertexIndicences ) ) )
+					{
+						CircleNE result = slicingCircle.Clone();
+						result.Transform( t.Isometry );
 
-					if( complete.Contains( result ) )
-						continue;
+						if( complete.Contains( result ) )
+							continue;
 
-					complete.Add( result );
-					yield return result;
+						complete.Add( result );
+						yield return result;
+					}
 				}
 			}
 		}
@@ -474,6 +499,12 @@
 			List<Polygon> slicees = new List<Polygon>(), sliced = null;
 			slicees.Add( template.Drawn );
 			SliceRecursive( slicees, slicers, ref sliced );
+
+			if( this.Config.CoxeterComplex )
+			{
+				// Order the stickers, so we can change their colors appropriately.
+				sliced = sliced.OrderBy( p => Euclidean2D.AngleToCounterClock( p.Center, new Vector3D( 1, 0 ) ) ).ToList();
+			}
 			
 			// ZZZ - Hacky to special case this,
 			//		 but I'm not sure how the general solution will go.
@@ -793,6 +824,29 @@
 			return result;
 		}
 
+		/// <summary>
+		/// Populate Neighbors of master cells. A neighbor shares a common edge with a cell. By definition, a cell is its own neighbor
+		/// </summary>
+		private void PopulateNeighbors( Tiling tiling, Dictionary<Vector3D, Cell> completed )
+		{
+			foreach( Cell master in m_masters )
+			{
+				master.Neighbors.Add( master );
+				Tile masterTile = tiling.TilePositions[master.Center];
+				foreach( Tile neighborTile in masterTile.EdgeIncidences )
+				{
+					Cell neighbor = completed[neighborTile.Center];
+
+					// This can happen for cells near the boundary of our recursion.
+					if( neighbor.IndexOfMaster < 0 )
+						continue;
+
+					master.Neighbors.Add( neighbor.MasterOrSelf );
+					neighbor.MasterOrSelf.Neighbors.Add( master );
+				}
+			}
+		}
+
 		private void AddMaster( Tile tile, Tiling tiling, PuzzleIdentifications identifications, Dictionary<Vector3D, Cell> completed )
 		{
 			Cell master = SetupCell( tiling.Tiles.First(), tile.Boundary, completed );
@@ -868,22 +922,22 @@
 			//	conjugated = parent.Isometry.Inverse() * identIsometry * parent.Isometry;
 
 			Vector3D newCenter = parent.VertexCircle.CenterNE;
-			newCenter = conjugated.Apply( newCenter );
+			newCenter = conjugated.ApplyInfiniteSafe( newCenter );
 
 			// ZZZ - Hack for spherical.  Some centers were projecting to very large values rather than DNE.
 			if( Infinity.IsInfinite( newCenter ) )
-				newCenter = Vector3D.DneVector();
+				newCenter = Infinity.InfinityVector2D;
 
 			// In the tiling?
 			Tile tile;
 			if( tiling != null && !tiling.TilePositions.TryGetValue( newCenter, out tile ) )
 			{
-				if( newCenter.Abs() < 0.4 )
-					System.Diagnostics.Trace.WriteLine( newCenter.Abs() );
 				return null;
 			}
 			if( positions != null && !positions.Positions.Contains( newCenter ) )
+			{
 				return null;
+			}
 
 			// Already done this one?
 			if( completed.ContainsKey( newCenter ) )
@@ -1506,8 +1560,9 @@
 			}
 
 			// Setup texture coords.
-			int lod = 5;
-			SurfaceTextureCoords = TextureHelper.TextureCoords( SurfacePoly, g, (int)Math.Pow( 2, lod ) );
+			int lod = 6;
+			SurfaceTextureCoords = TextureHelper.TextureCoords( SurfacePoly, g, (int)Math.Pow( 2.0, lod ) );
+
 			SurfaceElementIndices = TextureHelper.CalcElementIndices( SurfacePoly, lod )[lod];
 			Vector3D[] mergedCoords;
 			int[] mergedIndices;
@@ -2052,6 +2107,11 @@
 		{
 			UpdateState( Config, State, twist );
 		}
+
+		/// <summary>
+		/// Check if puzzle is solved for both normal and toggling modes
+		/// </summary>
+		public bool IsSolved => (Config.IsToggling ? State.IsAllOn : State.IsSolved);
 
 		/// <summary>
 		/// Update the state based on a twist.

@@ -204,13 +204,30 @@
 		/// <summary>
 		/// All the puzzles we represent.
 		/// </summary>
-		public void GetPuzzles( out PuzzleConfig tiling, out PuzzleConfig[] face, out PuzzleConfig[] edge, 
-			out PuzzleConfig[] vertex, out PuzzleConfig[] mixed, out PuzzleConfig[] earthquake )
+		public void GetPuzzles( out PuzzleConfig[] tilings, out PuzzleConfig[] face, out PuzzleConfig[] edge, 
+			out PuzzleConfig[] vertex, out PuzzleConfig[] mixed, out PuzzleConfig[] earthquake, out PuzzleConfig[] toggles )
 		{
-			tiling = NonSpecific();
+			PuzzleConfig tiling = NonSpecific();
 			tiling.MenuName = "Tiling";
 			tiling.DisplayName = this.ClassDisplayName + " " + tiling.MenuName;
-			tiling.SlicingCircles = null;
+
+			PuzzleConfig coxeter = NonSpecific();
+			coxeter.CoxeterComplex = true;
+			coxeter.MenuName = "Coxeter Complex";
+			coxeter.DisplayName = this.ClassDisplayName + " " + coxeter.MenuName;
+			coxeter.SlicingCircles.Thickness = 0.01;
+
+			tilings = new PuzzleConfig[] { tiling, coxeter };
+
+			toggles = new PuzzleConfig[2];
+			for (var i = 0; i < 2; i++)
+			{
+				toggles[i] = NonSpecific();
+				toggles[i].MenuName = (i == 0 ? "Toggling Neighbors" : "Toggling Clicked Tile And Neighbors");
+				toggles[i].TogglingMode = (i == 0 ? TogglingMode.NeighborsOnly : TogglingMode.NeighborsAndSelf);
+				toggles[i].DisplayName = ClassDisplayName + " " + toggles[i].MenuName;
+				toggles[i].ID = ClassID + toggles[i].MenuName;
+			}
 
 			List<PuzzleConfig> puzzles = new List<PuzzleConfig>();
 			foreach( PuzzleSpecific puzzleSpecific in this.PuzzleSpecificList )
@@ -260,6 +277,7 @@
 			config.SurfaceConfig = this.SurfaceConfig;
 			config.IRPConfig = this.IRPConfig;
 			config.Skew4DConfig = this.Skew4DConfig;
+			config.SlicingCircles = new SlicingCircles();
 
 			return config;
 		}

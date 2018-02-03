@@ -364,7 +364,7 @@
 			double twists = 0, scrambles = 0, total = 0;
 			if( m_puzzle != null && m_puzzle.TwistHistory != null )
 			{
-				total = m_puzzle.TwistHistory.AllTwists.Count();
+				total = m_puzzle.TwistHistory.AllMovesCount;
 				scrambles = m_puzzle.TwistHistory.Scrambles;
 				twists = total - scrambles;
 			}
@@ -419,10 +419,10 @@
 				if( m_puzzle != null && m_puzzle.Config != null )
 				{
 					if( m_puzzle.Config.Geometry == Geometry.Spherical )
-						m_settings.SphericalModel = (SphericalModel)((int)(m_settings.SphericalModel + 1) % 3);
+						m_settings.SphericalModel = (SphericalModel)((int)(m_settings.SphericalModel + 1) % 4);
 
 					if( m_puzzle.Config.Geometry == Geometry.Hyperbolic )
-						m_settings.HyperbolicModel = (HModel)(((int)m_settings.HyperbolicModel + 1) % 2);
+						m_settings.HyperbolicModel = (HModel)(((int)m_settings.HyperbolicModel + 1) % 4);
 				}
 			}
 
@@ -819,6 +819,8 @@
 			string text =
 				"MagicTile by Roice Nelson\n" +
 				"www.roice3.org/magictile   " +
+				"\n\nWith contributions from:\n" +
+				"  Nan Ma: implemented lights-on puzzles" +
 				"\n\nSpecial thanks to:\n" +
 				"  Melinda Green, for IRP data and encouragement\n" +
 				"  Nan Ma, for excellent feedback and usage testing\n" +

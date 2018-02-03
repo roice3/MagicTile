@@ -61,10 +61,15 @@
 			var transform = GrabModelTransform();
 
 			List<Polygon> polygons = new List<Polygon>();
+			Cell template = m_puzzle.MasterCells.First();
 			foreach( Cell cell in m_puzzle.AllCells )
 			{
-				foreach( Sticker s in cell.Stickers )
-					polygons.Add( s.Poly );
+				foreach( Sticker s in template.Stickers )
+				{
+					Polygon clone = s.Poly.Clone();
+					clone.Transform( cell.Isometry.Inverse() );
+					polygons.Add( clone );
+				}
 			}
 
 			SVG.WritePolygons( "output.svg", polygons );
@@ -200,7 +205,7 @@
 
 		public double WaitRadius { get; set; }
 
-		public void Render()
+		public void Render(bool forceUpdateTexture = false)
 		{
 			/* Optimization is pretty tricky.
 			 * 
@@ -227,6 +232,9 @@
 			bool useTexture = !spherical || ShowOnSurface;
 			if( useTexture )
 			{
+				if(forceUpdateTexture)
+					m_renderToTexture.InvalidateAllTextures();
+
 				GenTextures();
 
 				if( this.ShowOnSurface || this.ShowAsSkew )
@@ -371,8 +379,21 @@
 		{
 			System.Func<Vector3D, Vector3D> transform = null;
 			if( m_puzzle.Config.Geometry == Geometry.Hyperbolic &&
-				m_settings.HyperbolicModel == HModel.Klein )
-				transform = HyperbolicModels.PoincareToKlein;
+				m_settings.HyperbolicModel != HModel.Poincare )
+			{
+				switch( m_settings.HyperbolicModel )
+				{
+				case HModel.Klein:
+					transform = HyperbolicModels.PoincareToKlein;
+					break;
+				case HModel.UpperHalfPlane:
+					transform = HyperbolicModels.PoincareToUpper;
+					break;
+				case HModel.Orthographic:
+					transform = HyperbolicModels.PoincareToOrtho;
+					break;
+				}
+			}
 
 			if( m_puzzle.Config.Geometry == Geometry.Spherical )
 			{
@@ -512,9 +533,34 @@
 
 				Polygon p = sticker.Poly.Clone();
 				p.Transform( m_mouseMotion.Isometry );
-				Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
+				Color color = GetStickerColor( sticker );
 				GLUtils.DrawConcavePolygon( p, color, GrabModelTransform() );
 			}
+		}
+
+		private Color GetStickerColor( Sticker sticker )
+		{
+			Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
+
+			if( m_puzzle.Config.CoxeterComplex )
+			{
+				bool parity = sticker.StickerIndex % 2 == 0;
+				if( m_puzzle.MasterCells[sticker.CellIndex].Isometry.Reflected )
+					parity = !parity;
+
+				// Go around 180 degrees on the color wheel. https://stackoverflow.com/a/1165145
+				//float hue = color.GetHue();
+				//hue = (hue + 180) % 360;
+				//color = ColorUtil.HslToRgb( new Vector3D( hue, color.GetSaturation(), color.GetBrightness() ) );
+
+				// Another "reversal" option.
+				//color = Color.FromArgb( 255, 255 - color.R, 255 - color.G, 255 - color.B );
+
+				// Simple light-dark scheme.
+				color = parity ? Color.White : Color.Gray;
+			}
+
+			return color;
 		}
 
 		private void DrawMovingStickersDirectly()
@@ -540,7 +586,7 @@
 					{
 						Polygon clone = sticker.Poly.Clone();
 						clone.Transform( isometry );
-						Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
+						Color color = GetStickerColor( sticker );
 						GLUtils.DrawConcavePolygon( clone, color, GrabModelTransform() );
 					}
 				}
@@ -651,7 +697,7 @@
 					if( stickerPoly.Center.Abs() > m_ellipticalClipCutoff )
 						continue;
 
-				Color color = m_puzzle.State.GetStickerColor( master.Stickers[i].CellIndex, master.Stickers[i].StickerIndex );
+				Color color = GetStickerColor( master.Stickers[i] );
 				GLUtils.DrawPolygonSolid( stickerPoly, color );
 			}
 		}
@@ -776,6 +822,23 @@
 				return;
 
 			GL.Color3( m_settings.ColorTileEdges );
+
+			if( m_settings.HyperbolicModel == HModel.UpperHalfPlane ||
+				m_settings.HyperbolicModel == HModel.Orthographic )
+			{
+				double big = 10000;
+				bool upper = m_settings.HyperbolicModel == HModel.UpperHalfPlane;
+
+				// Our disk is a big rectangle.
+				GL.Begin( BeginMode.Polygon );
+					Vertex( new Vector3D( big, upper ? -1 : -big ) );
+					Vertex( new Vector3D( big, big ) );
+					Vertex( new Vector3D( -big, big ) );
+					Vertex( new Vector3D( -big, upper ? -1 : -big ) );
+				GL.End();
+
+				return;
+			}
 
 			int num = 250;
 			GL.Begin( BeginMode.TriangleFan );
@@ -1163,7 +1226,24 @@
 			//abcxq72::+switch (from Sarah, expert genius coder)
 			HyperbolicModel model = HyperbolicModel.Poincare;
 			if( m_puzzle.Config.Geometry == Geometry.Hyperbolic )
-				model = m_settings.HyperbolicModel == HModel.Poincare ? HyperbolicModel.Poincare : HyperbolicModel.Klein;
+			{
+				switch( m_settings.HyperbolicModel )
+				{
+				case HModel.Poincare:
+					model = HyperbolicModel.Poincare;
+					break;
+				case HModel.Klein:
+					model = HyperbolicModel.Klein;
+					break;
+				case HModel.UpperHalfPlane:
+					model = HyperbolicModel.UpperHalfPlane;
+					break;
+				case HModel.Orthographic:
+					model = HyperbolicModel.Orthographic;
+					break;
+				}
+			}
+			
 			HyperbolicModels.DrawElements( model, textureCoords, textureVerts, elements, m_mouseMotion.Isometry, m_textureScale );
 		}
 
@@ -1738,6 +1818,23 @@
 			m_glControl.Invalidate();
 		}
 
+		private void PerformTogglingClick(ClickData clickData)
+		{
+			if (this.ShowAsSkew)
+			{
+				string message = "Sorry, Lights On moves are not supported on the skew view at this time. To turn off the skew view, go to Settings -> Skew Polyhedra and set \"Show as Skew\" to False";
+				System.Windows.Forms.MessageBox.Show(message, "Unsupported", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				return;
+			}
+
+			Vector3D? spaceCoordsNoMouseMotion;
+			Cell closest = FindClosestCell(clickData.X, clickData.Y, out spaceCoordsNoMouseMotion);
+			if (closest == null || !spaceCoordsNoMouseMotion.HasValue)
+				return;
+			this.TwistHandler.Toggle(closest);
+			Render(true);
+		}
+
 		private void PerformClick( ClickData clickData )
 		{
 			// Handle macros.
@@ -1798,8 +1895,15 @@
 				FindClosestTwistingCircles( clickData.X, clickData.Y );
 			}
 
+			if( m_puzzle.Config.IsToggling)
+			{
+				PerformTogglingClick(clickData);
+			}
+
 			if( m_closestTwistingCircles == null )
+			{
 				return;
+			}
 
 			SingleTwist twist = new SingleTwist();
 			twist.IdentifiedTwistData = m_closestTwistingCircles.IdentifiedTwistData;

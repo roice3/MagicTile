@@ -18,7 +18,6 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
-         <ID>Puzzle.{5,4}.F.24</ID>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
