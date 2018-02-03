@@ -196,6 +196,32 @@
 			return points.ToArray();
 		}
 
+		public static void MergeVerts( Vector3D[] coords, int[] indices, out Vector3D[] newCoords, out int[] newIndices )
+		{
+			// The number of verts may be reduced.
+			// The number of indices won't change, but may have new values.
+
+			List<Vector3D> newCoordsList = new List<Vector3D>();
+			List<int> newIndicesList = new List<int>();
+			Dictionary<Vector3D, int> vectorMap = new Dictionary<Vector3D, int>();
+			foreach( int idx in indices )
+			{
+				Vector3D v = coords[idx];
+				int newIdx;
+				if( !vectorMap.TryGetValue( v, out newIdx ) )
+				{
+					newIdx = newCoordsList.Count;
+					newCoordsList.Add( v );
+					vectorMap[v] = newIdx;
+				}
+
+				newIndicesList.Add( newIdx );
+			}
+
+			newCoords = newCoordsList.ToArray();
+			newIndices = newIndicesList.ToArray();
+		}
+
 		/// <summary>
 		/// Subdivides a segment from p1->p2 with the two endpoints not on the origin, in the respective geometry.
 		/// </summary>

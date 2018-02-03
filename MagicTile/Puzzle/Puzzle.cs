@@ -51,6 +51,11 @@
 		private List<Cell> m_masters;
 
 		/// <summary>
+		/// The border of the fundamental domain.
+		/// </summary>
+		public Segment[] MasterBoundary { get; private set; }
+
+		/// <summary>
 		/// Access to the slave cells for a master cell.
 		/// </summary>
 		public IEnumerable<Cell> SlaveCells( Cell master )
@@ -275,6 +280,8 @@
  				StatusOrCancel( callback, ex.Message + "\n" + ex.StackTrace );
 			}
 
+			StatusOrCancel( callback, "calculating fundamental domain boundary..." );
+			CalcBoundary();
 			//TraceGraph();
 
 			this.State = new State( this.MasterCells.Count, tStickers.Count );
@@ -289,6 +296,22 @@
 			callback.Status( "Number of tiles:" + tiling.Tiles.Count() );
 			callback.Status( "Number of cells:" + count );
 			callback.Status( "Number of stickers per cell:" + tStickers.Count );
+		}
+
+		private void CalcBoundary()
+		{
+			Dictionary<Vector3D, List<Segment>> segments = new Dictionary<Vector3D, List<Segment>>();
+			foreach( Cell c in m_masters )
+			foreach( Segment s in c.Boundary.Segments )
+			{
+				List<Segment> segs;
+				if( !segments.TryGetValue( s.Midpoint, out segs ) )
+					segs = new List<Segment>();
+				segs.Add( s );
+				segments[s.Midpoint] = segs;
+			}
+
+			MasterBoundary = segments.Values.Where( l => l.Count == 1 ).Select( l => l.First() ).ToArray();
 		}
 
 		private IEnumerable<Tile> MasterCandidates( Tiling tiling )
@@ -1484,8 +1507,13 @@
 
 			// Setup texture coords.
 			int lod = 5;
-			SurfaceTextureCoords = TextureHelper.TextureCoords( SurfacePoly, g, 32 );
+			SurfaceTextureCoords = TextureHelper.TextureCoords( SurfacePoly, g, (int)Math.Pow( 2, lod ) );
 			SurfaceElementIndices = TextureHelper.CalcElementIndices( SurfacePoly, lod )[lod];
+			Vector3D[] mergedCoords;
+			int[] mergedIndices;
+			TextureHelper.MergeVerts( SurfaceTextureCoords, SurfaceElementIndices, out mergedCoords, out mergedIndices );
+			SurfaceTextureCoords = mergedCoords;
+			SurfaceElementIndices = mergedIndices;
 
 			// For each triangle of the surface, cache the closest twisting data.
 			List<TwistData> elementTwistData1 = new List<TwistData>();
