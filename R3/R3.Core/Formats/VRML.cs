@@ -209,7 +209,7 @@
 			return line.Split( new char[] { ' ', ',', '\t' }, System.StringSplitOptions.RemoveEmptyEntries );
 		}
 
-		public static void AppendShape( string path, string texFile, Vector3D[] points, short[] elements, Vector3D[] textureCoords, bool reverse, bool skipMiddle )
+		public static void AppendShape( string path, string texFile, Vector3D[] points, int[] elements, Vector3D[] textureCoords, bool reverse, bool skipMiddle )
 		{
 			using( StreamWriter sw = File.AppendText( path ) )
 			{
@@ -232,7 +232,7 @@
 			}
 		}
 
-		public static void AppendShape( string path, string texFile, Vector3D[] points, short[] elements, System.Drawing.Color color, bool reverse, bool skipMiddle )
+		public static void AppendShape( string path, string texFile, Vector3D[] points, int[] elements, System.Drawing.Color color, bool reverse, bool skipMiddle )
 		{
 			using( StreamWriter sw = File.AppendText( path ) )
 			{
@@ -258,7 +258,7 @@
 			}
 		}
 
-		private static void WriteElements( StreamWriter sw, short[] elements, bool reverse, bool skipMiddle )
+		private static void WriteElements( StreamWriter sw, int[] elements, bool reverse, bool skipMiddle )
 		{
 			sw.Write(
 				"    coordIndex [ \r\n" );

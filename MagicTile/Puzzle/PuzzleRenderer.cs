@@ -9,6 +9,7 @@
 	using R3.Math;
 	using System.Collections.Generic;
 	using System.Drawing;
+	using System.IO;
 	using System.Linq;
 	using System.Numerics;
 	using System.Windows.Forms;
@@ -67,6 +68,34 @@
 			}
 
 			SVG.WritePolygons( "output.svg", polygons );
+		}
+
+		/// <summary>
+		/// Save to a vrml file.
+		/// Only works when in surface mode.
+		/// </summary>
+		public void SaveVrml()
+		{
+			if( !(m_settings.SurfaceDisplay && m_puzzle.HasSurfaceConfig) )
+				return;
+
+			Matrix4D rot = m_mouseMotion.RotHandler4D.Current4dView;
+			var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
+			Vector3D mid = (boundingBox.Item1 + boundingBox.Item2) / 2;
+			double factor = m_surfaceTextureScale;
+
+			Vector3D[] textureVerts = SurfaceTransformedTextureVerts().Select( v =>
+			{
+				TransformSkewVert( rot, ref v );
+				return v;
+			} ).ToArray();
+			int[] elements = m_puzzle.SurfaceElementIndices;
+			Vector3D[] textureCoords = m_puzzle.SurfaceTextureCoords.Select( v => ( ( v - mid ) * factor + new Vector3D( 1, 1 ) ) / 2 ).ToArray();
+
+			string filename = "output.wrl";
+			File.Delete( filename );
+			VRML.AppendShape( filename, "fundamental.png", textureVerts, elements, 
+				textureCoords, reverse: true, skipMiddle: false );
 		}
 
 		/// <summary>
@@ -162,9 +191,13 @@
 				toDraw.Radius = radius;
 				GLUtils.DrawCircle( toDraw, Color.DarkSlateBlue, null );
 			}
+		}
 
+		public void SwapBuffers()
+		{
 			m_glControl.SwapBuffers();
 		}
+
 		public double WaitRadius { get; set; }
 
 		public void Render()
@@ -218,7 +251,7 @@
 			if( !(ShowOnSurface || ShowAsSkew) )
 				RenderClosestTwistingCircles();
 
-			m_glControl.SwapBuffers();
+			//RenderMasterBoundary();
 		}
 
 		private bool ShowOnSurface
@@ -358,6 +391,19 @@
 			SetupStandardGLSettings( m_settings.ColorBg );
 		}
 
+		private void EnableAntiAlias()
+		{
+			GL.Enable( EnableCap.Multisample );
+
+			// Antialiasing for lines.
+			GL.Enable( EnableCap.LineSmooth );
+			GL.Hint( HintTarget.LineSmoothHint, HintMode.Nicest );
+
+			// Antialiasing for polygons.
+			GL.Enable( EnableCap.PolygonSmooth );
+			GL.Hint( HintTarget.PolygonSmoothHint, HintMode.Nicest );
+		}
+
 		private void SetupStandardGLSettings( Color backgroundColor )
 		{
 			// ZZZ:code - Move some of this setup to to GLUtils class?
@@ -368,15 +414,7 @@
 
 			if( antialias )
 			{
-				GL.Enable( EnableCap.Multisample );
-
-				// Antialiasing for lines.
-				GL.Enable( EnableCap.LineSmooth );
-				GL.Hint( HintTarget.LineSmoothHint, HintMode.Nicest );
-
-				// Antialiasing for polygons.
-				GL.Enable( EnableCap.PolygonSmooth );
-				GL.Hint( HintTarget.PolygonSmoothHint, HintMode.Nicest );
+				EnableAntiAlias();
 			}
 			else
 			{
@@ -435,6 +473,22 @@
 			GL.Disable( EnableCap.StencilTest );
 		}
 
+		private void RenderMasterBoundary()
+		{
+			GL.Disable( EnableCap.Texture2D );
+			EnableAntiAlias();
+			GL.Enable( EnableCap.PolygonOffsetLine );
+			GL.PolygonOffset( 1.0f, 3.0f );
+			foreach( Segment s in m_puzzle.MasterBoundary )
+			{
+				GL.Color3( Color.Red );
+				GL.LineWidth( 8.0f );
+				Segment clone = s.Clone();
+				clone.Transform( m_mouseMotion.Isometry );
+				GLUtils.DrawSeg( clone, 75, GrabModelTransform() );
+			}
+		}
+
 		/// <summary>
 		/// Helper to draw a cell.
 		/// </summary>
@@ -459,7 +513,6 @@
 				Polygon p = sticker.Poly.Clone();
 				p.Transform( m_mouseMotion.Isometry );
 				Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
-
 				GLUtils.DrawConcavePolygon( p, color, GrabModelTransform() );
 			}
 		}
@@ -673,6 +726,7 @@
 				Cell master = m_puzzle.MasterCells[i];
 				m_renderToTexture.BindTexture( master );
 
+				GL.Color3( Color.White );
 				DrawCellUsingTexture( master );
 				foreach( Cell slave in m_puzzle.SlaveCells( master ) )
 					DrawCellUsingTexture( slave );
@@ -1197,7 +1251,7 @@
 			int[] elements = m_puzzle.SurfaceElementIndices;
 
 			List<VertexPositionNormalTexture> vboVertices = new List<VertexPositionNormalTexture>();
-			List<short> vboElements = new List<short>();
+			List<int> vboElements = new List<int>();
 
 			Vector3D normal = Vector3D.DneVector();
 			bool skip = false;
@@ -1219,7 +1273,7 @@
 					(float)vert.X, (float)vert.Y, (float)vert.Z,
 					(float)normal.X, (float)normal.Y, (float)normal.Z,
 					(float)(texCoord.X * factor + 1) / 2, (float)(texCoord.Y * factor + 1) / 2 ) );
-				vboElements.Add( (short)i );
+				vboElements.Add( (int)i );
 			}
 
 			VBO vbo = new VBO();
@@ -1242,7 +1296,7 @@
 				normal = irpCell.Boundary.NormalAfterTransform( TransformFunc( rot ) );
 
 			List<VertexPositionNormalTexture> vboVertices = new List<VertexPositionNormalTexture>();
-			List<short> vboElements = new List<short>();
+			List<int> vboElements = new List<int>();
 
 			bool skip = false;
 			double factor = m_textureScale;
@@ -1306,7 +1360,7 @@
 			int[] elements = m_puzzle.SurfaceElementIndices;
 
 			List<VertexPositionColor> vboVertices = new List<VertexPositionColor>();
-			List<short> vboElements = new List<short>();
+			List<int> vboElements = new List<int>();
 
 			Vector3D normal = Vector3D.DneVector();
 			bool skip = false;
@@ -1334,7 +1388,7 @@
 				}
 
 				vboVertices.Add( new VertexPositionColor( (float)vert.X, (float)vert.Y, (float)vert.Z, c ) );
-				vboElements.Add( (short)vboElements.Count );
+				vboElements.Add( (int)vboElements.Count );
 			}
 
 			VBO vbo = new VBO();
@@ -1346,16 +1400,18 @@
 		{
 			PickInfo[] pickInfoArray = irpCell.PickInfo;
 			List<VertexPositionColor> vboVertices = new List<VertexPositionColor>();
-			List<short> vboElements = new List<short>();
+			List<int> vboElements = new List<int>();
 
 			Matrix4D rot = m_mouseMotion.RotHandler4D.Current4dView;
 			foreach( PickInfo pi in pickInfoArray )
 			{
 				// We'll color backfacing differently, so that we can reverse twisting for those.
-				Color c = Color.FromArgb( pi.TwistData.IdentifiedTwistData.Index, backFacing ? 1 : 0, 1 );	// ZZZ - limited to 256, so probably not always enough.
+				Color c = Color.FromArgb( pi.TwistData.IdentifiedTwistData.Index, backFacing ? 1 : 0, 1 );  // ZZZ - limited to 256, so probably not always enough.
 
 				if( m_puzzle.HasValidIRPConfig )
-					VBO.PolygonToVerts( pi.Poly, c, vboVertices, vboElements );
+				{
+					VBO.PolygonToVerts( pi.Poly, c, vboVertices, vboElements.Select( i => (short)i ).ToList() );
+				}
 				else // HasValidSkewConfig
 				{
 					bool skip = false;
@@ -1375,7 +1431,7 @@
 							vert = Vector3D.DneVector();
 
 						vboVertices.Add( new VertexPositionColor( (float)vert.X, (float)vert.Y, (float)vert.Z, c ) );
-						vboElements.Add( (short)vboElements.Count );
+						vboElements.Add( (int)vboElements.Count );
 					}
 				}
 			}

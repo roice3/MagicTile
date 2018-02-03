@@ -67,7 +67,7 @@
 		/// <summary>
 		/// Create and load our VBO. This will dispose previous VBO handles and data, if it existed.
 		/// </summary>
-		public void Create<TVertex>( TVertex[] vertices, short[] elements ) where TVertex : struct
+		public void Create<TVertex>( TVertex[] vertices, int[] elements ) where TVertex : struct
 		{
 			Dispose();
 			m_handle = new VboHandle();
@@ -90,10 +90,10 @@
 
 			GL.GenBuffers( 1, out m_handle.m_eboId );
 			GL.BindBuffer( BufferTarget.ElementArrayBuffer, m_handle.m_eboId );
-			GL.BufferData( BufferTarget.ElementArrayBuffer, (IntPtr)( elements.Length * sizeof( short ) ), elements,
+			GL.BufferData( BufferTarget.ElementArrayBuffer, (IntPtr)( elements.Length * sizeof( int ) ), elements,
 						  BufferUsageHint.StaticDraw );
 			GL.GetBufferParameter( BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size );
-			if( elements.Length * sizeof( short ) != size )
+			if( elements.Length * sizeof( int ) != size )
 				throw new ApplicationException( "Element data not uploaded correctly" );
 
 			m_handle.m_numElements = elements.Length;
@@ -135,7 +135,7 @@
 				GL.TexCoordPointer( 2, TexCoordPointerType.Float, m_handle.m_vertexStride, new IntPtr( 24 ) );
 			}
 
-			GL.DrawElements( BeginMode.Triangles, m_handle.m_numElements, DrawElementsType.UnsignedShort, IntPtr.Zero );
+			GL.DrawElements( BeginMode.Triangles, m_handle.m_numElements, DrawElementsType.UnsignedInt, IntPtr.Zero );
 		}
 
 		/// <summary>
