@@ -34,7 +34,7 @@
 
 		public static bool GreaterThanOrEqual( double d1, double d2 )
 		{
-			return d1 > ( d2 + Threshold );
+			return d1 >= ( d2 - Threshold );
 		}
 
 		public static bool Equal( double d1, double d2, double threshold )
