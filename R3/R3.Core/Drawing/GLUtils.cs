@@ -274,7 +274,7 @@
 				max = new Vector3D( large, large );
 			}
 
-			GL.Color3( color );
+			GL.Color4( color );
 			GL.Begin( BeginMode.Quads );
 			GL.Vertex2( min.X, min.Y );
 			GL.Vertex2( min.X, max.Y );
@@ -322,10 +322,8 @@
 			GL.End();
 		}
 
-		public static void SaveImage( string fileName )
+		public static void SaveImage( string fileName, int width, int height )
 		{
-			int width = 1000;
-			int height = 1000;
 			Bitmap bmp = new Bitmap( width, height );
 			System.Drawing.Imaging.BitmapData data =
 				bmp.LockBits( new System.Drawing.Rectangle( 0, 0, width, height ),

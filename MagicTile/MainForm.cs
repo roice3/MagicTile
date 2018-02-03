@@ -87,6 +87,11 @@
 		private void m_glControl_Paint( object sender, PaintEventArgs e )
 		{
 			//System.Diagnostics.Trace.WriteLine( "Paint" );
+			int width = m_glControl.Width, height = m_glControl.Height;
+			if( m_capture )
+			{
+				m_glControl.SetBounds( 0, 0, 2500, 2500 );
+			}
 
 			// Manually update the UI in this case, so it doesn't lag.
 			if( m_renderer.IntenseRendering )
@@ -96,7 +101,18 @@
 				m_renderer.Render();
 			else
 				m_renderer.RenderForBuilding();
+
+			if( m_capture )
+			{
+				R3.Drawing.GLUtils.SaveImage( "output.png", m_glControl.Width, m_glControl.Height );
+				m_glControl.SetBounds( 0, 0, width, height );
+				m_capture = false;
+			}
+
+			m_glControl.SwapBuffers();
 		}
+
+		private bool m_capture = false;
 
 		private void menuShowPuzzleTree_Click( object sender, EventArgs e )
 		{
@@ -410,9 +426,20 @@
 				}
 			}
 
+			if( e.KeyCode == Keys.F8 )
+			{
+				m_renderer.SaveVrml();
+			}
+
 			if( e.KeyCode == Keys.F12 )
 			{
 				m_renderer.SaveToSvg();
+			}
+
+			if( e.KeyCode == Keys.F10 )
+			{
+				m_capture = true;
+				m_glControl.Invalidate();
 			}
 
 			if( e.KeyCode == Keys.Escape )
