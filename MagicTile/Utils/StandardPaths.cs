@@ -50,12 +50,14 @@
 		{
 			get
 			{
-				string dir = Path.Combine( ".\\", config );
+				string current = Directory.GetCurrentDirectory();
+				string dir = Path.Combine( current, config );
 				if( Directory.Exists( dir ) )
 					return dir;
-				
+
 				// Diff directory for development.
-				return Path.Combine( "..\\..\\", config );
+				string dev = Directory.GetParent( current ).Parent.FullName;
+				return Path.Combine( dev, config );
 			}
 		}
 
