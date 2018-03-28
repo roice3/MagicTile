@@ -352,6 +352,7 @@
 		{
 			FieldInfo gridViewFieldInfo = typeof( PropertyGrid ).GetField( "gridView",
 				BindingFlags.Instance | BindingFlags.NonPublic );
+			if (gridViewFieldInfo == null) return;
 			object propertyGridView = gridViewFieldInfo.GetValue( grid );
 
 			FieldInfo labelRatioFieldInfo = propertyGridView.GetType().GetField( "labelRatio", 
