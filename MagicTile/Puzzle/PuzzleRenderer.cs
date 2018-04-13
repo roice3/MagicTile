@@ -419,10 +419,6 @@
 			// Antialiasing for lines.
 			GL.Enable( EnableCap.LineSmooth );
 			GL.Hint( HintTarget.LineSmoothHint, HintMode.Nicest );
-
-			// Antialiasing for polygons.
-			GL.Enable( EnableCap.PolygonSmooth );
-			GL.Hint( HintTarget.PolygonSmoothHint, HintMode.Nicest );
 		}
 
 		private void SetupStandardGLSettings( Color backgroundColor )
