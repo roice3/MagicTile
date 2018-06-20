@@ -1828,6 +1828,8 @@
 			if (closest == null || !spaceCoordsNoMouseMotion.HasValue)
 				return;
 			this.TwistHandler.Toggle(closest);
+
+			m_glControl.Invalidate();
 			Render(true);
 		}
 
