@@ -195,6 +195,7 @@
             <Item>R4.7</Item>
             <Item>R4.8</Item>
          </Group>
+         <Item>{7,3}.6</Item>
          <Item>{7,4}.24</Item>
          <Group Name="{8,3}">
             <Item>{8,3}.6</Item>
