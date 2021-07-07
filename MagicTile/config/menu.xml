@@ -132,27 +132,48 @@
       </Elliptical>
       <Euclidean>
          <Group Name="Torus">
-            <Item>{3,6}.6</Item>
-            <Item>{3,6}.8</Item>
-            <Item>{3,6}.14</Item>
-            <Item>{4,4}.4</Item>
-            <Item>{4,4}.8</Item>
-            <Item>{4,4}.9</Item>
-            <Item>{4,4}.16</Item>
-            <Item>{6,3}.6</Item>
-            <Item>{6,3}.7</Item>
-            <Item>{6,3}.16</Item>
+            <Group Name="{3,6}">
+               <Item>{3,6}.6</Item>
+               <Item>{3,6}.8</Item>
+               <Item>{3,6}.14</Item>
+            </Group>
+            <Group Name="{4,4}">
+               <Item>{4,4}.4</Item>
+               <Item>{4,4}.7</Item>
+               <Item>{4,4}.8</Item>
+               <Item>{4,4}.9</Item>
+               <Item>{4,4}.16</Item>
+               <Item>{4,4}.25</Item>
+            </Group>
+            <Group Name="{6,3}">
+               <Item>{6,3}.6</Item>
+               <Item>{6,3}.7</Item>
+               <Item>{6,3}.8</Item>
+               <Item>{6,3}.9a</Item>
+               <Item>{6,3}.9b</Item>
+               <Item>{6,3}.12</Item>
+               <Item>{6,3}.16</Item>
+               <Item>{6,3}.19</Item>
+            </Group>
          </Group>
          <Group Name="Klein Bottle">
-            <Item>{3,6}.8.Non</Item>
-            <Item>{4,4}.4.Non</Item>
-            <Item>{4,4}.9.Non</Item>
-            <Item>{6,3}.9</Item>
+            <Group Name="{3,6}">
+               <Item>{3,6}.8.Non</Item>
+            </Group>
+            <Group Name="{4,4}">
+               <Item>{4,4}.4.Non</Item>
+               <Item>{4,4}.9.Non</Item>
+            </Group>
+            <Group Name="{6,3}">
+               <Item>{6,3}.9</Item>
+            </Group>
          </Group>
          <Group Name="Orbifold">
             <Item>{3,6}.4.orb</Item>
             <Item>{4,4}.5.orb</Item>
             <Item>{4,4}.9.orb</Item>
+            <Item>{6,3}.8a</Item>
+            <Item>{6,3}.8b</Item>
          </Group>
       </Euclidean>
       <Hyperbolic>
@@ -166,6 +187,7 @@
          </Group>
          <Group Name="{4,5}">
             <Item>{4,5}.5</Item>
+            <Item>{4,5}.10</Item>
             <Item>{4,5}.40</Item>
          </Group>
          <Item>{4,6}.6</Item>

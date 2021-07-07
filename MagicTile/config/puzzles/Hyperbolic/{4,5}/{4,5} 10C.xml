@@ -1,17 +1,21 @@
 <PuzzleConfigClass>
-   <ClassDisplayName>{4,5} 5-Color</ClassDisplayName>
-   <ClassID>{4,5}.5</ClassID>
-   <ExpectedNumColors>5</ExpectedNumColors>
+   <ClassDisplayName>{4,5} 10-Color</ClassDisplayName>
+   <ClassID>{4,5}.10</ClassID>
+   <ExpectedNumColors>10</ExpectedNumColors>
    <Identifications>
       <Identification>
-         <EdgeSet>2</EdgeSet>
-         <EndRotation>0</EndRotation>
+         <EdgeSet>2:2</EdgeSet>
+         <EndRotation>2</EndRotation>
+         <InPlaceReflection>true</InPlaceReflection>
+         <InitialEdgeSet/>
          <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
       </Identification>
       <Identification>
-         <EdgeSet>1:2:1</EdgeSet>
-         <EndRotation>0</EndRotation>
-         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
+         <EdgeSet>3:2:3</EdgeSet>
+         <EndRotation>1</EndRotation>
+         <InPlaceReflection>false</InPlaceReflection>
+         <InitialEdgeSet/>
+         <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
       </Identification>
    </Identifications>
    <NumTiles>5000</NumTiles>
@@ -39,7 +43,6 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
-         <ID>Puzzle.{4,5}.F.5</ID>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>

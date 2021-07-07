@@ -826,11 +826,12 @@
 				"  Melinda Green, for IRP data and encouragement\n" +
 				"  Nan Ma, for excellent feedback and usage testing\n" +
 				"  Rob Nelson, for brainstorming and ideas\n" +
-				"  Andrey Astrelin, for helping with puzzle configurations\n" + 
+				"  Andrey Astrelin, for contributing puzzle configurations\n" + 
 				"  Ed Baumann, for enthusiasm and solving so many puzzles\n" +
 				"  Burkard Polster, for great suggestions and popularizing\n" +
 				"  Don Hatch and Fritz Obermeyer, for making inspiring software\n" +
-				"  The 4D_Cubing Yahoo group";
+				"  Luna Harran, for contributing puzzle configurations\n" +
+				"  The hypercubing group";
 			string caption = "About";
 			MessageBox.Show( this, text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information );
 		}
