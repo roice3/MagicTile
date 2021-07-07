@@ -44,6 +44,17 @@
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0.25:0:1:0</Distance>
+               <Distance>0.5:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
       <Edge/>
       <Puzzle>
          <DisplayName>Harlequin</DisplayName>

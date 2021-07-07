@@ -6,7 +6,7 @@
       <Identification>
          <EdgeSet>2:2:2:2</EdgeSet>
          <EndRotation>2</EndRotation>
-		 <InPlaceReflection>true</InPlaceReflection>
+         <InPlaceReflection>true</InPlaceReflection>
          <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
       </Identification>
    </Identifications>
@@ -50,6 +50,17 @@
             <EdgeCentered/>
             <FaceCentered>
                <Distance>0:2.24:0:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0.25:0:1:0</Distance>
+               <Distance>0.5:0:1:0</Distance>
             </FaceCentered>
             <Thickness>0.01</Thickness>
             <VertexCentered/>
