@@ -232,8 +232,8 @@
 			bool useTexture = !spherical || ShowOnSurface;
 			if( useTexture )
 			{
-				if(forceUpdateTexture)
-					m_renderToTexture.InvalidateAllTextures();
+				if( forceUpdateTexture )
+					InvalidateTextures();
 
 				GenTextures();
 
@@ -727,6 +727,9 @@
 				foreach( List<Sticker> list in twistData.AffectedStickersForSliceMask( twist.SliceMask ) )
 				foreach( Sticker sticker in list )	
 				{
+					if( clipForElliptical && !master.Stickers.Contains( sticker ) )
+						continue;
+
 					// Performance boost for earthquake.
 					if( earthquake )
 					{
@@ -1486,8 +1489,10 @@
 
 				if( m_puzzle.HasValidIRPConfig )
 				{
-					VBO.PolygonToVerts( pi.Poly, c, vboVertices, vboElements.Select( i => (short)i ).ToList() );
-				}
+                    List<short> _elements = new List<short>();
+					VBO.PolygonToVerts( pi.Poly, c, vboVertices, _elements );
+                    vboElements = _elements.Select(i => (int)i).ToList();
+                }
 				else // HasValidSkewConfig
 				{
 					bool skip = false;
