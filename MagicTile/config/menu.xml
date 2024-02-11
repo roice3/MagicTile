@@ -154,6 +154,7 @@
                <Item>{6,3}.12</Item>
                <Item>{6,3}.16</Item>
                <Item>{6,3}.19</Item>
+               <Item>{6,3}.24</Item>
             </Group>
          </Group>
          <Group Name="Klein Bottle">

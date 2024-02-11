@@ -1,13 +1,12 @@
 <PuzzleConfigClass>
-   <ClassDisplayName>{6,3} 19-Color</ClassDisplayName>
-   <ClassID>{6,3}.19</ClassID>
-   <ExpectedNumColors>19</ExpectedNumColors>
+   <ClassDisplayName>{6,3} 24-Color</ClassDisplayName>
+   <ClassID>{6,3}.24</ClassID>
+   <ExpectedNumColors>24</ExpectedNumColors>
    <Identifications>
       <Identification>
-         <EdgeSet>3:2:3:3</EdgeSet>
-         <EndRotation>5</EndRotation>
-         <InPlaceReflection>true</InPlaceReflection>
-         <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
+         <EdgeSet>3:3:3</EdgeSet>
+         <EndRotation>0</EndRotation>
+         <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
       </Identification>
    </Identifications>
    <NumTiles>2500</NumTiles>
