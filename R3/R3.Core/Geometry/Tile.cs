@@ -135,7 +135,7 @@
 		/// <summary>
 		/// ZZZ - needs to be part of performance setting?
 		/// Returns true if the tile should be included after a Mobius transformation will be applied.
-		/// If the tile is not be included, this method avoids applying the mobious transform to the entire tile.
+		/// If the tile is not included, this method avoids applying the Mobius transform to the entire tile.
 		/// </summary>
 		public bool IncludeAfterMobius( Mobius m )
 		{
@@ -160,7 +160,7 @@
 					//bool use = ( poly.Center.Abs() < 0.9 );	// Only disk
 
 					CircleNE c = VertexCircle;
-					bool use = c.CenterNE.Abs() < 0.9999;
+					bool use = c.CenterNE.Abs() < 0.99999;
 
 					/*List<Vector3D> points = poly.GetEdgePoints();
 					double maxdist = points.Max( point => point.Abs() );
