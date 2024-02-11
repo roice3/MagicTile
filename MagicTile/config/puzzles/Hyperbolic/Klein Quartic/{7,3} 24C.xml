@@ -39,7 +39,7 @@
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
-               <Distance>0:2:0:0</Distance>
+               <Distance>1:0:1:0</Distance>
             </FaceCentered>
             <Thickness>0.01</Thickness>
             <VertexCentered/>
@@ -59,7 +59,37 @@
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
+               <Distance>0:2:0:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
                <Distance>2:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>1:1:0.85:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>1:1:1:0</Distance>
             </FaceCentered>
             <Thickness>0.01</Thickness>
             <VertexCentered/>
@@ -204,6 +234,20 @@
             <VertexCentered>
                <Distance>1.4:0:0:0</Distance>
                <Distance>1.6:0:0:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered>
+               <Distance>0:1:0:0</Distance>
+            </EdgeCentered>
+            <FaceCentered>
+               <Distance>0:1:0:0</Distance>
+            </FaceCentered>
+            <Thickness>0.005</Thickness>
+            <VertexCentered>
+               <Distance>0:-1:1:0</Distance>
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
