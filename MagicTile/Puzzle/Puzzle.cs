@@ -245,7 +245,7 @@
 
 			// Slice up the template tile.
 			StatusOrCancel( callback, "slicing up template tile..." );
-			List<Polygon> tStickers = SliceUpTemplate( template, templateTwistDataArray );
+			List<Polygon> tStickers = SliceUpTemplate( tiling, template, templateTwistDataArray );
 
 			StatusOrCancel( callback, "adding in stickers..." );
 			if( this.Config.Geometry == Geometry.Spherical )
@@ -448,7 +448,7 @@
 		/// <summary>
 		/// Returns all the circles we want to use to slice up a template cell.
 		/// </summary>
-		private IEnumerable<CircleNE> Slicers( Tile template, IEnumerable<TwistData> templateSlicers )
+		private IEnumerable<CircleNE> Slicers( Tiling tiling, Tile template, IEnumerable<TwistData> templateSlicers )
 		{
 			HashSet<CircleNE> complete = new HashSet<CircleNE>( new CircleNE_EqualityComparer() );
 			List<Tile> templateTile = new List<Tile>();
@@ -477,10 +477,40 @@
 				{
 					// Use all edge and vertex incident tiles.
 					// ZZZ - It's easy to imagine needing to grab more than this in the future.
-					foreach( Tile t in templateTile.Concat( template.EdgeIncidences.Concat( template.VertexIndicences ) ) )
+					var tiles = templateTile.Concat(template.EdgeIncidences.Concat(template.VertexIndicences));
+					List<Isometry> isometries = tiles.Select( t => t.Isometry ).ToList();
+
+					// Yep, I needed more in this case.
+					// I don't want to do this everywhere because of speed. Make this configurable or smarter?
+					if ( Config.P == 7 && Config.Q == 3 )
+					{
+						isometries.Clear();
+						var nearCenter = tiling.Tiles.Where(t => t.Center.Abs() < .75).ToList();
+						foreach (Tile t in nearCenter)
+						{
+							Isometry isometry = new Isometry();
+							isometry.CalculateFromTwoPolygons(template, t.Boundary, this.Config.Geometry);
+							isometry = isometry.Inverse();
+							isometries.Add(isometry);
+
+							// Ugh, there is a bug somewhere that makes t.Isometry be mirrored for one of the tiles.
+							// This is why I recaculated above vs. using the stored isometry in the tile.
+							//isometries.Add( t.Isometry );
+						}
+
+						// Another hack to avoid numerical precision limitations.
+						var d = this.Config.SlicingCircles.FaceCentered;
+						if (d != null && d.Count == 1 &&
+								d[0].P == 1 && d[0].Q == 1 && d[0].R == 1)
+						{
+							slicingCircle.Radius *= 0.999;
+						}
+					}
+
+					foreach( Isometry i in isometries )
 					{
 						CircleNE result = slicingCircle.Clone();
-						result.Transform( t.Isometry );
+						result.Transform( i );
 
 						if( complete.Contains( result ) )
 							continue;
@@ -493,9 +523,9 @@
 		}
 
 		// ZZZ - move all this puzzle slicing code to a separate file.
-		private List<Polygon> SliceUpTemplate( Tile template, TwistData[] templateTwistDataArray )
+		private List<Polygon> SliceUpTemplate( Tiling tiling, Tile template, TwistData[] templateTwistDataArray )
 		{
-			List<CircleNE> slicers = Slicers( template, templateTwistDataArray ).ToList();
+			List<CircleNE> slicers = Slicers( tiling, template, templateTwistDataArray ).ToList();
 			List<Polygon> slicees = new List<Polygon>(), sliced = null;
 			slicees.Add( template.Drawn );
 			SliceRecursive( slicees, slicers, ref sliced );
