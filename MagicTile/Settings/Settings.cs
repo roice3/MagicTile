@@ -88,13 +88,13 @@
 			//		 where certain rotations can project lines through infinity
 			//		 at divisible rotation values.  This helps avoid that until
 			//		 I do a proper fix in the projection.
-			double rotationStep = this.RotationRate * 40;
+			double rotationStep = this.RotationRate * 150;
 			rotationStep += 1.123456789;
 			rotationStep /= twistOrder;
 
 			// Make extremely large for disco ball mode.
 			if( this.RotationRate == 1 )
-				rotationStep = 200;
+				rotationStep = 250;
 
 			return rotationStep;
 		}
