@@ -476,32 +476,35 @@
 				foreach( CircleNE slicingCircle in twistData.Circles )
 				{
 					// Use all edge and vertex incident tiles.
-					// ZZZ - It's easy to imagine needing to grab more than this in the future.
 					var tiles = templateTile.Concat(template.EdgeIncidences.Concat(template.VertexIndicences));
 					List<Isometry> isometries = tiles.Select( t => t.Isometry ).ToList();
 
-					// Yep, I needed more in this case.
-					// I don't want to do this everywhere because of speed. Make this configurable or smarter?
-					if ( Config.P == 7 && Config.Q == 3 )
+					// We may need to use more tiles for slicing on Euclidean and Hyperbolic puzzles.
+					if( Config.Geometry == Geometry.Euclidean || Config.Geometry == Geometry.Hyperbolic )
 					{
 						isometries.Clear();
-						var nearCenter = tiling.Tiles.Where(t => t.Center.Abs() < .75).ToList();
-						foreach (Tile t in nearCenter)
+
+						// Get all tiles within the slicing circle.
+						double cutoff = slicingCircle.Radius;
+						var nearCenter = tiling.Tiles.Where(
+							t => t.Center.Abs() < cutoff || 
+							t.Boundary.Vertices.Any( v => v.Abs() < cutoff ) ).ToList();
+						foreach( Tile t in nearCenter )
 						{
+							// Ugh, there is a bug somewhere that makes t.Isometry be mirrored for one of the tiles.
+							// This is why I recaculate below vs. using the stored isometry in the tile.
+							//isometries.Add( t.Isometry );
+
 							Isometry isometry = new Isometry();
 							isometry.CalculateFromTwoPolygons(template, t.Boundary, this.Config.Geometry);
 							isometry = isometry.Inverse();
 							isometries.Add(isometry);
-
-							// Ugh, there is a bug somewhere that makes t.Isometry be mirrored for one of the tiles.
-							// This is why I recaculated above vs. using the stored isometry in the tile.
-							//isometries.Add( t.Isometry );
 						}
 
-						// Another hack to avoid numerical precision limitations.
+						// Another hack to avoid a limitation of the slicer (it doesn't support tangent arc slices).
 						var d = this.Config.SlicingCircles.FaceCentered;
-						if (d != null && d.Count == 1 &&
-								d[0].P == 1 && d[0].Q == 1 && d[0].R == 1)
+						if( d != null && d.Count == 1 &&
+							d[0].P == 1 && d[0].Q == 1 && d[0].R == 1 )
 						{
 							slicingCircle.Radius *= 0.999;
 						}
