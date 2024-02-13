@@ -482,13 +482,11 @@
 					// We may need to use more tiles for slicing on Euclidean and Hyperbolic puzzles.
 					if( Config.Geometry == Geometry.Euclidean || Config.Geometry == Geometry.Hyperbolic )
 					{
-						isometries.Clear();
-
 						// Get all tiles within the slicing circle.
 						double cutoff = slicingCircle.Radius;
 						var nearCenter = tiling.Tiles.Where(
-							t => t.Center.Abs() < cutoff || 
-							t.Boundary.Vertices.Any( v => v.Abs() < cutoff ) ).ToList();
+							t => t.Center.Abs() <= cutoff || 
+							t.Boundary.Vertices.Any( v => v.Abs() <= cutoff ) ).ToList();
 						foreach( Tile t in nearCenter )
 						{
 							// Ugh, there is a bug somewhere that makes t.Isometry be mirrored for one of the tiles.
