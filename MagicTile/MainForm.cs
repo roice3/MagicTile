@@ -497,6 +497,8 @@
 				m_renderer.SliceMask |= SliceMask.SLICEMASK_8;
 			if( e.KeyCode == Keys.NumPad9 || e.KeyCode == Keys.D9 )
 				m_renderer.SliceMask |= SliceMask.SLICEMASK_9;
+			if( e.KeyCode == Keys.NumPad0 || e.KeyCode == Keys.D0 )
+				m_renderer.SliceMask |= SliceMask.SLICEMASK_10;
 
 			m_settings.ClampLevels();
 			m_propertyGrid.SelectedObject = m_settings;
@@ -524,6 +526,8 @@
 				m_renderer.SliceMask &= ~SliceMask.SLICEMASK_8;
 			if( e.KeyCode == Keys.NumPad9 || e.KeyCode == Keys.D9 )
 				m_renderer.SliceMask &= ~SliceMask.SLICEMASK_9;
+			if( e.KeyCode == Keys.NumPad0 || e.KeyCode == Keys.D0 )
+				m_renderer.SliceMask &= ~SliceMask.SLICEMASK_10;
 
 			m_glControl.Invalidate();
 		}

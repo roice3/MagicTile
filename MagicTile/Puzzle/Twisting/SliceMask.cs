@@ -15,6 +15,7 @@
 		public static int SLICEMASK_7 = 0x0040;
 		public static int SLICEMASK_8 = 0x0080;
 		public static int SLICEMASK_9 = 0x0100;
+		public static int SLICEMASK_10 = 0x0200;
 
 		public static int SliceToMask( int slice )
 		{
@@ -38,6 +39,8 @@
 					return SLICEMASK_8;
 				case 9:
 					return SLICEMASK_9;
+				case 10:
+					return SLICEMASK_10;
 				default:
 					return 0;
 			}
@@ -46,7 +49,7 @@
 		public static int[] MaskToSlices( int mask )
 		{
 			List<int> result = new List<int>();
-			for( int i=0; i<9; i++ )
+			for( int i=0; i<=10; i++ )
 				if( ( SliceToMask( i ) & mask ) != 0 )
 					result.Add( i );
 
