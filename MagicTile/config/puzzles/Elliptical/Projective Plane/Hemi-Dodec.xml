@@ -81,6 +81,71 @@
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
+      <Puzzle>
+         <DisplayName>Hemi-Petaminx</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0.225:0:1:0</Distance>
+               <Distance>0.45:0:1:0</Distance>
+               <Distance>0.675:0:1:0</Distance>
+               <Distance>0.9:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.015</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Hemi-Examinx</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0.175:0:1:0</Distance>
+               <Distance>0.35:0:1:0</Distance>
+               <Distance>0.525:0:1:0</Distance>
+               <Distance>0.7:0:1:0</Distance>
+               <Distance>0.875:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.015</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Hemi-Zettaminx</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0.15:0:1:0</Distance>
+               <Distance>0.3:0:1:0</Distance>
+               <Distance>0.45:0:1:0</Distance>
+               <Distance>0.6:0:1:0</Distance>
+               <Distance>0.75:0:1:0</Distance>
+               <Distance>0.9:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.015</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Hemi-Minx of Madness</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0.095:0:1:0</Distance>
+               <Distance>0.19:0:1:0</Distance>
+               <Distance>0.285:0:1:0</Distance>
+               <Distance>0.38:0:1:0</Distance>
+               <Distance>0.475:0:1:0</Distance>
+               <Distance>0.57:0:1:0</Distance>
+               <Distance>0.665:0:1:0</Distance>
+               <Distance>0.76:0:1:0</Distance>
+               <Distance>0.855:0:1:0</Distance>
+               <Distance>0.95:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
       <Edge/>
       <Puzzle>
          <SlicingCircles>
