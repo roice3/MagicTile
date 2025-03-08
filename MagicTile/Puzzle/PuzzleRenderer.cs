@@ -259,8 +259,32 @@
 			if( !(ShowOnSurface || ShowAsSkew) )
 				RenderClosestTwistingCircles();
 
-			//RenderMasterBoundary();
+			RenderMasterBoundary();
+			//Draw14gon();
 		}
+
+		private void Draw14gon()
+		{
+			GL.Disable( EnableCap.Texture2D );
+			if( m_14gon == null )
+			{
+				Tiling tiling = new Tiling();
+				tiling.Generate( new TilingConfig( 14, 7, 1 ) );
+				m_14gon = tiling;
+			}
+
+			Polygon p = m_14gon.Tiles.First().Boundary.Clone();
+			p.Transform( m_mouseMotion.Isometry );
+			Color color = Color.Gray;
+			//GLUtils.DrawConcavePolygon( p, color, GrabModelTransform() );
+			foreach( Segment seg in p.Segments )
+			{
+				Circle c = new Circle( seg.P1, seg.Midpoint, seg.P2 );
+				GLUtils.DrawCircle( c, Color.White, GrabModelTransform(), solid: true );
+				//GLUtils.DrawSeg( seg, 20, GrabModelTransform() );
+			}
+		}
+		Tiling m_14gon;
 
 		private bool ShowOnSurface
 		{

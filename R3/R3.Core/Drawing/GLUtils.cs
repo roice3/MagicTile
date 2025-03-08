@@ -13,20 +13,29 @@
 		/// <summary>
 		/// Draws a circle in OpenGL immediate mode.
 		/// </summary>
-		public static void DrawCircle( Circle c, Color color, System.Func<Vector3D, Vector3D> transform )
+		public static void DrawCircle( Circle c, Color color, System.Func<Vector3D, Vector3D> transform, bool solid = false )
 		{
-			DrawCircleInternal( c, color, 100, transform );
+			DrawCircleInternal( c, color, 100, transform, solid );
 		}
 
 		private static void DrawCircleInternal( Circle c, Color color, int divisions, 
-			System.Func<Vector3D,Vector3D> transform )
+			System.Func<Vector3D,Vector3D> transform, bool solid = false )
 		{
 			GL.Color3( color );
-			GL.Begin( BeginMode.LineLoop );
+			if( !solid )
+				GL.Begin( BeginMode.LineLoop );
+			else
+			{
+				GL.Begin( BeginMode.TriangleFan );
+				Vector3D temp = new Vector3D( c.Center.X, c.Center.Y );
+				Vector3D transformed = transform == null ? temp : transform( temp );
+				GL.Vertex3( transformed.X, transformed.Y, transformed.Z );
+			}
+
 			{
 				Vector3D radius = new Vector3D( 0, c.Radius );
 
-				for( int i = 0; i < divisions; i++ )
+				for( int i = 0; i <= divisions; i++ )
 				{
 					radius.RotateXY( 2 * Math.PI / divisions );
 
