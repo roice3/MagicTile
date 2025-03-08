@@ -3,17 +3,17 @@
    <ClassID>{4,4}.6</ClassID>
    <ExpectedNumColors>6</ExpectedNumColors>
    <Identifications>
-	  <Identification>
+      <Identification>
          <EdgeSet>2:3</EdgeSet>
          <EndRotation>0</EndRotation>
-		 <InPlaceReflection>true</InPlaceReflection>
-		 <InitialEdgeSet>0:2</InitialEdgeSet>
+         <InPlaceReflection>true</InPlaceReflection>
+         <InitialEdgeSet>0:2</InitialEdgeSet>
       </Identification>
-	  <Identification>
-		 <EdgeSet>2:2</EdgeSet>
+      <Identification>
+         <EdgeSet>2:2</EdgeSet>
          <EndRotation>2</EndRotation>
-		 <InPlaceReflection>true</InPlaceReflection>
-		 <InitialEdgeSet>1:3</InitialEdgeSet>
+         <InPlaceReflection>true</InPlaceReflection>
+         <InitialEdgeSet>1:3</InitialEdgeSet>
       </Identification>
    </Identifications>
    <NumTiles>2500</NumTiles>
@@ -31,7 +31,6 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
-         <ID>Puzzle.{4,4}.F.16</ID>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>

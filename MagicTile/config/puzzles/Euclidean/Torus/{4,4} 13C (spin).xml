@@ -3,11 +3,11 @@
    <ClassID>{4,4}.13S</ClassID>
    <ExpectedNumColors>13</ExpectedNumColors>
    <Identifications>
-	  <Identification>
+      <Identification>
          <EdgeSet>2:2:3:2</EdgeSet>
          <EndRotation>2</EndRotation>
-		 <InPlaceReflection>true</InPlaceReflection>
-		 <InitialEdgeSet></InitialEdgeSet>
+         <InPlaceReflection>true</InPlaceReflection>
+         <InitialEdgeSet/>
       </Identification>
    </Identifications>
    <NumTiles>2500</NumTiles>
@@ -25,7 +25,6 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
-         <ID>Puzzle.{4,4}.F.16</ID>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>

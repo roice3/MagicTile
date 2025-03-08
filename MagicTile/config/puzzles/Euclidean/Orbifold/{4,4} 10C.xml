@@ -8,7 +8,7 @@
          <EndRotation>2</EndRotation>
          <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
       </Identification>
-	  <Identification>
+      <Identification>
          <EdgeSet>2:2:2</EdgeSet>
          <EndRotation>0</EndRotation>
          <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
@@ -29,7 +29,6 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
-         <ID>Puzzle.{4,4}.F.16</ID>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>

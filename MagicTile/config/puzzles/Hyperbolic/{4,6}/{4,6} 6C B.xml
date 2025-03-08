@@ -6,29 +6,27 @@
       <Identification>
          <EdgeSet>2:2:2</EdgeSet>
          <EndRotation>0</EndRotation>
-		 <InPlaceReflection>false</InPlaceReflection>
+         <InPlaceReflection>false</InPlaceReflection>
          <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
-      </Identification>   
-	  <Identification>
+      </Identification>
+      <Identification>
          <EdgeSet>1:1</EdgeSet>
          <EndRotation>1</EndRotation>
-		 <InPlaceReflection>true</InPlaceReflection>
+         <InPlaceReflection>true</InPlaceReflection>
          <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
       </Identification>
-	  <Identification>
+      <Identification>
          <EdgeSet>2:1:2</EdgeSet>
          <EndRotation>2</EndRotation>
-		 <InPlaceReflection>false</InPlaceReflection>
+         <InPlaceReflection>false</InPlaceReflection>
          <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
       </Identification>
-
    </Identifications>
    <NumTiles>5000</NumTiles>
    <P>4</P>
    <Q>6</Q>
    <Specific>
       <Puzzle>
-         <ID>Puzzle.{4,6}.Petal</ID>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
