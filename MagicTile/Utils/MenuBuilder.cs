@@ -352,6 +352,7 @@
 				m_puzzleIds[config.ID] = config;
 				if( NumPuzzles != m_puzzleIds.Count )
 				{
+					System.Diagnostics.Trace.WriteLine( string.Format( "Duplicate puzzle id: {0}", config.ID ) );
 					System.Diagnostics.Debug.Assert( false );
 					//throw new System.Exception( "Duplicate puzzle config IDs." );
 				}
