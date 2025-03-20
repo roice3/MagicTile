@@ -260,7 +260,7 @@
 			if( !(ShowOnSurface || ShowAsSkew) )
 				RenderClosestTwistingCircles();
 
-			RenderMasterBoundary();
+			//RenderMasterBoundary();
 			//Draw14gon();
 		}
 
@@ -268,6 +268,8 @@
 		{
 			SetupStandardGLSettings(
 				m_settings.ColorBg );
+			GL.Disable( EnableCap.Texture2D );
+			EnableAntiAlias();
 
 			GL.PushAttrib(
 				AttribMask.LightingBit |
@@ -279,8 +281,17 @@
 			tri.Scale( 3.0 );
 			tri.Translate( new Vector3D(-.1, 0) );
 			int level = 0;
-			DrawSingleTri( tri, LevelColor( level ), 16.0f );
-			DrawNextLevel( tri, 0 );
+			//DrawSingleTri( tri, LevelColor( level ), 16.0f );
+			//DrawNextLevel( tri, 0 );
+
+			Polygon mid = new Polygon();
+			mid.CreateRegular( 3, 6 );
+			mid.Scale( -1.5 );
+			mid.Translate( new Vector3D( -.1, 0 ) );
+			level = 0;
+			mid.Scale( .995 );
+			GLUtils.DrawPolygonSolid( mid, LevelColor( level ) );
+			DrawNextLevel( tri, 0, outlines: false );
 
 			GL.PopAttrib();
 		}
@@ -305,10 +316,10 @@
 			return col;
 		}
 
-		private void DrawNextLevel( Polygon parent, int level )
+		private void DrawNextLevel( Polygon parent, int level, bool outlines = true )
 		{
 			level++;
-			if( level > 3 )
+			if( level > 9 )
 				return;
 
 			Polygon tri1 = parent.Clone();
@@ -320,25 +331,36 @@
 			Vector3D off2 = parent.Vertices[1] - tri2.Vertices[1]; tri2.Translate( off2 );
 			Vector3D off3 = parent.Vertices[2] - tri3.Vertices[2]; tri3.Translate( off3 );
 
-			tri1.Scale( .95 );
-			tri2.Scale( .95 );
-			tri3.Scale( .95 );
+			if( outlines )
+			{
+				tri1.Scale( .95 );
+				tri2.Scale( .95 );
+				tri3.Scale( .95 );
 
-			float lineWidth = 16.0f;
-			lineWidth /= (float)Math.Pow( 1.75, level );
-			DrawSingleTri( tri1, LevelColor( level ), lineWidth );
-			DrawSingleTri( tri2, LevelColor( level ), lineWidth );
-			DrawSingleTri( tri3, LevelColor( level ), lineWidth );
+				float lineWidth = 16.0f;
+				lineWidth /= (float)Math.Pow( 1.75, level );
+				DrawSingleTri( tri1, LevelColor( level ), lineWidth );
+				DrawSingleTri( tri2, LevelColor( level ), lineWidth );
+				DrawSingleTri( tri3, LevelColor( level ), lineWidth );
+			}
+			else
+			{
+				tri1.Scale( .995 );
+				tri2.Scale( .995 );
+				tri3.Scale( .995 );
 
-			DrawNextLevel( tri1, level );
-			DrawNextLevel( tri2, level );
-			DrawNextLevel( tri3, level );
+				GLUtils.DrawPolygonSolid( tri1, LevelColor( level ) );
+				GLUtils.DrawPolygonSolid( tri2, LevelColor( level ) );
+				GLUtils.DrawPolygonSolid( tri3, LevelColor( level ) );
+			}
+
+			DrawNextLevel( tri1, level, outlines );
+			DrawNextLevel( tri2, level, outlines );
+			DrawNextLevel( tri3, level, outlines );
 		}
 
 		private void DrawSingleTri( Polygon tri, Color col, float width )
 		{
-			GL.Disable( EnableCap.Texture2D );
-			EnableAntiAlias();
 			GL.Enable( EnableCap.PolygonOffsetLine );
 			
 			// Maybe make this level dependent.
