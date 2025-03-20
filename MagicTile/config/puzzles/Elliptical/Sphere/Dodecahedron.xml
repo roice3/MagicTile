@@ -60,6 +60,17 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>2:0:1:0</Distance>
+               <Distance>1:1:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.015</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
          <DisplayName>Gigaminx</DisplayName>
          <ID>Gigaminx</ID>
          <SlicingCircles>
