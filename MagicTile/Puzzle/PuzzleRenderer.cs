@@ -259,7 +259,7 @@
 			if( !(ShowOnSurface || ShowAsSkew) )
 				RenderClosestTwistingCircles();
 
-			RenderMasterBoundary();
+			//RenderMasterBoundary();
 			//Draw14gon();
 		}
 
