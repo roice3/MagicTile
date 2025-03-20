@@ -480,7 +480,8 @@
 					List<Isometry> isometries = tiles.Select( t => t.Isometry ).ToList();
 
 					// We may need to use more tiles for slicing on Euclidean and Hyperbolic puzzles.
-					if( Config.Geometry == Geometry.Euclidean || Config.Geometry == Geometry.Hyperbolic )
+					// This is too much for the earthquake puzzle though.
+					if( (Config.Geometry == Geometry.Euclidean || Config.Geometry == Geometry.Hyperbolic) && !Config.Earthquake )
 					{
 						// Get all tiles within the slicing circle.
 						double cutoff = slicingCircle.Radius;
