@@ -420,10 +420,10 @@
 				}
 
 				// Long way to go to make this general.
-				if( this.Config.Earthquake )
+				if( this.Config.Systolic )
 				{
 					TwistData twistData = new TwistData();
-					twistData.TwistType = ElementType.Vertex;
+					twistData.TwistType = ElementType.Vertex;	// Thought about making a separate 'systole' type here
 					twistData.Center = s.P1;
 					twistData.Order = 3;		// The only use here is in controlling twist speed.
 					twistData.NumSlices = 3;	// We'll use the slices as a way to mark the 3 directions.
@@ -436,7 +436,38 @@
 					if( Pants.TemplateHex == null )
 						Pants.TemplateHex = twistData.Pants.Hexagon.Clone();
 					twistData.Pants.Transform( m );
-					twistData.Circles = Pants.SystolesForKQ().Select( c => { c.Transform( m ); return c; } ).ToArray();
+					// ZZZ - should earthquake td get setup here too??????????????????????????????????????????????????????????????
+
+
+					// The actual twist Mobius may be 1 of 3, depending on the pants edge twisting.
+					// and that will get set later.
+
+					var pantsCircles = Pants.SystolesForKQ();
+					List<CircleNE> cutCircles = new List<CircleNE>();
+					foreach( Distance d in circles.Systolic )
+					{
+						List<CircleNE> temp = new List<CircleNE>();
+						if( !d.Zero )
+						{
+							foreach( CircleNE pc in pantsCircles )
+							{
+								Slicer.OffsetHyperbolicGeodesic( pc, d.Dist( this.Config.P, this.Config.Q ), out Circle c1, out Circle c2 );
+
+								// NOTE: Make the circle NE center the vertex, since we are using that as a reference for systolic twists.
+								// This will be "outside" the circle, but we can account for that where we need to (in finding affected masters/stickers).
+								//Vector3D refVert = s.P1;
+								//temp.Add( new CircleNE( c1, refVert ) );
+								//temp.Add( new CircleNE( c2, refVert ) );
+								temp.Add( new CircleNE( c1, c1.Center ) );
+								temp.Add( new CircleNE( c2, c2.Center ) );
+							}
+						}
+						else
+							temp.AddRange( pantsCircles );
+
+						cutCircles.AddRange( temp.Select( c => { c.Transform( m ); return c; } ) );
+					}
+					twistData.Circles = cutCircles.ToArray();
 
 					result.Add( twistData );
 				}
@@ -480,8 +511,8 @@
 					List<Isometry> isometries = tiles.Select( t => t.Isometry ).ToList();
 
 					// We may need to use more tiles for slicing on Euclidean and Hyperbolic puzzles.
-					// This is too much for the earthquake puzzle though.
-					if( (Config.Geometry == Geometry.Euclidean || Config.Geometry == Geometry.Hyperbolic) && !Config.Earthquake )
+					// This is too much for the systolic puzzle though.
+					if( (Config.Geometry == Geometry.Euclidean || Config.Geometry == Geometry.Hyperbolic) && !Config.Systolic )
 					{
 						// Get all tiles within the slicing circle.
 						double cutoff = slicingCircle.Radius;
@@ -583,8 +614,11 @@
 			foreach( Polygon slicee in slicees )
 			{
 				List<Polygon> tempSliced2;
-				if( Config.Earthquake )
+				if( Config.Systolic )
+				{
+					// ZZZ - cuts may be hypercycles (not geodesic). Hoping it is close enough.
 					Slicer.SlicePolygonWithHyperbolicGeodesic( slicee, slicer, this.Config.SlicingCircles.Thickness, out tempSliced2 );
+				}
 				else
 					Slicer.SlicePolygon( slicee, slicer, this.Config.Geometry, this.Config.SlicingCircles.Thickness, out tempSliced2 );
 				tempSliced.AddRange( tempSliced2 );
@@ -1089,7 +1123,21 @@
 				copy.Transform( isometry );
 				transformedCircles.Add( copy );
 			}
-			transformedTwistData.Circles = transformedCircles.ToArray();
+
+			// This is subtle and I wish unecessary.
+			// I wish I would have been more careful to not have cells reflected all over the place (except if necessary in non-orientable situations).
+			/*if( this.Config.Systolic && reverse )
+			{
+				Debug.Assert( transformedCircles.Count == 6 );
+				transformedTwistData.Circles = new CircleNE[]
+				{                   
+					transformedCircles[0], transformedCircles[1],
+					transformedCircles[4], transformedCircles[5],
+					transformedCircles[2], transformedCircles[3]
+				};
+			}
+			else*/
+				transformedTwistData.Circles = transformedCircles.ToArray();
 
 			return transformedTwistData;
 		}
@@ -1444,13 +1492,13 @@
 			List<Cell> result = new List<Cell>();
 			result.AddRange( this.MasterCells );
 
-			// Special handlinng for earthquake.
+			// Special handlinng for systolic.
 			// ZZZ - I wonder if this should be the approach in the normal case too (cycling through 
 			//		 masters first and slaves second), but fear changing the existing behavior.
 			//		 After all, any slave twist will also result in some master twist.
 			//		 This might speed up code below, and get rid of the complexity of the "hotTwists" code.
 			HashSet<Vector3D> complete = new HashSet<Vector3D>();
-			if( this.Config.Earthquake )
+			if( this.Config.Systolic )
 			{
 				// Get all twist data attached to master cells.
 				List<TwistData> toCheck = new List<TwistData>();
@@ -2157,9 +2205,9 @@
 			// Maps from sticker to new sticker position.
 			Dictionary<Sticker, Vector3D> newMap = new Dictionary<Sticker, Vector3D>();
 
-			bool earthquake = config.Earthquake;
+			bool systolic = config.Systolic;
 			IdentifiedTwistData identifiedTwistData = twist.IdentifiedTwistData;
-			double rotation = earthquake ? 1.0 : twist.Magnitude;
+			double rotation = systolic ? 1.0 : twist.Magnitude;
 			if( !twist.LeftClick )
 				rotation *= -1;
 
@@ -2168,8 +2216,8 @@
 			foreach( TwistData twistData in twist.StateCalcTD )
 			{
 				count++;
-				Mobius mobius = twistData.MobiusForTwist( config.Geometry, twist, rotation,
-					earthquake, count > identifiedTwistData.TwistDataForStateCalcs.Count );
+				Mobius mobius = twistData.MobiusForTwist( config, twist, rotation,
+					count > identifiedTwistData.TwistDataForStateCalcs.Count );
 
 				foreach( List<Sticker> list in twistData.AffectedStickersForSliceMask( twist.SliceMask ) )
 				foreach( Sticker sticker in list )

@@ -339,8 +339,9 @@
 
 			if( additionalTransform == null )
 				GL.Disable( EnableCap.Texture2D );
-			foreach( TwistData twistData in m_closestTwistingCircles.IdentifiedTwistData.TwistDataForDrawing )
-			foreach( CircleNE slicingCircle in twistData.CirclesForSliceMask( this.SliceMaskEnsureSlice ) )
+			//foreach( TwistData twistData in m_closestTwistingCircles.IdentifiedTwistData.TwistDataForDrawing )
+			foreach( TwistData twistData in m_closestTwistingCircles.IdentifiedTwistData.TwistDataForStateCalcs )
+			foreach( CircleNE slicingCircle in twistData.CirclesForSliceMask( this.SliceMaskSafe ) )
 			{
 				CircleNE toDraw = slicingCircle.Clone();
 				System.Func<Vector3D,Vector3D> t = null;
@@ -375,17 +376,20 @@
 				{ 
 					GLUtils.DrawCircleSafe( toDraw, c, t );
 				}
-				else if( m_puzzle.Config.Earthquake )
+				else if( m_puzzle.Config.Systolic )
 				{
-					if( m_choppedPantsSeg != -1 )
+					GLUtils.DrawHypercycle( toDraw, c, t );
+
+					// Earthquakes have the pants chopped off, and we need to draw that.
+					if( m_puzzle.Config.Earthquake && m_closestGeodesicSeg != -1 )
 					{
+						int pantsSeg = Pants.ChoppedPantsSeg( m_closestGeodesicSeg );
 						Polygon clone = twistData.Pants.Hexagon.Clone();
 						clone.Transform( m_mouseMotion.Isometry );
 						int div = 15;
 						GL.Color3( c );
-						GLUtils.DrawSeg( clone.Segments[m_choppedPantsSeg], div, t );
+						GLUtils.DrawSeg( clone.Segments[pantsSeg], div, t );
 					}
-					GLUtils.DrawHyperbolicGeodesic( toDraw, m_settings.ColorTwistingCircles, GrabModelTransform() );
 				}
 				else
 				{
@@ -394,7 +398,9 @@
 			}
 		}
 		private TwistData m_closestTwistingCircles = null;
-		private int m_choppedPantsSeg = -1;
+
+		// This is for systolic puzzles. We need more info than just the closest twisting circles.
+		private int m_closestGeodesicSeg = -1;
 
 		/// <summary>
 		/// Grabs a model transform based on puzzle geometry and settings.
@@ -724,7 +730,7 @@
 
 		private void RenderMoving( Cell master, Isometry transform, bool clipForElliptical = false )
 		{
-			bool earthquake = m_puzzle.Config.Earthquake;
+			bool systolic = m_puzzle.Config.Systolic;
 
 			// Draw moving stickers.
 			SingleTwist twist = this.TwistHandler.CurrrentTwist;
@@ -743,8 +749,8 @@
 				if( !twistData.AffectedMasterCells.ContainsKey( master ) )
 					continue;
 
-				Mobius mobius = twistData.MobiusForTwist( m_puzzle.Config.Geometry, twist, rotation, 
-					earthquake, count > identifiedTwistData.TwistDataForStateCalcs.Count );
+				Mobius mobius = twistData.MobiusForTwist( m_puzzle.Config, twist, rotation, 
+					count > identifiedTwistData.TwistDataForStateCalcs.Count );
 				Isometry isometry = new Isometry( master.Isometry );
 				isometry.Mobius *= mobius;
 
@@ -754,8 +760,8 @@
 					if( clipForElliptical && !master.Stickers.Contains( sticker ) )
 						continue;
 
-					// Performance boost for earthquake.
-					if( earthquake )
+					// Performance boost for systolic.
+					if( systolic )
 					{
 						Vector3D test = sticker.Poly.Center;
 						test = isometry.Apply( test );
@@ -773,7 +779,7 @@
 							continue;
 
 					Color color = m_puzzle.State.GetStickerColor( sticker.CellIndex, sticker.StickerIndex );
-					GLUtils.DrawPolygonSolid( clone, color, fast: earthquake );
+					GLUtils.DrawPolygonSolid( clone, color, fast: systolic );
 				}
 			}
 		}
@@ -853,7 +859,7 @@
 				bool upper = m_settings.HyperbolicModel == HModel.UpperHalfPlane;
 
 				// Our disk is a big rectangle.
-				GL.Begin( BeginMode.Polygon );
+				GL.Begin( PrimitiveType.Polygon );
 					Vertex( new Vector3D( big, upper ? -1 : -big ) );
 					Vertex( new Vector3D( big, big ) );
 					Vertex( new Vector3D( -big, big ) );
@@ -864,15 +870,13 @@
 			}
 
 			int num = 250;
-			GL.Begin( BeginMode.TriangleFan );
-
-			Vertex( new Vector3D() );
-			for( int i=0; i<=num; i++ )
-			{
-				double angle = 2 * Math.PI * i / num;
-				Vertex( new Vector3D( Math.Cos( angle ), Math.Sin( angle ), 0 ) );
-			}
-
+			GL.Begin( PrimitiveType.TriangleFan );
+				Vertex( new Vector3D() );
+				for( int i=0; i<=num; i++ )
+				{
+					double angle = 2 * Math.PI * i / num;
+					Vertex( new Vector3D( Math.Cos( angle ), Math.Sin( angle ), 0 ) );
+				}
 			GL.End();
 		}
 
@@ -1751,13 +1755,13 @@
 			m_closestTwistingCircles = m_puzzle.ClosestTwistingCircles( spaceCoordsNoMouseMotion.Value );
 			object newlyFound = (object)m_closestTwistingCircles;
 
-			// Twisting is more subtle for the earthquake puzzle.
-			if( m_puzzle.Config.Earthquake )
+			// Twisting is more subtle for systolic (and earthquake) puzzles.
+			if( m_puzzle.Config.Systolic )
 			{
-				int prev = m_choppedPantsSeg;
+				int prev = m_closestGeodesicSeg;
 				Vector3D mouse = spaceCoordsNoMouseMotion.Value;
-				m_choppedPantsSeg = m_closestTwistingCircles.Pants.Closest( mouse );
-				if( prev != m_choppedPantsSeg )
+				m_closestGeodesicSeg = m_closestTwistingCircles.Pants.ClosestGeodesicSeg( mouse );
+				if( prev != m_closestGeodesicSeg )
 					return true;
 			}
 
@@ -1908,7 +1912,7 @@
 			}	
 
 			//
-			// From here on down, we're doing normal twisting.
+			// From here on down, we're doing normal (non-macro) twisting.
 			//
 			bool skewReverseTwist = false;
 			if( (ShowOnSurface || ShowAsSkew) && !RenderingDisks )
@@ -1935,20 +1939,26 @@
 			SingleTwist twist = new SingleTwist();
 			twist.IdentifiedTwistData = m_closestTwistingCircles.IdentifiedTwistData;
 			twist.LeftClick = clickData.Button == MouseButtons.Left;
-			if( m_puzzle.Config.Earthquake )
+			
+			if( m_puzzle.Config.Systolic )
 			{
-				twist.SliceMask = m_choppedPantsSeg / 2;
+				twist.SliceMask = MagicTile.SliceMask.DirSegToMask( m_closestGeodesicSeg );
 
-				TwistData td = m_closestTwistingCircles;
-				Vector3D lookup = td.Pants.TinyOffset( m_choppedPantsSeg );
-				Vector3D reflected = td.Pants.Hexagon.Segments[m_choppedPantsSeg].ReflectPoint( lookup );
-				TwistData tdEarthQuake = m_puzzle.ClosestTwistingCircles( reflected );
-				
-				twist.IdentifiedTwistDataEarthquake = tdEarthQuake.IdentifiedTwistData;
-				twist.SliceMaskEarthquake = tdEarthQuake.Pants.Closest( reflected ) / 2;
+				// Earthquake is even more special.
+				if( m_puzzle.Config.Earthquake )
+				{
+					TwistData td = m_closestTwistingCircles;
+					Vector3D lookup = td.Pants.TinyOffset( m_closestGeodesicSeg );
+					int choppedPantsSeg = Pants.ChoppedPantsSeg( m_closestGeodesicSeg );
+					Vector3D reflected = td.Pants.Hexagon.Segments[choppedPantsSeg].ReflectPoint( lookup );
+					TwistData tdSystolic = m_puzzle.ClosestTwistingCircles( reflected );
+
+					twist.IdentifiedTwistDataEarthquake = tdSystolic.IdentifiedTwistData;
+					twist.SliceMaskEarthquake = MagicTile.SliceMask.DirSegToMask( tdSystolic.Pants.ClosestGeodesicSeg( reflected ) );
+				}
 			}
 			else
-				twist.SliceMask = this.SliceMaskEnsureSlice;
+				twist.SliceMask = this.SliceMaskSafe;
 			
 			// Correction when clicking on mirrored tiles for non-orientable puzzles.
 			// We want the user to always see the tiles they left-click turn CCW.
@@ -1969,12 +1979,16 @@
 		public int SliceMask { get; set; }
 
 		/// <summary>
-		/// Ensures a slice if no slice selected.
+		/// Uses the correct "slice" for systolic puzzles, 
+		/// and ensures a slice if no slice selected.
 		/// </summary>
-		public int SliceMaskEnsureSlice
+		public int SliceMaskSafe
 		{
 			get
 			{
+				if( m_puzzle.Config.Systolic )
+					return MagicTile.SliceMask.DirSegToMask( m_closestGeodesicSeg );
+
 				return 0 == SliceMask ? 1 : SliceMask;
 			}
 		}	

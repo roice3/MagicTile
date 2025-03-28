@@ -103,7 +103,10 @@
 			}
 		}
 
-		public static void DrawHyperbolicGeodesic( CircleNE c, Color color,
+		/// <summary>
+		/// This may be geodesic, but does not have to be.
+		/// </summary>
+		public static void DrawHypercycle( CircleNE c, Color color,
 			System.Func<Vector3D, Vector3D> transform )
 		{
 			GL.Color3( color );

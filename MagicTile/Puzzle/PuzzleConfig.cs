@@ -165,9 +165,9 @@
 			get
 			{
 				return
-					Tolerance.Zero( P ) ||
-					Tolerance.Zero( Q ) ||
-					Tolerance.Zero( R ) ||
+					Tolerance.Zero( P ) &&
+					Tolerance.Zero( Q ) &&
+					Tolerance.Zero( R ) &&
 					Tolerance.Zero( D );
 			}
 		}
@@ -224,6 +224,7 @@
 			FaceCentered = new List<Distance>();
 			EdgeCentered = new List<Distance>();
 			VertexCentered = new List<Distance>();
+			Systolic = new List<Distance>();
 			Thickness = 0.01;
 		}
 
@@ -268,7 +269,21 @@
 				LoadList( VertexCentered, value ); 
 			}
 		}
-		
+
+		/// <summary>
+		/// The systolic slicing circles.
+		/// </summary>
+		[DataMember( Name = "Systolic" )]
+		private DistanceStringList SystolicPersist
+		{
+			get { return SaveList( Systolic ); }
+			set
+			{
+				Systolic = new List<Distance>();
+				LoadList( Systolic, value );
+			}
+		}
+
 		// ZZZ - Way to use generic IPersistable type in the Persistence class?
 		private DistanceStringList SaveList( List<Distance> list )
 		{
@@ -304,6 +319,11 @@
 		/// The vertex-centered slicing circles.
 		/// </summary>
 		public List<Distance> VertexCentered { get; set; }
+
+		/// <summary>
+		/// The systolic slicing circles.
+		/// </summary>
+		public List<Distance> Systolic { get; set; }
 
 		/// <summary>
 		/// The thickness of our slicing circles, in the respective geometry.
@@ -342,11 +362,53 @@
 			}
 		}
 
+		public bool SystolicTwisting
+		{
+			get
+			{
+				return
+					this.Systolic != null &&
+					this.Systolic.Count > 0;
+			}
+		}
+
+		public bool FaceTwistingOnly
+		{
+			get
+			{
+				return FaceTwisting && !EdgeTwisting && !VertexTwisting && !SystolicTwisting;
+			}
+		}
+
+		public bool EdgeTwistingOnly
+		{
+			get
+			{
+				return !FaceTwisting && EdgeTwisting && !VertexTwisting && !SystolicTwisting;
+			}
+		}
+
+		public bool VertexTwistingOnly
+		{
+			get
+			{
+				return !FaceTwisting && !EdgeTwisting && VertexTwisting && !SystolicTwisting;
+			}
+		}
+
+		public bool SystolicTwistingOnly
+		{
+			get
+			{
+				return !FaceTwisting && !EdgeTwisting && !VertexTwisting && SystolicTwisting;
+			}
+		}
+
 		public bool Sliced
 		{
 			get
 			{
-				return FaceTwisting || EdgeTwisting || VertexTwisting;
+				return FaceTwisting || EdgeTwisting || VertexTwisting || SystolicTwisting;
 			}
 		}
 	}
@@ -474,10 +536,9 @@
 
 			SlicingCircles = new SlicingCircles();
 
-			bool earthquake = false;
-			if( !earthquake )
+			bool systolic = false;
+			if( !systolic )
 				SlicingCircles.FaceCentered.Add( new Distance( 2.0 / 3, 0, 1.0, 0 ) );
-			Earthquake = earthquake;
 			TileShrink = 0.94;
 
 			Version = Loader.VersionCurrent;
@@ -541,10 +602,26 @@
 		public SlicingCircles SlicingCircles { get; set; }
 
 		/// <summary>
-		/// Whether or not we are an Earthquake puzzle (based on systolic pants decomposition).
+		/// Whether or not we are a systolic puzzle (based on systolic pants decomposition).
+		/// We need to special case these puzzles various places.
 		/// </summary>
 		[DataMember]
-		public bool Earthquake { get; set; }
+		public bool Systolic { get { return this.SlicingCircles.SystolicTwisting; } }
+
+		/// <summary>
+		/// Whether or not we are an "Earthquake" puzzle (based on systolic pants decomposition).
+		/// We will designate this as a systolic puzzle with a degenerate (zero, i.e. geodesic) slicing circle.
+		/// </summary>
+		[DataMember]
+		public bool Earthquake 
+		{ 
+			get 
+			{ 
+				return Systolic && 
+					this.SlicingCircles.Systolic.Count == 1 &&
+					this.SlicingCircles.Systolic[0].Zero; 
+			} 
+		}
 
 		/// <summary>
 		/// Used to control the gap between tiles.

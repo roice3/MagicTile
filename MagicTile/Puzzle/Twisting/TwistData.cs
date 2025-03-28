@@ -1,5 +1,6 @@
 ﻿namespace MagicTile
 {
+	using R3.Core;
 	using R3.Geometry;
 	using R3.Math;
 	using System.Collections.Generic;
@@ -113,24 +114,60 @@
 		public CircleNE[] Circles { get; set; }
 
 		/// <summary>
-		/// For an "Earthquake" puzzle, twisting will be based on a pair of pants.
+		/// For a systolic puzzle, twisting will be based on a pair of pants.
 		/// null by default.
 		/// </summary>
 		public Pants Pants { get; set; }
 
 		/// <summary>
+		/// Easy check for systolic mode.
+		/// </summary>
+		private bool Systolic { get { return Pants != null; } }
+
+		/// <summary>
 		/// Easy check for earthquake mode.
 		/// </summary>
-		private bool Earthquake { get { return Pants != null; } }
+		private bool Earthquake { get { return Pants != null && Circles.Length == 3; } }
+
+		private CircleNE[] CirclesForSlice( int slice )
+		{
+			int dirSeg = SliceMask.SliceToDirSeg( slice );
+			switch( dirSeg )
+			{
+				// I wish the indices matched here the circles better.
+				case 1:
+					return Circles.Skip( 2 ).Take( 2 ).ToArray();
+				case 3:
+					return Circles.Skip( 4 ).Take( 2 ).ToArray();
+				case 5:
+					return Circles.Skip( 0 ).Take( 2 ).ToArray();
+				case -1:
+					break;
+				default:
+					System.Diagnostics.Debug.Assert( false );
+					break;
+			}
+
+			return new CircleNE[] { };
+		}
 
 		/// <summary>
 		/// Grabs all the circles the apply to a given slicemask.
 		/// </summary>
 		public CircleNE[] CirclesForSliceMask( int mask )
 		{
-			// For earthquake puzzles, return all circles for now.
+			// For earthquake puzzles, return all 3 circles for now.
 			if( Earthquake )
 				return Circles;
+
+			// For systolic puzzles, return the relevant slice.
+			// NOTE: I did consider all 3 edges of the pants twisting every time too.
+			//		 That could be yet a different kind of puzzle (there are tradeoffs)
+			if( Systolic )
+			{
+				int slice = SliceMask.MaskToSlice( mask );
+				return CirclesForSlice( slice );
+			}
 
 			int count = this.Circles.Length;
 			List<int> indexes = new List<int>();
@@ -193,10 +230,22 @@
 		/// </summary>
 		public List<StickerList> AffectedStickersForSliceMask( int mask )
 		{
+			// We need the full list for earthquake.
 			if( Earthquake )
 				return AffectedStickers;
 
 			List<StickerList> result = new List<StickerList>();
+
+			// Systolic handling.
+			// This may change in the future if we want to support systolics with multiple slices
+			// (at this point the "slices" are representing the 3 different directions.
+			if( Systolic )
+			{
+				int sliceInQuotesButReallyDirection = SliceMask.MaskToSlice( mask );
+				result.Add( AffectedStickers[sliceInQuotesButReallyDirection-1] );
+				return result;
+			}
+
 			foreach( int slice in SliceMask.MaskToSlices( mask ) )
 			{
 				if( slice > AffectedStickers.Count )
@@ -231,6 +280,17 @@
 					CircleNE c = Pants.TestCircle.Clone();
 					c.Reflect( Pants.Hexagon.Segments[i * 2] );
 					if( c.HasVertexInside( cell.Boundary ) )
+						return true;
+				}
+
+				return false;
+			}
+
+			if( Systolic )
+			{
+				foreach( CircleNE circleNE in this.Circles )
+				{
+					if( circleNE.Intersects( cell.Boundary ) )
 						return true;
 				}
 
@@ -283,8 +343,32 @@
 				return;
 			}
 
-			System.Func<CircleNE, Vector3D, bool> isInside = ( c, t ) => sphericalPuzzle ? 
+			System.Func<CircleNE, Vector3D, bool> isInside = ( c, t ) => sphericalPuzzle ?
 				 CircleNE.IsPointInsideNE( c, t ) : CircleNE.IsPointInsideFast( c, t );
+
+			if( Systolic )
+			{
+				// Systolic puzzles are special.
+				isInside = ( c, t ) => CircleNE.isPointInsideHypercycle( c, t );
+
+				// Only 1 pair-of-pants supported to start.
+				System.Diagnostics.Debug.Assert( Circles.Length == 6 );
+				for( int slice=1; slice<=3; slice++ )
+				{
+					var circles = CirclesForSlice( slice );
+					CircleNE c1 = circles[0];
+					CircleNE c2 = circles[1];
+
+					// If we make the circle centers the pants hexagon center and calc the non-euclidean one (slow), we may need to reverse the sense of this..
+					if( isInside( c1, sticker.Poly.Center ) && !isInside( c2, sticker.Poly.Center ) )
+					//if( !isInside( c1, sticker.Poly.Center ) && isInside( c2, sticker.Poly.Center ) )
+					{
+						AffectedStickers[slice-1].Add( sticker );
+					}
+				}
+
+				return;
+			}
 
 			// Slices are ordered by depth.
 			// We cycle from the inner slice outward.
@@ -304,19 +388,28 @@
 				AffectedStickers[this.NumSlices-1].Add( sticker );
 		}
 
-		public Mobius MobiusForTwist( Geometry g, SingleTwist twist, double rotation, bool earthquake, bool earthquakeData = false )
+		public Mobius MobiusForTwist( PuzzleConfig config, SingleTwist twist, double rotation, bool useEarthquakeTwistData = false )
 		{
+			Geometry g = config.Geometry;
+
 			Mobius mobius = new Mobius();
-			if( earthquake )
+			if( config.Systolic )
 			{
-				int seg = earthquakeData ?
-					(twist.SliceMaskEarthquake * 2 + 3) % 6 :
-					(twist.SliceMask * 2 + 3) % 6;
-				Vector3D p1 = this.Pants.Hexagon.Segments[seg].P2;
-				Vector3D p2 = Pants.Hexagon.Segments[seg].P1;
+				int hexSeg = useEarthquakeTwistData ?
+					SliceMask.MaskToDirSeg( twist.SliceMaskEarthquake ) :
+					SliceMask.MaskToDirSeg( twist.SliceMask );
+				//System.Diagnostics.Trace.WriteLine( "Slicemask: " + twist.SliceMask + "\tHexseg:" + hexSeg );
+
+				Vector3D p1 = this.Pants.Hexagon.Segments[hexSeg].P2;
+				Vector3D p2 = Pants.Hexagon.Segments[hexSeg].P1;
 				if( Pants.Isometry.Reflected )
 					R3.Core.Utils.SwapPoints( ref p1, ref p2 );
 				System.Diagnostics.Debug.Assert( !Reverse );
+
+				// Earthquake puzzles twist twice as far.
+				if( !config.Earthquake )
+					rotation /= 2;
+
 				mobius.Geodesic( Geometry.Hyperbolic, p1, p2, rotation );
 			}
 			else

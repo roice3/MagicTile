@@ -40,12 +40,6 @@
 		public SlicingCircles SlicingCircles { get; set; }
 
 		/// <summary>
-		/// Whether or not we are an Earthquake puzzle (based on systolic pants decomposition).
-		/// </summary>
-		[DataMember]
-		public bool Earthquake { get; set; }
-
-		/// <summary>
 		/// Build a unique identifier.
 		/// </summary>
 		public string AutoUniqueId()
@@ -53,8 +47,7 @@
 			// We only need to be unique up to slicing circles.
 			// (The manually set BaseIDs in PuzzleConfigClass will take care of the rest.)
 			// Invariant culture is important!
-			string result = Earthquake ?
-				"Earthquake" : string.Format( CultureInfo.InvariantCulture, "T{0}", SlicingCircles.Thickness );
+			string result = string.Format( CultureInfo.InvariantCulture, "T{0}", SlicingCircles.Thickness );
 			result += CirclesToString();
 			return result;
 		}
@@ -66,9 +59,6 @@
 		/// </summary>
 		public string AutoDisplayName()
 		{
-			if( Earthquake )
-				return "Earthquake";
-
 			string result = CirclesToString();
 			result = result.TrimStart();
 			return result;
@@ -88,6 +78,9 @@
 			if( this.SlicingCircles.VertexTwisting )
 				foreach( Distance d in this.SlicingCircles.VertexCentered )
 					result += string.Format( CultureInfo.InvariantCulture, " V{0}", d.SaveToStringShort() );
+			if( this.SlicingCircles.SystolicTwisting )
+				foreach( Distance d in this.SlicingCircles.Systolic )
+					result += string.Format( CultureInfo.InvariantCulture, " S{0}", d.SaveToStringShort() );
 			return result;
 		}
 	}
@@ -205,7 +198,7 @@
 		/// All the puzzles we represent.
 		/// </summary>
 		public void GetPuzzles( out PuzzleConfig[] tilings, out PuzzleConfig[] face, out PuzzleConfig[] edge, 
-			out PuzzleConfig[] vertex, out PuzzleConfig[] mixed, out PuzzleConfig[] earthquake, out PuzzleConfig[] toggles )
+			out PuzzleConfig[] vertex, out PuzzleConfig[] mixed, out PuzzleConfig[] systolic, out PuzzleConfig[] toggles )
 		{
 			PuzzleConfig tiling = NonSpecific();
 			tiling.MenuName = "Tiling";
@@ -236,7 +229,6 @@
 
 				// Specific stuff.
 				config.SlicingCircles = puzzleSpecific.SlicingCircles;
-				config.Earthquake = puzzleSpecific.Earthquake;
 
 				// NOTE: I decided to not propagate old IDs for edge or vertex turning puzzles.
 				//		 We won't be able to load preview version macros for these anyway, 
@@ -255,11 +247,11 @@
 				puzzles.Add( config );
 			}
 
-			face = puzzles.Where( p => p.SlicingCircles.FaceTwisting && !p.SlicingCircles.EdgeTwisting && !p.SlicingCircles.VertexTwisting ).ToArray();
-			edge = puzzles.Where( p => !p.SlicingCircles.FaceTwisting && p.SlicingCircles.EdgeTwisting && !p.SlicingCircles.VertexTwisting ).ToArray();
-			vertex = puzzles.Where( p => !p.SlicingCircles.FaceTwisting && !p.SlicingCircles.EdgeTwisting && p.SlicingCircles.VertexTwisting ).ToArray();
-			earthquake = puzzles.Where( p => p.Earthquake ).ToArray();
-			mixed = puzzles.Except( face ).Except( edge ).Except( vertex ).Except( earthquake ).ToArray();
+			face = puzzles.Where( p => p.SlicingCircles.FaceTwistingOnly ).ToArray();
+			edge = puzzles.Where( p => p.SlicingCircles.EdgeTwistingOnly ).ToArray();
+			vertex = puzzles.Where( p => p.SlicingCircles.VertexTwistingOnly ).ToArray();
+			systolic = puzzles.Where( p => p.SlicingCircles.SystolicTwistingOnly ).ToArray();
+			mixed = puzzles.Except( face ).Except( edge ).Except( vertex ).Except( systolic ).ToArray();
 		}
 
 		private PuzzleConfig NonSpecific()

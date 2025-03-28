@@ -28,6 +28,7 @@
 		/// <summary>
 		/// Earthquake twists involve two sets of identified twist data.
 		/// Normally, this will be null.
+		/// NOTE: This is not used for systolic puzzles.
 		/// </summary>
 		public IdentifiedTwistData IdentifiedTwistDataEarthquake { get; set; }
 

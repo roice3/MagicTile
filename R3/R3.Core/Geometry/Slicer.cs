@@ -36,10 +36,10 @@
 		}
 
 		/// <summary>
-		/// Slicing function used for earthquake puzzles.
 		/// c should be geodesic (orthogonal to the disk boundary).
+		/// (c it is really a Circle, not a CircleNE, but some low-level helpers it uses take in CircleNEs)
 		/// </summary>
-		public static void SlicePolygonWithHyperbolicGeodesic( Polygon p, CircleNE c, double thickness, out List<Polygon> output )
+		public static void OffsetHyperbolicGeodesic( CircleNE c, double thickness, out Circle c1, out Circle c2 )
 		{
 			Geometry g = Geometry.Hyperbolic;
 
@@ -57,12 +57,23 @@
 				Vector3D closestToOrigin = H3Models.Ball.ClosestToOrigin( new Circle3D() { Center = c.Center, Radius = c.Radius, Normal = new Vector3D( 0, 0, 1 ) } );
 
 				Vector3D p1, p2;
-				Euclidean2D.IntersectionCircleCircle( c, new Circle(), out p1, out p2 );
+				Circle disk = new Circle();
+				Euclidean2D.IntersectionCircleCircle( c, disk, out p1, out p2 );
 				seg = Segment.Arc( p1, closestToOrigin, p2 );
 			}
 
-			Circle c1 = H3Models.Ball.EquidistantOffset( g, seg, thickness / 2 );
-			Circle c2 = H3Models.Ball.EquidistantOffset( g, seg, -thickness / 2 );
+			c1 = H3Models.Ball.EquidistantOffset( g, seg, thickness / 2 );
+			c2 = H3Models.Ball.EquidistantOffset( g, seg, -thickness / 2 );
+		}
+
+		/// <summary>
+		/// Slicing function used for systolic puzzles.
+		/// c should be geodesic (orthogonal to the disk boundary).
+		/// (c it is really a Circle, not a CircleNE, but some low-level helpers it uses take in CircleNEs)
+		/// </summary>
+		public static void SlicePolygonWithHyperbolicGeodesic( Polygon p, CircleNE c, double thickness, out List<Polygon> output )
+		{
+			OffsetHyperbolicGeodesic( c, thickness, out Circle c1, out Circle c2 );
 
 			CircleNE c1NE = c.Clone(), c2NE = c.Clone();
 			c1NE.Center = c1.Center; c2NE.Center = c2.Center;

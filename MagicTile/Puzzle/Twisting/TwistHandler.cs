@@ -65,7 +65,7 @@
 
 				double max = m_currentTwist.Magnitude;
 				double result = ( max / 2.0 ) * ( -Math.Cos( Math.PI * m_rotation / max ) + 1 );
-				if( m_puzzle.Config.Earthquake )
+				if( m_puzzle.Config.Systolic )
 					result /= m_currentTwist.Magnitude;	// Scale from 0 to 1.
 				return result;
 			}
@@ -404,11 +404,14 @@
 				int randomSlice = rand.Next( numSlices );
 				if( !earthquake )
 					randomSlice += 1;
-				m_currentTwist.SliceMask = SliceMask.SliceToMask( randomSlice );
+				m_currentTwist.SliceMask = SliceMask.SliceToMask( randomSlice ) * 2;
 
+				// Earthquake scrambling takes more care.
 				if( earthquake )
 				{
-					int choppedSeg = m_currentTwist.SliceMask * 2;
+/////////////////////////////////////////////////////////
+
+					int choppedSeg = SliceMask.MaskToSlice( m_currentTwist.SliceMask );
 					Vector3D lookup = td.Pants.TinyOffset( choppedSeg );
 					Vector3D reflected = td.Pants.Hexagon.Segments[choppedSeg].ReflectPoint( lookup );
 					TwistData tdEarthQuake = m_puzzle.ClosestTwistingCircles( reflected );
@@ -416,7 +419,7 @@
 					m_currentTwist.IdentifiedTwistDataEarthquake = tdEarthQuake.IdentifiedTwistData;
 
 					// Fix scrambing here.
-					m_currentTwist.SliceMaskEarthquake = tdEarthQuake.Pants.Closest( reflected ) / 2;
+					m_currentTwist.SliceMaskEarthquake = tdEarthQuake.Pants.ChoppedPantsSeg( reflected ) / 2;
 				}
 
 				// Apply the twist.

@@ -479,6 +479,13 @@
 		{
 			return c.IsPointInsideFast( testPoint );
 		}
+
+		// Not perfect yet, but the fast version definitely doesn't work for these circles.
+		public static bool isPointInsideHypercycle( CircleNE c, Vector3D testPoint )
+		{
+			// Use the regular circle version for now.
+			return c.IsPointInside( testPoint );
+		}
 	}
 
 	public class CircleNE_EqualityComparer : IEqualityComparer<CircleNE>
