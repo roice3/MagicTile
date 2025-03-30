@@ -382,7 +382,6 @@
 			if( allTwistData.Count == 0 )
 				return;
 
-			bool earthquake = m_puzzle.Config.Earthquake;
 			for( int i = 0; i < numTwists; i++ )
 			{
 				m_currentTwist = new SingleTwist();
@@ -401,25 +400,25 @@
 
 				TwistData td = m_currentTwist.IdentifiedTwistData.TwistDataForStateCalcs.First();
 				int numSlices = td.NumSlices;
-				int randomSlice = rand.Next( numSlices );
-				if( !earthquake )
-					randomSlice += 1;
+				int randomSlice = rand.Next( numSlices ) + 1;
 				m_currentTwist.SliceMask = SliceMask.SliceToMask( randomSlice ) * 2;
 
-				// Earthquake scrambling takes more care.
-				if( earthquake )
+				if( m_puzzle.Config.Systolic )
 				{
-/////////////////////////////////////////////////////////
+					// Systolic are good on random slicemasks above (set to 3).
 
-					int choppedSeg = SliceMask.MaskToSlice( m_currentTwist.SliceMask );
-					Vector3D lookup = td.Pants.TinyOffset( choppedSeg );
-					Vector3D reflected = td.Pants.Hexagon.Segments[choppedSeg].ReflectPoint( lookup );
-					TwistData tdEarthQuake = m_puzzle.ClosestTwistingCircles( reflected );
+					// Earthquake scrambling takes more care.
+					if( m_puzzle.Config.Earthquake )
+					{
+						int dirSeg = SliceMask.MaskToDirSeg( m_currentTwist.SliceMask );
+						Vector3D lookup = td.Pants.TinyOffset( dirSeg );
+						int choppedPantsSeg = Pants.ChoppedPantsSeg( dirSeg );
+						Vector3D reflected = td.Pants.Hexagon.Segments[choppedPantsSeg].ReflectPoint( lookup );
+						TwistData tdEarthQuake = m_puzzle.ClosestTwistingCircles( reflected );
 
-					m_currentTwist.IdentifiedTwistDataEarthquake = tdEarthQuake.IdentifiedTwistData;
-
-					// Fix scrambing here.
-					m_currentTwist.SliceMaskEarthquake = tdEarthQuake.Pants.ChoppedPantsSeg( reflected ) / 2;
+						m_currentTwist.IdentifiedTwistDataEarthquake = tdEarthQuake.IdentifiedTwistData;
+						m_currentTwist.SliceMaskEarthquake = SliceMask.DirSegToMask( tdEarthQuake.Pants.ClosestGeodesicSeg( reflected ) );
+					}
 				}
 
 				// Apply the twist.

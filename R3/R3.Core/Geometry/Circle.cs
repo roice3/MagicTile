@@ -483,8 +483,10 @@
 		// Not perfect yet, but the fast version definitely doesn't work for these circles.
 		public static bool isPointInsideHypercycle( CircleNE c, Vector3D testPoint )
 		{
-			// Use the regular circle version for now.
-			return c.IsPointInside( testPoint );
+			// Maybe we can do some speed tricks to make this fast for hypercycles?
+
+			// The sense of "inside" we've gone with on systolic puzzles is based on the NE center of a systolic hexagon vertex.
+			return c.IsPointInsideNE( testPoint );
 		}
 	}
 

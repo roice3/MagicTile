@@ -359,9 +359,7 @@
 					CircleNE c1 = circles[0];
 					CircleNE c2 = circles[1];
 
-					// If we make the circle centers the pants hexagon center and calc the non-euclidean one (slow), we may need to reverse the sense of this..
-					if( isInside( c1, sticker.Poly.Center ) && !isInside( c2, sticker.Poly.Center ) )
-					//if( !isInside( c1, sticker.Poly.Center ) && isInside( c2, sticker.Poly.Center ) )
+					if( !isInside( c1, sticker.Poly.Center ) && isInside( c2, sticker.Poly.Center ) )
 					{
 						AffectedStickers[slice-1].Add( sticker );
 					}

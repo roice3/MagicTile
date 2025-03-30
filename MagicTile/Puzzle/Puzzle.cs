@@ -428,16 +428,14 @@
 					twistData.Order = 3;		// The only use here is in controlling twist speed.
 					twistData.NumSlices = 3;	// We'll use the slices as a way to mark the 3 directions.
 
+					// I think we could use Eucliden geometry for this isometry too.
 					Mobius m = new Mobius();
-					m.Isometry( Geometry.Hyperbolic, Euclidean2D.AngleToCounterClock( new Vector3D( 1, 0 ), s.P1 ), new Vector3D() );
+					double angle = Euclidean2D.AngleToCounterClock( new Vector3D( 1, 0 ), s.P1 );
+					m.Elliptic( Geometry.Hyperbolic, new Vector3D(), angle );
 
 					twistData.Pants = new Pants();
 					twistData.Pants.SetupHexagonForKQ();
-					if( Pants.TemplateHex == null )
-						Pants.TemplateHex = twistData.Pants.Hexagon.Clone();
 					twistData.Pants.Transform( m );
-					// ZZZ - should earthquake td get setup here too??????????????????????????????????????????????????????????????
-
 
 					// The actual twist Mobius may be 1 of 3, depending on the pants edge twisting.
 					// and that will get set later.
@@ -453,18 +451,17 @@
 							{
 								Slicer.OffsetHyperbolicGeodesic( pc, d.Dist( this.Config.P, this.Config.Q ), out Circle c1, out Circle c2 );
 
-								// NOTE: Make the circle NE center the vertex, since we are using that as a reference for systolic twists.
+								// NOTE: Make the circle NE center the pants, since we are using that as a reference for systolic twists.
 								// This will be "outside" the circle, but we can account for that where we need to (in finding affected masters/stickers).
-								//Vector3D refVert = s.P1;
-								//temp.Add( new CircleNE( c1, refVert ) );
-								//temp.Add( new CircleNE( c2, refVert ) );
-								temp.Add( new CircleNE( c1, c1.Center ) );
-								temp.Add( new CircleNE( c2, c2.Center ) );
+								Vector3D refVert = pc.CenterNE;
+								temp.Add( new CircleNE( c1, refVert ) );
+								temp.Add( new CircleNE( c2, refVert ) );
 							}
 						}
 						else
 							temp.AddRange( pantsCircles );
 
+						// Transform the circles.
 						cutCircles.AddRange( temp.Select( c => { c.Transform( m ); return c; } ) );
 					}
 					twistData.Circles = cutCircles.ToArray();
@@ -1124,26 +1121,12 @@
 				transformedCircles.Add( copy );
 			}
 
-			// This is subtle and I wish unecessary.
-			// I wish I would have been more careful to not have cells reflected all over the place (except if necessary in non-orientable situations).
-			/*if( this.Config.Systolic && reverse )
-			{
-				Debug.Assert( transformedCircles.Count == 6 );
-				transformedTwistData.Circles = new CircleNE[]
-				{                   
-					transformedCircles[0], transformedCircles[1],
-					transformedCircles[4], transformedCircles[5],
-					transformedCircles[2], transformedCircles[3]
-				};
-			}
-			else*/
-				transformedTwistData.Circles = transformedCircles.ToArray();
-
+			transformedTwistData.Circles = transformedCircles.ToArray();
 			return transformedTwistData;
 		}
 
 		/// <summary>
-		/// A version dependent helper.  This is the current, good way to setup twist data.
+		/// A version dependent helper. This is the current, good way to setup twist data.
 		/// </summary>
 		private void SetupTwistDataForCell_VersionCurrent( TopologyAnalyzer topology, Cell cell, TwistData templateTwistData, bool reverse,
 			Dictionary<Vector3D, TwistData> twistDataMap, List<IdentifiedTwistData> collections )
@@ -1191,6 +1174,9 @@
 				SetupTwistDataForCell_VersionCurrent( topology, master, twistData, reverse, twistDataMap, collections );
 				foreach( Cell slave in SlaveCells( master ) )
 				{
+					if( this.Config.Systolic && !this.Config.Earthquake )
+						continue;
+
 					reverse = master.Reflected ^ slave.Reflected;
 					SetupTwistDataForCell_VersionCurrent( topology, slave, twistData, reverse, twistDataMap, collections );
 				}
@@ -1527,7 +1513,8 @@
 					}
 				} );
 
-				m_stateCalcCells = result.Distinct().ToList();
+				// In debugging, sometimes nulls would slip in. I haven't tracked down what is going on there.
+				m_stateCalcCells = result.Distinct().Where( c => c != null ).ToList();
 				m_stateCalcCellSet = new HashSet<Cell>( m_stateCalcCells );
 				return;
 			}

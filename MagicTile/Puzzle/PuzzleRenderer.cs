@@ -339,8 +339,7 @@
 
 			if( additionalTransform == null )
 				GL.Disable( EnableCap.Texture2D );
-			//foreach( TwistData twistData in m_closestTwistingCircles.IdentifiedTwistData.TwistDataForDrawing )
-			foreach( TwistData twistData in m_closestTwistingCircles.IdentifiedTwistData.TwistDataForStateCalcs )
+			foreach( TwistData twistData in m_closestTwistingCircles.IdentifiedTwistData.TwistDataForDrawing )
 			foreach( CircleNE slicingCircle in twistData.CirclesForSliceMask( this.SliceMaskSafe ) )
 			{
 				CircleNE toDraw = slicingCircle.Clone();

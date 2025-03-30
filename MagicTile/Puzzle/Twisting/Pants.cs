@@ -12,8 +12,6 @@
 	/// </summary>
 	public class Pants : ITransformable
 	{
-		public static Polygon TemplateHex = null;
-
 		public Pants()
 		{
 			Hexagon = new Polygon();
@@ -71,8 +69,6 @@
 		/// The generic polygon check is way too slow.
 		/// This is meant to be used during puzzle building.
 		/// </summary>
-		/// <param name="p"></param>
-		/// <returns></returns>
 		public bool IsPointInsideOptimized( Vector3D p )
 		{
 			if( !CircumCircle.IsPointInsideFast( p ) )
