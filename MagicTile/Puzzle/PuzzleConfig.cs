@@ -605,14 +605,12 @@
 		/// Whether or not we are a systolic puzzle (based on systolic pants decomposition).
 		/// We need to special case these puzzles various places.
 		/// </summary>
-		[DataMember]
 		public bool Systolic { get { return this.SlicingCircles.SystolicTwisting; } }
 
 		/// <summary>
 		/// Whether or not we are an "Earthquake" puzzle (based on systolic pants decomposition).
 		/// We will designate this as a systolic puzzle with a degenerate (zero, i.e. geodesic) slicing circle.
 		/// </summary>
-		[DataMember]
 		public bool Earthquake 
 		{ 
 			get 
