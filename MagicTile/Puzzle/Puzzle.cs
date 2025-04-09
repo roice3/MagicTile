@@ -508,7 +508,7 @@
 					List<Isometry> isometries = tiles.Select( t => t.Isometry ).ToList();
 
 					// We may need to use more tiles for slicing on Euclidean and Hyperbolic puzzles.
-					// This is too much for the systolic puzzle though.
+					// This code doesn't work for the systolic puzzle though (because the slicing circles cover so many tiles).
 					if( (Config.Geometry == Geometry.Euclidean || Config.Geometry == Geometry.Hyperbolic) && !Config.Systolic )
 					{
 						// Get all tiles within the slicing circle.
@@ -1054,7 +1054,7 @@
 		/// </summary>
 		private void AddStickersToCell( Cell cell, List<Polygon> tStickers )
 		{
-			Isometry inv = cell.Isometry.Inverse();
+			Isometry inv = cell.IsometryInverse;
 			for( int i=0; i<tStickers.Count; i++ )
 			{
 				Polygon transformed = tStickers[i].Clone();
@@ -1075,7 +1075,7 @@
 			for( int i = 0; i < MasterCells.Count; i++ )
 			{
 				Cell master = MasterCells[i];
-				Vector3D[] masterTextureCoords = Isometry.TransformVertices( templateTextureCoords, master.Isometry.Inverse() );
+				Vector3D[] masterTextureCoords = Isometry.TransformVertices( templateTextureCoords, master.IsometryInverse );
 
 				// Actually pre-calculate final values? That would require some knowledge from PuzzleRenderer class though,
 				// i.e. the scaled "factor" of the texture.
@@ -1085,7 +1085,7 @@
 				foreach( Cell slave in SlaveCells( master ) )
 				{
 					// NOTE: We don't set the slave TextureCoords, since we can just use the ones in the master directly.
-					slave.TextureVertices = Isometry.TransformVertices( templateTextureCoords, slave.Isometry.Inverse() );
+					slave.TextureVertices = Isometry.TransformVertices( templateTextureCoords, slave.IsometryInverse );
 				}
 			}
 
@@ -1097,9 +1097,138 @@
 		/// </summary>
 		internal TextureHelper TextureHelper { get; set; }
 
-		private static TwistData TransformedTwistDataForCell( Cell cell, TwistData untransformed, bool reverse )
+
+		private Isometry IsometryFromOriginToCell( Tiling tiling, TopologyAnalyzer topology, Cell cell, Vector3D templateTwistDataCenter )
 		{
-			Isometry isometry = cell.Isometry.Inverse();
+			Isometry isometry;
+			if( this.Config.Systolic )
+			{
+				// The isometry needs to keep the underlying hexagon of the pants oriented correctly (and not reversed).
+				// In short, this needs to be a Mobius taking the twist data center to the template twist data center, but ALSO needs to be done consistently when from separate parts of the tiling.
+				// The latter means we need to get all 3 cells sharing the twist center (a tile vertex), and always map them in the same order (a logical order by master id).
+				// This is so ugly, and I'll never understand it again if I have to revisit in the future.
+
+				// Get the 3 cells surrounding the TD center.
+				Vector3D vertexAtCell = cell.IsometryInverse.Apply( templateTwistDataCenter );
+				List<Tile> incidentTiles = tiling.VertexIncidences[vertexAtCell];
+				if( incidentTiles == null || incidentTiles.Count != 3 )
+				{
+					return null;
+				}
+
+				// Order them consisently using our topology analyzer.
+				// We'll do this by always starting with the one having the lowest master index.
+				int lowestMaster = int.MaxValue;
+				int indexWithLowestMaster = 0;
+				for( int i=0; i<3; i++ )
+				{
+					int idx = topology.GetLogicalElementIndex( ElementType.Face, incidentTiles[i].Center );
+					if( -1 == idx )
+					{
+						return null;
+					}
+
+					if( idx < lowestMaster )
+					{
+						lowestMaster = idx;
+						indexWithLowestMaster = i;
+					}
+				}
+				
+				Vector3D e1 = incidentTiles[indexWithLowestMaster].Center;
+				Vector3D e2 = incidentTiles[(indexWithLowestMaster + 1)%3].Center;
+				Vector3D e3 = incidentTiles[(indexWithLowestMaster + 2)%3].Center;
+
+				// We may need to swap the latter two to have CCW order.
+				Vector3D d1 = e1 - vertexAtCell;
+				Vector3D d2 = e2 - vertexAtCell;
+				Vector3D d3 = e3 - vertexAtCell;
+				if( Euclidean2D.AngleToCounterClock( d1, d2 ) > Euclidean2D.AngleToCounterClock( d1, d3 ) )
+					R3.Core.Utils.SwapPoints( ref e2, ref e3 );
+
+				// Map the 3 centers defining the original pants to these points, in CCW order.
+				// ZZZ - hardcoding the original centers here will need to be removed if we ever make this general.
+				Vector3D s1 = this.MasterCells[0].Center;
+				Vector3D s2 = this.MasterCells[7].Center;
+				Vector3D s3 = this.MasterCells[1].Center;
+				double amountTemplateRotated = Euclidean2D.AngleToCounterClock( new Vector3D( 1, 0 ), templateTwistDataCenter );
+				s1.RotateXY( amountTemplateRotated );
+				s2.RotateXY( amountTemplateRotated );
+				s3.RotateXY( amountTemplateRotated );
+
+
+				Mobius m = new Mobius();
+				m.MapPoints( s1, s2, s3, e1, e2, e3 );
+				isometry = new Isometry( m, null );
+
+				///////////// Below is earlier effort before I realized the extra orientation need.
+				/*
+
+				// We can do this with a Mobius taking the center of the cell to the center of the master, followed by the correct rotation to get the twist data center to the appropriate vertex.
+				// All this rigamarole is needed since some of the cells have reflected isometries.
+
+				Mobius toOrigin = new Mobius();
+				toOrigin.Geodesic( Geometry.Hyperbolic, cell.Center, new Vector3D() );
+
+
+				Vector3D vertexAtCell = cell.IsometryInverse.Apply( templateTwistDataCenter );
+
+				Vector3D tdcAfterMovingToOrigin = toOrigin.Apply( vertexAtCell );
+				double angle = Euclidean2D.AngleToCounterClock( tdcAfterMovingToOrigin, templateTwistDataCenter );
+				//if( angle > Math.PI )
+				//	angle -= 2 * Math.PI;
+
+				Mobius m2 = new Mobius();
+				m2.Elliptic( Geometry.Hyperbolic, new Complex(), angle );
+
+				Isometry cellIsometry = new Isometry( m2 * toOrigin, null );
+				isometry = cellIsometry.Inverse();
+
+				/////////////////////////////////////
+				// Testing checks
+
+				Vector3D testc = cell.Isometry.Apply( cell.Center );
+				if( testc.Abs() > .0001 )
+				{
+					Debug.Assert( false );
+				}
+
+				Vector3D mappedCenter = isometry.Apply( templateTwistDataCenter );
+				if( vertexAtCell != mappedCenter )
+				{
+					Debug.Assert( false );
+				}
+
+				//////////////////////////////////////
+				*/
+			}
+			else
+			{
+				isometry = cell.IsometryInverse;
+			}
+			return isometry;
+		}
+
+		private bool TwistDataMapped( Dictionary<Vector3D, TwistData> twistDataMap, Cell cell, Vector3D twistDataCenter, out Vector3D centerSafe )
+		{
+			// NOTE: This is technically not correct for systolic puzzles, but we only need the CENTER mapped correctly for this check,
+			//		 and this isometry will do it more quickly.
+			Isometry isometry = cell.IsometryInverse;
+			Vector3D mappedCenter = isometry.Apply( twistDataCenter );
+			centerSafe = InfinitySafe( mappedCenter );
+			return twistDataMap.ContainsKey( centerSafe );
+		}
+
+		private TwistData TransformedTwistDataForCell( Tiling tiling, TopologyAnalyzer topology, Cell cell, TwistData untransformed, bool reverse )
+		{
+			Isometry isometry = IsometryFromOriginToCell( tiling, topology, cell, untransformed.Center );
+			if( isometry == null )
+				return null;
+			return TransformedTwistDataForIsometry( isometry, untransformed, reverse );
+		}
+
+		private static TwistData TransformedTwistDataForIsometry( Isometry isometry, TwistData untransformed, bool reverse )
+		{
 			Vector3D newCenter = isometry.Apply( untransformed.Center );
 
 			TwistData transformedTwistData = new TwistData();
@@ -1108,11 +1237,15 @@
 			transformedTwistData.Order = untransformed.Order;
 			transformedTwistData.Reverse = reverse;
 			transformedTwistData.NumSlices = untransformed.NumSlices;
+
+			// Pants, if they exist.
 			if( untransformed.Pants != null )
 			{
 				transformedTwistData.Pants = untransformed.Pants.Clone();
 				transformedTwistData.Pants.Transform( isometry );
 			}
+
+			// Our twisting circles.
 			List<CircleNE> transformedCircles = new List<CircleNE>();
 			foreach( CircleNE circleNE in untransformed.Circles )
 			{
@@ -1120,22 +1253,26 @@
 				copy.Transform( isometry );
 				transformedCircles.Add( copy );
 			}
-
 			transformedTwistData.Circles = transformedCircles.ToArray();
+
 			return transformedTwistData;
 		}
 
 		/// <summary>
 		/// A version dependent helper. This is the current, good way to setup twist data.
 		/// </summary>
-		private void SetupTwistDataForCell_VersionCurrent( TopologyAnalyzer topology, Cell cell, TwistData templateTwistData, bool reverse,
+		private void SetupTwistDataForCell_VersionCurrent( Tiling tiling, TopologyAnalyzer topology, Cell cell, TwistData templateTwistData, bool reverse,
 			Dictionary<Vector3D, TwistData> twistDataMap, List<IdentifiedTwistData> collections )
 		{
-			TwistData transformedTwistData = TransformedTwistDataForCell( cell, templateTwistData, reverse );
+			// Already done this one?
+			if( TwistDataMapped( twistDataMap, cell, templateTwistData.Center, out Vector3D centerSafe ) )
+				return;
 
-			// Already have this one?
-			Vector3D centerSafe = InfinitySafe( transformedTwistData.Center );
-			if( twistDataMap.ContainsKey( centerSafe ) )
+			// A later optimization was to not do all this work until after we check if we are mapped.
+			TwistData transformedTwistData = TransformedTwistDataForCell( tiling, topology, cell, templateTwistData, reverse );
+			
+			// This can happen near the edges for systolic puzzles.
+			if( transformedTwistData == null )
 				return;
 
 			int index = topology.GetLogicalElementIndex( templateTwistData.TwistType, centerSafe );
@@ -1167,18 +1304,24 @@
 			for( int i=0; i<count; i++ )
 				collections.Add( new IdentifiedTwistData() );
 
+			//foreach( Cell master in this.MasterCells.Take( 1 ) )
 			foreach( Cell master in this.MasterCells )
 			foreach( TwistData twistData in templateTwistDataArray )
 			{
 				bool reverse = false;
-				SetupTwistDataForCell_VersionCurrent( topology, master, twistData, reverse, twistDataMap, collections );
+				SetupTwistDataForCell_VersionCurrent( tiling, topology, master, twistData, reverse, twistDataMap, collections );
 				foreach( Cell slave in SlaveCells( master ) )
 				{
-					if( this.Config.Systolic && !this.Config.Earthquake )
-						continue;
+					// Avoid a weird issue at the edges.
+					// ZZZ - I hope this can go away?
+					/*if( this.Config.Systolic && !this.Config.Earthquake )
+					{
+						if( slave.Center.Abs() > .9 )
+							continue;
+					}*/
 
 					reverse = master.Reflected ^ slave.Reflected;
-					SetupTwistDataForCell_VersionCurrent( topology, slave, twistData, reverse, twistDataMap, collections );
+					SetupTwistDataForCell_VersionCurrent( tiling, topology, slave, twistData, reverse, twistDataMap, collections );
 				}
 			}
 
@@ -1197,7 +1340,7 @@
 		private void SetupTwistDataForCell_PreviewVersion( Cell cell, TwistData templateTwistData, bool reverse,
 			Dictionary<Vector3D, TwistData> twistDataMap, IdentifiedTwistData collection )
 		{
-			TwistData transformedTwistData = TransformedTwistDataForCell( cell, templateTwistData, reverse );
+			TwistData transformedTwistData = TransformedTwistDataForCell( null, null, cell, templateTwistData, reverse );
 			collection.TwistDataForDrawing.Add( transformedTwistData );
 			if( m_stateCalcCells.Contains( cell ) )
 				collection.TwistDataForStateCalcs.Add( transformedTwistData );
@@ -1209,7 +1352,7 @@
 		/// <summary>
 		/// Here for backward compatibility.
 		/// </summary>
-		private void SetupTwistDataForFullPuzzle_PreviewVersion( Tiling tiling, TwistData[] templateTwistDataArray,
+		private void SetupTwistDataForFullPuzzle_PreviewVersion( TwistData[] templateTwistDataArray,
 			Dictionary<Vector3D, TwistData> twistDataMap )
 		{
 			// Map to help track what is done.
@@ -1253,7 +1396,7 @@
 			// Map to help track what is done.
 			Dictionary<Vector3D, TwistData> twistDataMap = new Dictionary<Vector3D, TwistData>();
 			if( Config.Version == Loader.VersionPreview )
-				SetupTwistDataForFullPuzzle_PreviewVersion( tiling, templateTwistDataArray, twistDataMap );
+				SetupTwistDataForFullPuzzle_PreviewVersion( templateTwistDataArray, twistDataMap );
 			else if( Config.Version == Loader.VersionCurrent )
 				SetupTwistDataForFullPuzzle_VersionCurrent( tiling, topology, templateTwistDataArray, twistDataMap );
 
@@ -1307,7 +1450,7 @@
 				m_twistDataNearTree.InsertObject( nearTreeObject );
 			}
 		}
-
+		
 		/// <summary>
 		/// For spherical puzzles, this will append antipodal twist data (if it exists).
 		/// </summary>
@@ -1492,8 +1635,8 @@
 				foreach( Cell master in this.MasterCells )
 				{
 					bool dummy = false;
-					TwistData transformed = TransformedTwistDataForCell( master, twistData, dummy );
-					if( complete.Contains( transformed.Center ) )
+					TwistData transformed = TransformedTwistDataForCell( tiling, topology, master, twistData, dummy );
+					if( transformed == null || complete.Contains( transformed.Center ) )
 						continue;
 					complete.Add( transformed.Center );
 					toCheck.Add( transformed );
@@ -1513,7 +1656,7 @@
 					}
 				} );
 
-				// In debugging, sometimes nulls would slip in. I haven't tracked down what is going on there.
+				// In debugging, sometimes nulls would slip in. I haven't tracked down what is going on there. Could parallel be doing it?
 				m_stateCalcCells = result.Distinct().Where( c => c != null ).ToList();
 				m_stateCalcCellSet = new HashSet<Cell>( m_stateCalcCells );
 				return;
@@ -1524,9 +1667,8 @@
 			foreach( Cell slave in this.AllSlaveCells )
 			{
 				bool dummy = false;
-				TwistData transformed = TransformedTwistDataForCell( slave, twistData, dummy );
-				
-				if( complete.Contains( transformed.Center ) )
+				TwistData transformed = TransformedTwistDataForCell( tiling, topology, slave, twistData, dummy );
+				if( transformed == null || complete.Contains( transformed.Center ) )
 					continue;
 				complete.Add( transformed.Center );
 

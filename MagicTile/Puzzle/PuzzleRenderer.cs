@@ -379,6 +379,13 @@
 				{
 					GLUtils.DrawHypercycle( toDraw, c, t );
 
+					// Debugging systolic, but leaving this in because it might be nice to provide an option to draw the pants at some point.
+					/*if( m_puzzle.Config.Systolic  )
+					{
+						GLUtils.DrawPolygonVaryingColor( twistData.Pants.Hexagon, new Color[] { Color.White, Color.Red, Color.White, Color.Green, Color.White, Color.Blue }, t );
+						//GLUtils.DrawPolygon( twistData.Pants.Hexagon, Color.DimGray, t );
+					}*/
+
 					// Earthquakes have the pants chopped off, and we need to draw that.
 					if( m_puzzle.Config.Earthquake && m_closestGeodesicSeg != -1 )
 					{
@@ -1754,7 +1761,7 @@
 			m_closestTwistingCircles = m_puzzle.ClosestTwistingCircles( spaceCoordsNoMouseMotion.Value );
 			object newlyFound = (object)m_closestTwistingCircles;
 
-			// Twisting is more subtle for systolic (and earthquake) puzzles.
+			// Twisting is more subtle for systolic (including earthquake) puzzles.
 			if( m_puzzle.Config.Systolic )
 			{
 				int prev = m_closestGeodesicSeg;
@@ -1943,7 +1950,8 @@
 			{
 				twist.SliceMask = MagicTile.SliceMask.DirSegToMask( m_closestGeodesicSeg );
 
-				// Earthquake is even more special.
+				// Only the earthquake really needs the following,
+				// though I did consider including for all systolic puzzles (since there are effectively these extra identifications).
 				if( m_puzzle.Config.Earthquake )
 				{
 					TwistData td = m_closestTwistingCircles;
@@ -1952,8 +1960,8 @@
 					Vector3D reflected = td.Pants.Hexagon.Segments[choppedPantsSeg].ReflectPoint( lookup );
 					TwistData tdSystolic = m_puzzle.ClosestTwistingCircles( reflected );
 
-					twist.IdentifiedTwistDataEarthquake = tdSystolic.IdentifiedTwistData;
-					twist.SliceMaskEarthquake = MagicTile.SliceMask.DirSegToMask( tdSystolic.Pants.ClosestGeodesicSeg( reflected ) );
+					twist.IdentifiedTwistDataSystolic = tdSystolic.IdentifiedTwistData;
+					twist.SliceMaskSystolic = MagicTile.SliceMask.DirSegToMask( tdSystolic.Pants.ClosestGeodesicSeg( reflected ) );
 				}
 			}
 			else

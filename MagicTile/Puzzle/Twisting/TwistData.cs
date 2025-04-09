@@ -129,17 +129,18 @@
 		/// </summary>
 		private bool Earthquake { get { return Pants != null && Circles.Length == 3; } }
 
-		private CircleNE[] CirclesForSlice( int slice )
+		/// <summary>
+		/// Slice -> Circles mapping.
+		/// </summary>
+		public CircleNE[] CirclesForSystolicSlice( int slice )
 		{
-			int dirSeg = SliceMask.SliceToDirSeg( slice );
-			switch( dirSeg )
+			switch( slice )
 			{
-				// I wish the indices matched here the circles better.
 				case 1:
 					return Circles.Skip( 2 ).Take( 2 ).ToArray();
-				case 3:
+				case 2:
 					return Circles.Skip( 4 ).Take( 2 ).ToArray();
-				case 5:
+				case 3:
 					return Circles.Skip( 0 ).Take( 2 ).ToArray();
 				case -1:
 					break;
@@ -166,7 +167,7 @@
 			if( Systolic )
 			{
 				int slice = SliceMask.MaskToSlice( mask );
-				return CirclesForSlice( slice );
+				return CirclesForSystolicSlice( slice );
 			}
 
 			int count = this.Circles.Length;
@@ -349,17 +350,20 @@
 			if( Systolic )
 			{
 				// Systolic puzzles are special.
-				isInside = ( c, t ) => CircleNE.isPointInsideHypercycle( c, t );
+				//isInside = ( c, t ) => CircleNE.isPointInsideHypercycle( c, t );
 
-				// Only 1 pair-of-pants supported to start.
+				// Only 1 ribbon supported to start.
 				System.Diagnostics.Debug.Assert( Circles.Length == 6 );
 				for( int slice=1; slice<=3; slice++ )
 				{
-					var circles = CirclesForSlice( slice );
+					var circles = CirclesForSystolicSlice( slice );
 					CircleNE c1 = circles[0];
 					CircleNE c2 = circles[1];
 
-					if( !isInside( c1, sticker.Poly.Center ) && isInside( c2, sticker.Poly.Center ) )
+					// ZZZ - We could make this even faster because we are repeating this calculation for the same circle pairs.
+					//		 We could cache a map from pairs of circles to contained stickers to avoid that.
+					//if( !isInside( c1, sticker.Poly.Center ) && isInside( c2, sticker.Poly.Center ) )
+					if( CircleNE.isBetweenHypercyclesFast( c1, c2, sticker.Poly.Center ) )
 					{
 						AffectedStickers[slice-1].Add( sticker );
 					}
@@ -386,15 +390,15 @@
 				AffectedStickers[this.NumSlices-1].Add( sticker );
 		}
 
-		public Mobius MobiusForTwist( PuzzleConfig config, SingleTwist twist, double rotation, bool useEarthquakeTwistData = false )
+		public Mobius MobiusForTwist( PuzzleConfig config, SingleTwist twist, double rotation, bool useSystolicTwistData = false )
 		{
 			Geometry g = config.Geometry;
 
 			Mobius mobius = new Mobius();
 			if( config.Systolic )
 			{
-				int hexSeg = useEarthquakeTwistData ?
-					SliceMask.MaskToDirSeg( twist.SliceMaskEarthquake ) :
+				int hexSeg = useSystolicTwistData ?
+					SliceMask.MaskToDirSeg( twist.SliceMaskSystolic ) :
 					SliceMask.MaskToDirSeg( twist.SliceMask );
 				//System.Diagnostics.Trace.WriteLine( "Slicemask: " + twist.SliceMask + "\tHexseg:" + hexSeg );
 

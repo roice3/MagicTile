@@ -222,6 +222,7 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
+         <DisplayName>Systolic Classic</DisplayName>
          <SlicingCircles>
             <Systolic>
                <Distance>1:0:0:0</Distance>

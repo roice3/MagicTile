@@ -221,6 +221,39 @@
 		}
 
 		/// <summary>
+		/// Debugging method.
+		/// </summary>
+		public static void DrawPolygonVaryingColor( Polygon p, Color[] colors,
+			System.Func<Vector3D, Vector3D> transform )
+		{
+			/*
+			GL.Begin( BeginMode.LineLoop );
+			{
+				Vector3D[] edgePoints = p.EdgePoints;
+				int shuffle = edgePoints.Length / colors.Length + 1;
+				int cIdx = 0;
+
+				for( int i = 0; i < edgePoints.Length; i++ )
+				{
+					if( i%shuffle == 0 )
+						GL.Color3( colors[cIdx++] );
+					Vector3D transformed = transform == null ?
+						edgePoints[i] : transform( edgePoints[i] );
+					GL.Vertex2( transformed.X, transformed.Y );
+				}
+			}
+			GL.End();
+			*/
+
+			int cIdx = 0;
+			foreach( Segment seg in p.Segments )
+			{
+				GL.Color3( colors[cIdx++] );
+				GLUtils.DrawSeg( seg, 10, transform );
+			}
+		}
+
+		/// <summary>
 		/// Draws a filled in polygon that might be concave.
 		/// We use the stencil buffer for this, as described here:
 		/// http://zrusin.blogspot.com/2006/07/hardware-accelerated-polygon-rendering.html

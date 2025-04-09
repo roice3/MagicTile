@@ -423,6 +423,12 @@
 		}
 
 		/// <summary>
+		/// Ability for client to cache whether we are inverted.
+		/// This class does NOTHING with this itself.
+		/// </summary>
+		public bool? InvertedCached = null;
+
+		/// <summary>
 		/// Checks to see if a point is inside us, in a non-Euclidean sense.
 		/// This works if we are inverted, and even if we are a line!
 		/// (if we are a line, half of the plane is still "inside").
@@ -480,13 +486,42 @@
 			return c.IsPointInsideFast( testPoint );
 		}
 
-		// Not perfect yet, but the fast version definitely doesn't work for these circles.
+		// Not perfect yet, but the fast version definitely doesn't work for these circles because they can be inverted.
 		public static bool isPointInsideHypercycle( CircleNE c, Vector3D testPoint )
 		{
 			// Maybe we can do some speed tricks to make this fast for hypercycles?
 
 			// The sense of "inside" we've gone with on systolic puzzles is based on the NE center of a systolic hexagon vertex.
 			return c.IsPointInsideNE( testPoint );
+		}
+
+		/// <summary>
+		/// A speed optimized version.
+		/// Between will be outside c1 and inside c2 (in an NE sense).
+		/// We'll optimize the calculation in various ways (caching when inverted, plus order of checking can avoid some checking)
+		/// </summary>
+		public static bool isBetweenHypercyclesFast( CircleNE c1, CircleNE c2, Vector3D testPoint )
+		{
+			// Check outside c1 first.
+			if( c1.InvertedCached == null )
+				c1.InvertedCached = c1.Inverted;
+			bool insideC1 = c1.IsPointInsideFast( testPoint );
+			if( c1.InvertedCached.Value )
+				insideC1 = !insideC1;
+			if( insideC1 )
+				return false;
+
+			// Now check inside c2
+			if( c2.InvertedCached == null )
+				c2.InvertedCached = c2.Inverted;
+			bool insideC2 = c2.IsPointInsideFast( testPoint );
+			if( c2.InvertedCached.Value )
+				insideC2 = !insideC2;
+			if( !insideC2 )
+				return false;
+
+			// We are inside c1 and outside c2.
+			return true;
 		}
 	}
 

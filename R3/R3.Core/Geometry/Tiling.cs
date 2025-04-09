@@ -252,6 +252,12 @@
 		}
 
 		/// <summary>
+		/// I'm a little worried about memory of keeping these around being wasteful.
+		/// </summary>
+		public Dictionary<Vector3D, List<Tile>> EdgesIncidences {  get; private set; }
+		public Dictionary<Vector3D, List<Tile>> VertexIncidences { get; private set; }
+
+		/// <summary>
 		/// Fill out all the incidence information.
 		/// If performance became an issue, we could do some of this at tile generation time.
 		/// </summary>
@@ -304,6 +310,9 @@
 				// Also, make sure we only track vertex incidences that do not have edge incidences too.
 				t.VertexIndicences = t.VertexIndicences.Except( t.EdgeIncidences ).ToList();
 			}
+
+			EdgesIncidences = Edges;
+			VertexIncidences = Vertices;
 		}
 
 		public static Tile CreateBaseTile( TilingConfig config )
