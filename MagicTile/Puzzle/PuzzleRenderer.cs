@@ -379,12 +379,22 @@
 				{
 					GLUtils.DrawHypercycle( toDraw, c, t );
 
-					// Debugging systolic, but leaving this in because it might be nice to provide an option to draw the pants at some point.
-					/*if( m_puzzle.Config.Systolic  )
+					// Draw the pants if configured.
+					if( m_settings.ShowSystolicPants && m_puzzle.Config.Systolic  )
 					{
-						GLUtils.DrawPolygonVaryingColor( twistData.Pants.Hexagon, new Color[] { Color.White, Color.Red, Color.White, Color.Green, Color.White, Color.Blue }, t );
-						//GLUtils.DrawPolygon( twistData.Pants.Hexagon, Color.DimGray, t );
-					}*/
+							double lFactor = .6;
+							Color lightRed = ColorUtil.AdjustL( Color.Yellow, lFactor );
+							Color lightGreen = ColorUtil.AdjustL( Color.Green, lFactor );
+							Color lightBlue = ColorUtil.AdjustL( Color.Blue, lFactor );
+							Color lightGray = ColorUtil.AdjustL( Color.Black, lFactor );
+							Polygon clone = twistData.Pants.Hexagon.Clone();
+							clone.Transform( m_mouseMotion.Isometry );
+							GLUtils.DrawPolygonVaryingColor( clone, new Color[] { lightGray, lightRed, lightGray, lightGreen, lightGray, lightBlue }, t );
+							//GLUtils.DrawPolygon( twistData.Pants.Hexagon, Color.DimGray, t );
+
+							// Consider drawing the hexagon center.
+							//GLUtils.DrawCircle( new Circle() { Center = twistData.Pants.TestCircle.Center, Radius = twistData.Pants.TestCircle.Radius }, Color.DimGray, t );
+					}
 
 					// Earthquakes have the pants chopped off, and we need to draw that.
 					if( m_puzzle.Config.Earthquake && m_closestGeodesicSeg != -1 )

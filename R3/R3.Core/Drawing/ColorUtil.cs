@@ -63,5 +63,42 @@
 			return Color.FromArgb( 255, (int)rgb.X, (int)rgb.Y, (int)rgb.Z );
 		}
 
+		public static Color FromRGB( Vector3D rgb )
+		{
+			if( rgb.DNE )
+				return Color.FromArgb( 0, 255, 255, 255 );
+
+			rgb *= 255;
+			return Color.FromArgb( 255, (int)rgb.X, (int)rgb.Y, (int)rgb.Z );
+		}
+
+		public static Color AdjustH( Color c, double h )
+		{
+			Vector3D hsl = new Vector3D( c.GetHue(), c.GetSaturation(), c.GetBrightness() );
+			hsl.X = h;
+			Vector3D rgb = CHSL2RGB( hsl );
+			return FromRGB( rgb );
+		}
+
+		public static Color AdjustS( Color c, double s )
+		{
+			Vector3D hsl = new Vector3D( c.GetHue(), c.GetSaturation(), c.GetBrightness() );
+			hsl.Y = s;
+			Vector3D rgb = CHSL2RGB( hsl );
+			return FromRGB( rgb );
+		}
+
+		public static Color AdjustL( Color c, double l )
+		{
+			if( l > 1 )
+				l = 1;
+			if( l < 0 )
+				l = 0;
+
+			Vector3D hsl = new Vector3D( c.GetHue(), c.GetSaturation(), c.GetBrightness() );
+			hsl.Z = l;
+			Vector3D rgb = CHSL2RGB( hsl );
+			return FromRGB( rgb );
+		}
 	}
 }

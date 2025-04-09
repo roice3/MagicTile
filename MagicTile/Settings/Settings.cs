@@ -40,6 +40,7 @@
 			ShowTextureTriangles = false;
 			EnableTextureMipmaps = true;
 			EnableAntialiasing = true;
+			ShowSystolicPants = true;
 			ShowAsSkew = true;
 			XLevels = YLevels = ZLevels = 3;
 			ConstrainToHypersphere = true;
@@ -174,6 +175,12 @@
 		public bool ShowStateCalcCells { get; set; }
 
 		[DataMember]
+		[DisplayName( "Show Systolic Pants" )]
+		[Description( "Display hexagons defining the systolic pants." )]
+		[Category( "Debug" )]
+		public bool ShowSystolicPants { get; set; }
+
+		[DataMember]
 		[DisplayName( "Show as Skew" )]
 		[Description( "Controls rendering the puzzle as a regular skew polyhedron (IRP or finite 4D). " +
 			"This setting is ignored if the puzzle does not have an associated skew polyhedron, or if the tiling is configured to only display as skew." )]
@@ -305,6 +312,7 @@
 			this.Gliding = 0.5;
 			this.EnableTextureMipmaps = true;
 			this.EnableAntialiasing = true;
+			this.ShowSystolicPants = true;
 			this.ShowAsSkew = true;
 			this.XLevels = this.YLevels = this.ZLevels = 3;
 			this.ConstrainToHypersphere = true;
