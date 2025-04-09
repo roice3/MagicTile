@@ -68,19 +68,19 @@
 		public Cell MasterOrSelf { get { return Master ?? this; } }
 
 		/// <summary>
-		/// List of master cells that share boundaries with this cell. 
+		/// List of master cells that share edge boundaries with this cell. 
 		/// If a master cell borders a slave cell, the master of the slave cell is in this list.
 		/// A master cell is its own neighbor by definition
 		/// </summary>
 		public HashSet<Cell> Neighbors { get; set; }
 
 		/// <summary>
-		/// This is the isometry that will take us back to the master cell.
+		/// This is the isometry that will take us back to the cell at the origin.
 		/// </summary>
 		public Isometry Isometry { get; set; }
 
 		/// <summary>
-		/// This is the isometry that will take the master cell to us.
+		/// This is the isometry that will take the cell at the origin to us.
 		/// Cache for speed?
 		/// </summary>
 		public Isometry IsometryInverse

@@ -833,7 +833,7 @@
 				"  Andrey Astrelin, for contributing puzzle configurations\n" + 
 				"  Ed Baumann, for enthusiasm and solving so many puzzles\n" +
 				"  Burkard Polster, for great suggestions and popularizing\n" +
-				"  Don Hatch and Fritz Obermeyer, for making inspiring software\n" +
+				"  Don Hatch and Fritz Obermeyer, for inspiring software\n" +
 				"  Luna Harran, for contributing puzzle configurations\n" +
 				"  The hypercubing group";
 			string caption = "About";

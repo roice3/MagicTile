@@ -229,8 +229,8 @@
 			level++;
 
 			PuzzleConfig[] tilings;
-			PuzzleConfig[] face, edge, vertex, mixed, earthquake, toggles;
-			puzzleConfigClass.GetPuzzles( out tilings, out face, out edge, out vertex, out mixed, out earthquake, out toggles );
+			PuzzleConfig[] face, edge, vertex, mixed, systolic, toggles;
+			puzzleConfigClass.GetPuzzles( out tilings, out face, out edge, out vertex, out mixed, out systolic, out toggles );
 
 			AddPuzzle( tilings[0], parentTreeNode, parentMenuItem, isTiling: true );
 			AddPuzzle( tilings[1], parentTreeNode, parentMenuItem, isTiling: true );
@@ -279,11 +279,11 @@
 				EndTable( swWiki );
 			}
 
-			if( mixed.Length > 0 )
+			if( systolic.Length > 0 )
 			{
-				AddGroup( swWiki, level, "Mixed Twisting", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
+				AddGroup( swWiki, level, "Systolic", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
 				StartTable( swWiki );
-				foreach( PuzzleConfig config in mixed )
+				foreach( PuzzleConfig config in systolic )
 				{
 					if( swList != null )
 						swList.WriteLine( config.DisplayName );
@@ -293,11 +293,11 @@
 				EndTable( swWiki );
 			}
 
-			if( earthquake.Length > 0 )
+			if( mixed.Length > 0 )
 			{
-				AddGroup( swWiki, level, "Special", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
+				AddGroup( swWiki, level, "Mixed Twisting", parentTreeNode, parentMenuItem, out groupNode, out groupMenuItem );
 				StartTable( swWiki );
-				foreach( PuzzleConfig config in earthquake )
+				foreach( PuzzleConfig config in mixed )
 				{
 					if( swList != null )
 						swList.WriteLine( config.DisplayName );

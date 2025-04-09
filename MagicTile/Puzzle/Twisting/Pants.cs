@@ -12,8 +12,6 @@
 	/// </summary>
 	public class Pants : ITransformable
 	{
-		public static Polygon TemplateHex = null;
-
 		public Pants()
 		{
 			Hexagon = new Polygon();
@@ -71,8 +69,6 @@
 		/// The generic polygon check is way too slow.
 		/// This is meant to be used during puzzle building.
 		/// </summary>
-		/// <param name="p"></param>
-		/// <returns></returns>
 		public bool IsPointInsideOptimized( Vector3D p )
 		{
 			if( !CircumCircle.IsPointInsideFast( p ) )
@@ -131,7 +127,32 @@
 			}
 		}
 
-		public int Closest( Vector3D p )
+		/// <summary>
+		/// Return the segment where we chop in an earthquake
+		/// </summary>
+		public int ChoppedPantsSeg( Vector3D p )
+		{
+			int closestGeodesic = ClosestGeodesicSeg( p );
+			return ChoppedPantsSeg( closestGeodesic );
+		}
+
+		public static int ChoppedPantsSeg( int closestGeodesicSeg )
+		{
+			if( closestGeodesicSeg == 1 )
+				return 4;
+			if( closestGeodesicSeg == 3 )
+				return 0;
+			if( closestGeodesicSeg == 5 )
+				return 2;
+			return -1;
+		}
+
+		/// 
+		/// <summary>
+		/// Return the index of the closest pant geodesic.
+		/// Index is of the underlying hexagon segments.
+		/// </summary>
+		public int ClosestGeodesicSeg( Vector3D p )
 		{
 			// Needs to be non-euclidean calc,
 			// Moving the hex to the center will make that be the case.
@@ -145,12 +166,14 @@
 			double d3 = poly.Segments[5].Midpoint.Dist( p );
 			double min = Math.Min( d1, Math.Min( d2, d3 ) );
 
+			// UGH, why are these remapped to different indices????
+			// Not liking my past self right now.
 			if( min == d1 )
-				return 4;
+				return 1;
 			if( min == d2 )
-				return 0;
+				return 3;
 			if( min == d3 )
-				return 2;
+				return 5;
 			return -1;
 		}
 
@@ -164,8 +187,10 @@
 			}
 		}
 
-		public Vector3D TinyOffset( int awayFromSeg )
+		public Vector3D TinyOffset( int towardSeg )
 		{
+			int awayFromSeg = ChoppedPantsSeg( towardSeg );
+
 			// Center;
 			Mobius m = MobiusToCenter;
 			Vector3D p = Hexagon.Center;
@@ -292,7 +317,7 @@
 			Mobius m = RotMobius( vertex0 );
 			List<CircleNE> result = new List<CircleNE>();
 			result.Add( template );
-			for( int i = 0; i < 3; i++ )
+			for( int i = 0; i < 2; i++ )
 			{
 				CircleNE next = result.Last().Clone();
 				next.Transform( m );

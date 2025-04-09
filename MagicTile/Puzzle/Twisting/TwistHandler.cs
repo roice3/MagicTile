@@ -65,7 +65,7 @@
 
 				double max = m_currentTwist.Magnitude;
 				double result = ( max / 2.0 ) * ( -Math.Cos( Math.PI * m_rotation / max ) + 1 );
-				if( m_puzzle.Config.Earthquake )
+				if( m_puzzle.Config.Systolic )
 					result /= m_currentTwist.Magnitude;	// Scale from 0 to 1.
 				return result;
 			}
@@ -148,8 +148,8 @@
 			m_rotation = 0;
 			m_currentTwist = twist;
 			m_currentTwist.IdentifiedTwistData.StartTwist( m_currentTwist.SliceMask, m_puzzle.IsSpherical );
-			if( m_currentTwist.IdentifiedTwistDataEarthquake != null )
-				m_currentTwist.IdentifiedTwistDataEarthquake.StartTwist( m_currentTwist.SliceMask, m_puzzle.IsSpherical );
+			if( m_currentTwist.IdentifiedTwistDataSystolic != null )
+				m_currentTwist.IdentifiedTwistDataSystolic.StartTwist( m_currentTwist.SliceMask, m_puzzle.IsSpherical );
 			m_timer.Enabled = true;
 		}
 
@@ -165,15 +165,15 @@
 				return;
 
 			InvalidateTextures( m_currentTwist.IdentifiedTwistData );
-			if( m_currentTwist.IdentifiedTwistDataEarthquake != null )
-				InvalidateTextures( m_currentTwist.IdentifiedTwistDataEarthquake );
+			if( m_currentTwist.IdentifiedTwistDataSystolic != null )
+				InvalidateTextures( m_currentTwist.IdentifiedTwistDataSystolic );
 			if( m_puzzle.HasSurfaceConfig )
 			{
 				m_renderToTexture.InvalidateTexture( PuzzleRenderer.SurfaceTexture1 );
 				m_renderToTexture.InvalidateTexture( PuzzleRenderer.SurfaceTexture2 );
 			}
 
-			int order = m_currentTwist.IdentifiedTwistDataEarthquake == null ? m_currentTwist.IdentifiedTwistData.Order : 10;
+			int order = m_currentTwist.IdentifiedTwistDataSystolic == null ? m_currentTwist.IdentifiedTwistData.Order : 10;
 			m_rotation += R3.Core.Utils.DegreesToRadians( m_settings.RotationStep( order ) );
 			//Trace.WriteLine( "rotation " + m_rotation );
 			if( m_rotation > m_currentTwist.Magnitude )
@@ -215,8 +215,8 @@
 			m_workingMacro.Update( m_currentTwist );
 
 			m_currentTwist.IdentifiedTwistData.EndTwist( m_currentTwist.SliceMask, m_puzzle.IsSpherical );
-			if( m_currentTwist.IdentifiedTwistDataEarthquake != null )
-				m_currentTwist.IdentifiedTwistDataEarthquake.EndTwist( m_currentTwist.SliceMask, m_puzzle.IsSpherical );
+			if( m_currentTwist.IdentifiedTwistDataSystolic != null )
+				m_currentTwist.IdentifiedTwistDataSystolic.EndTwist( m_currentTwist.SliceMask, m_puzzle.IsSpherical );
 			m_currentTwist = null;
 
 			if( updateStatus )
@@ -382,7 +382,6 @@
 			if( allTwistData.Count == 0 )
 				return;
 
-			bool earthquake = m_puzzle.Config.Earthquake;
 			for( int i = 0; i < numTwists; i++ )
 			{
 				m_currentTwist = new SingleTwist();
@@ -401,22 +400,25 @@
 
 				TwistData td = m_currentTwist.IdentifiedTwistData.TwistDataForStateCalcs.First();
 				int numSlices = td.NumSlices;
-				int randomSlice = rand.Next( numSlices );
-				if( !earthquake )
-					randomSlice += 1;
+				int randomSlice = rand.Next( numSlices ) + 1;
 				m_currentTwist.SliceMask = SliceMask.SliceToMask( randomSlice );
 
-				if( earthquake )
+				if( m_puzzle.Config.Systolic )
 				{
-					int choppedSeg = m_currentTwist.SliceMask * 2;
-					Vector3D lookup = td.Pants.TinyOffset( choppedSeg );
-					Vector3D reflected = td.Pants.Hexagon.Segments[choppedSeg].ReflectPoint( lookup );
-					TwistData tdEarthQuake = m_puzzle.ClosestTwistingCircles( reflected );
+					// Already good on random slicemasks above (set to 3).
 
-					m_currentTwist.IdentifiedTwistDataEarthquake = tdEarthQuake.IdentifiedTwistData;
+					// Earthquake scrambling does take some more care.
+					if( m_puzzle.Config.Earthquake )
+					{
+						int dirSeg = SliceMask.MaskToDirSeg( m_currentTwist.SliceMask );
+						Vector3D lookup = td.Pants.TinyOffset( dirSeg );
+						int choppedPantsSeg = Pants.ChoppedPantsSeg( dirSeg );
+						Vector3D reflected = td.Pants.Hexagon.Segments[choppedPantsSeg].ReflectPoint( lookup );
+						TwistData tdSystolic = m_puzzle.ClosestTwistingCircles( reflected );
 
-					// Fix scrambing here.
-					m_currentTwist.SliceMaskEarthquake = tdEarthQuake.Pants.Closest( reflected ) / 2;
+						m_currentTwist.IdentifiedTwistDataSystolic = tdSystolic.IdentifiedTwistData;
+						m_currentTwist.SliceMaskSystolic = SliceMask.DirSegToMask( tdSystolic.Pants.ClosestGeodesicSeg( reflected ) );
+					}
 				}
 
 				// Apply the twist.

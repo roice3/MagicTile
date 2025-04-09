@@ -1,8 +1,6 @@
 ﻿namespace MagicTile
 {
 	using System.Collections.Generic;
-	using System.Diagnostics;
-	using System.Linq;
 
 	public static class SliceMask
 	{
@@ -44,6 +42,59 @@
 				default:
 					return 0;
 			}
+		}
+
+		/// <summary>
+		/// This is for systolic puzzles.
+		/// </summary>
+		public static int DirSegToMask( int dirSeg )
+		{
+			switch( dirSeg )
+			{
+				case 1:
+					return SLICEMASK_1;
+				case 3:
+					return SLICEMASK_2;
+				case 5:
+					return SLICEMASK_3;
+				default:
+					return 0;
+			}
+		}
+
+		public static int SliceToDirSeg( int slice )
+		{
+			switch( slice )
+			{
+				case 1:
+					return 1;
+				case 2:
+					return 3;
+				case 3:
+					return 5;
+				default:
+					return 0;
+			}
+		}
+
+		public static int MaskToDirSeg( int mask )
+		{
+			int slice = MaskToSlice( mask );
+			return SliceToDirSeg( slice );
+		}
+
+		/// <summary>
+		/// This is only meant to be used with one slice (on systolic puzzles).
+		/// If it is called with multiple slices, just the first will be returned.
+		/// </summary>
+		public static int MaskToSlice( int mask )
+		{
+			int[] slices = MaskToSlices( mask );
+			if( slices.Length >= 1 )
+				return slices[0];
+			
+			// Default to the first slice.
+			return 1;
 		}
 
 		public static int[] MaskToSlices( int mask )
