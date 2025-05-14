@@ -1,15 +1,24 @@
 <PuzzleConfigClass>
-   <ClassDisplayName>{6,3} 24-Color</ClassDisplayName>
-   <ClassID>{6,3}.24</ClassID>
+   <ClassDisplayName>{6,3} 24-Color C</ClassDisplayName>
+   <ClassID>{6,3}.24k</ClassID>
    <ExpectedNumColors>24</ExpectedNumColors>
    <Identifications>
       <Identification>
-         <EdgeSet>3:3:3</EdgeSet>
+         <EdgeSet>3:3:3:3:3:3:3:3:3:3:3:3:3:3:3:3:3:3:3:3:3:3:3</EdgeSet>
          <EndRotation>0</EndRotation>
+         <InPlaceReflection>false</InPlaceReflection>
+         <InitialEdgeSet>0:3</InitialEdgeSet>
          <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
       </Identification>
+      <Identification>
+         <EdgeSet>2:3:3:3:3:3</EdgeSet>
+         <EndRotation>0</EndRotation>
+         <InPlaceReflection>false</InPlaceReflection>
+         <InitialEdgeSet>1:4</InitialEdgeSet>
+         <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
+      </Identification>
    </Identifications>
-   <NumTiles>2500</NumTiles>
+   <NumTiles>5000</NumTiles>
    <P>6</P>
    <Q>3</Q>
    <Specific>
