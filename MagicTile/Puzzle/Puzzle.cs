@@ -503,9 +503,19 @@
 				foreach( TwistData twistData in templateSlicers )
 				foreach( CircleNE slicingCircle in twistData.Circles )
 				{
-					// Use all edge and vertex incident tiles.
-					var tiles = templateTile.Concat(template.EdgeIncidences.Concat(template.VertexIndicences));
-					List<Isometry> isometries = tiles.Select( t => t.Isometry ).ToList();
+					List<Isometry> isometries;
+
+					// For spherical puzzles, just use all the tiles. There won't be that many.
+					if( Config.Geometry == Geometry.Spherical )
+					{
+						isometries = tiling.Tiles.Select( t => t.Isometry ).ToList();
+					}
+					else
+					{
+						// Use all edge and vertex incident tiles.
+						var tiles = templateTile.Concat( template.EdgeIncidences.Concat( template.VertexIndicences ) );
+						isometries = tiles.Select( t => t.Isometry ).ToList();
+					}
 
 					// We may need to use more tiles for slicing on Euclidean and Hyperbolic puzzles.
 					// This code doesn't work for the systolic puzzle though (because the slicing circles cover so many tiles).
