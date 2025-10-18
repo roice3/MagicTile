@@ -824,18 +824,19 @@
 			string text =
 				"MagicTile by Roice Nelson\n" +
 				"www.roice3.org/magictile   " +
-				"\n\nWith contributions from:\n" +
-				"  Nan Ma: implemented lights-on puzzles" +
+				"\n\nWith big contributions from Nan Ma: he gave excellent feedback and usage testing, and implemented the lights-on puzzles." +
 				"\n\nSpecial thanks to:\n" +
 				"  Melinda Green, for IRP data and encouragement\n" +
-				"  Nan Ma, for excellent feedback and usage testing\n" +
-				"  Rob Nelson, for brainstorming and ideas\n" +
-				"  Andrey Astrelin, for contributing puzzle configurations\n" + 
+				"  Rob Nelson, for brainstorming and the initial inspiration\n" +
 				"  Ed Baumann, for enthusiasm and solving so many puzzles\n" +
 				"  Burkard Polster, for great suggestions and popularizing\n" +
 				"  Don Hatch and Fritz Obermeyer, for inspiring software\n" +
-				"  Luna Harran, for contributing puzzle configurations\n" +
-				"  The hypercubing group";
+				"  The hypercubing group: https://hypercubing.xyz/" +
+				"\n\nPuzzle configuration contributors:\n" +
+				"  Andrey Astrelin\n" +
+				"  Luna Harran\n" +
+				"  Josh Courtney\n" +
+				"  Michael Gottlieb";
 			string caption = "About";
 			MessageBox.Show( this, text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information );
 		}
