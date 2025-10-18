@@ -152,6 +152,17 @@
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
+      <Puzzle>
+         <ID>Puzzle.{7,3}.E.24</ID>
+         <SlicingCircles>
+            <EdgeCentered>
+               <Distance>1.73:0:0:0</Distance>
+            </EdgeCentered>
+            <FaceCentered/>
+            <Thickness>0.015</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
       <Vertex/>
       <Puzzle>
          <ID>Puzzle.{7,3}.V.24</ID>
