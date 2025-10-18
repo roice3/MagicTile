@@ -78,6 +78,17 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0.4:0:0:0</Distance>
+               <Distance>0.33:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
          <DisplayName>Circle Square Tiling</DisplayName>
          <SlicingCircles>
             <EdgeCentered/>
