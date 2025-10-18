@@ -124,16 +124,6 @@
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered/>
-            <Thickness>0.01</Thickness>
-            <VertexCentered>
-               <Distance>0:0:2:0</Distance>
-            </VertexCentered>
-         </SlicingCircles>
-      </Puzzle>
       <Mixed/>
       <Puzzle>
          <SlicingCircles>

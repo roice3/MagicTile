@@ -52,16 +52,6 @@
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
-               <Distance>0:2.24:0:0</Distance>
-            </FaceCentered>
-            <Thickness>0.01</Thickness>
-            <VertexCentered/>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered>
                <Distance>0.25:0:1:0</Distance>
                <Distance>0.5:0:1:0</Distance>
             </FaceCentered>
@@ -81,16 +71,6 @@
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered>
-               <Distance>0:1.41:0:0</Distance>
-            </EdgeCentered>
-            <FaceCentered/>
-            <Thickness>0.01</Thickness>
-            <VertexCentered/>
-         </SlicingCircles>
-      </Puzzle>
       <Vertex/>
       <Puzzle>
          <SlicingCircles>
@@ -99,36 +79,6 @@
             <Thickness>0.01</Thickness>
             <VertexCentered>
                <Distance>0:0:1:0</Distance>
-            </VertexCentered>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered/>
-            <Thickness>0.01</Thickness>
-            <VertexCentered>
-               <Distance>0:0:1.15:0</Distance>
-            </VertexCentered>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered/>
-            <Thickness>0.01</Thickness>
-            <VertexCentered>
-               <Distance>2:0:0:0</Distance>
-            </VertexCentered>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered/>
-            <Thickness>0.01</Thickness>
-            <VertexCentered>
-               <Distance>0:0:2:0</Distance>
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>

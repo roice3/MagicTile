@@ -6,8 +6,8 @@
       <Identification>
          <EdgeSet>3:3</EdgeSet>
          <EndRotation>1</EndRotation>
-		 <InPlaceReflection>false</InPlaceReflection>
-		 <InitialEdgeSet>0:3</InitialEdgeSet>
+         <InPlaceReflection>false</InPlaceReflection>
+         <InitialEdgeSet>0:3</InitialEdgeSet>
          <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
       </Identification>
    </Identifications>
@@ -35,32 +35,12 @@
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
-	  <Puzzle>
+      <Puzzle>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
-				<Distance>1.3:0:0:0</Distance>
+               <Distance>1.3:0:0:0</Distance>
                <Distance>0.67:0:1:0</Distance>
-            </FaceCentered>
-            <Thickness>0.01</Thickness>
-            <VertexCentered/>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered>
-               <Distance>0:2:0:0</Distance>
-            </FaceCentered>
-            <Thickness>0.01</Thickness>
-            <VertexCentered/>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered>
-               <Distance>2:0:1:0</Distance>
             </FaceCentered>
             <Thickness>0.01</Thickness>
             <VertexCentered/>
@@ -100,7 +80,7 @@
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
-	  <Puzzle>
+      <Puzzle>
          <SlicingCircles>
             <EdgeCentered>
                <Distance>1.33:0:0:0</Distance>
@@ -234,8 +214,7 @@
       <Basis1Y>
          <Q>-4</Q>
       </Basis1Y>
-      <Basis2X>
-	  </Basis2X>
+      <Basis2X/>
       <Basis2Y>
          <Q>8</Q>
       </Basis2Y>
