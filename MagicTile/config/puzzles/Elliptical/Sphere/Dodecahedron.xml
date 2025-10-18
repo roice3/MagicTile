@@ -40,6 +40,18 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
+         <DisplayName>Litestarminx</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>1.75:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.015</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Starminx</DisplayName>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
@@ -50,6 +62,31 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
+         <DisplayName>Master Starminx</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>1.75:0:1:0</Distance>
+               <Distance>1:1:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.015</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Circle Starminx</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>1.2:0:0:0</Distance>
+               <Distance>1.6:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.015</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Pentultimate</DisplayName>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
@@ -60,6 +97,7 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
+         <DisplayName>Starmate</DisplayName>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
@@ -196,7 +234,31 @@
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
+      <Puzzle>
+         <DisplayName>Dodecahedral Tuttminx Crystal</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.025</Thickness>
+            <VertexCentered>
+               <Distance>2:0:0:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
       <Edge/>
+      <Puzzle>
+         <DisplayName>Helicopter Dodecahedron</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered>
+               <Distance>0:0.9:0:0</Distance>
+            </EdgeCentered>
+            <FaceCentered/>
+            <Thickness>0.015</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
       <Puzzle>
          <SlicingCircles>
             <EdgeCentered>
@@ -304,6 +366,7 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
+         <DisplayName>Bauhinia Dodecahedron II</DisplayName>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered/>
@@ -364,6 +427,28 @@
                <Distance>1.2:0:0:0</Distance>
                <Distance>1.4:0:0:0</Distance>
                <Distance>1.6:0:0:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Pentagram</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered/>
+            <Thickness>0.015</Thickness>
+            <VertexCentered>
+               <Distance>0:1:0.61:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Starminx III</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered/>
+            <Thickness>0.015</Thickness>
+            <VertexCentered>
+               <Distance>1.57:0:1:0</Distance>
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
@@ -445,6 +530,62 @@
             <Thickness>0.015</Thickness>
             <VertexCentered>
                <Distance>1:1:1:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Dodecahedral Tuttminx</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0:0.8:0:0</Distance>
+            </FaceCentered>
+            <Thickness>0.025</Thickness>
+            <VertexCentered>
+               <Distance>1.4:0:0:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Dodecahedral Rayminx</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0:0.68:0:0</Distance>
+               <Distance>0:0.85:0:0</Distance>
+            </FaceCentered>
+            <Thickness>0.025</Thickness>
+            <VertexCentered>
+               <Distance>1.25:0:0:0</Distance>
+               <Distance>1.5:0:0:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Coronaminx</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0.44:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.025</Thickness>
+            <VertexCentered>
+               <Distance>1:0:0:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>DIRT</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered>
+               <Distance>0.75:0:0:0</Distance>
+            </EdgeCentered>
+            <FaceCentered>
+               <Distance>0:0.8:0:0</Distance>
+            </FaceCentered>
+            <Thickness>0.015</Thickness>
+            <VertexCentered>
+               <Distance>0.9:0:0:0</Distance>
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
