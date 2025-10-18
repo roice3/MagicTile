@@ -90,48 +90,6 @@
          </SlicingCircles>
       </Puzzle>
       <Vertex/>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered/>
-            <Thickness>0.025</Thickness>
-            <VertexCentered>
-               <Distance>0:0:1:0</Distance>
-            </VertexCentered>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered/>
-            <Thickness>0.025</Thickness>
-            <VertexCentered>
-               <Distance>1.35:0:0:0</Distance>
-            </VertexCentered>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered/>
-            <Thickness>0.025</Thickness>
-            <VertexCentered>
-               <Distance>0:0:0.8:0</Distance>
-               <Distance>0:0:1:0</Distance>
-            </VertexCentered>
-         </SlicingCircles>
-      </Puzzle>
-      <Puzzle>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered/>
-            <Thickness>0.025</Thickness>
-            <VertexCentered>
-               <Distance>0:0:1:0</Distance>
-               <Distance>0:0:1.2:0</Distance>
-            </VertexCentered>
-         </SlicingCircles>
-      </Puzzle>
    </Specific>
    <TileShrink>0.98</TileShrink>
 </PuzzleConfig>
