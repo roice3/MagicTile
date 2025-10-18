@@ -69,6 +69,29 @@
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
+               <Distance>0.85:0:0:0</Distance>
+               <Distance>0.75:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Circle Hexagon Tiling</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0:0.75:0:0</Distance>
+               <Distance>0.75:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
                <Distance>0.4:0:1:0</Distance>
                <Distance>0.8:0:1:0</Distance>
             </FaceCentered>
