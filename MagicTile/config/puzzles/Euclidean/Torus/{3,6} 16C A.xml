@@ -6,15 +6,15 @@
       <Identification>
          <EdgeSet>1:2:1:1:2</EdgeSet>
          <EndRotation>1</EndRotation>
-		 <InPlaceReflection>true</InPlaceReflection>
-		 <InitialEdgeSet>0</InitialEdgeSet>
+         <InPlaceReflection>true</InPlaceReflection>
+         <InitialEdgeSet>0</InitialEdgeSet>
          <UseMirroredEdgeSet>true</UseMirroredEdgeSet>
       </Identification>
-	  <Identification>
+      <Identification>
          <EdgeSet>1:2:1:2:2</EdgeSet>
          <EndRotation>0</EndRotation>
-		 <InPlaceReflection>true</InPlaceReflection>
-		 <InitialEdgeSet>2</InitialEdgeSet>
+         <InPlaceReflection>true</InPlaceReflection>
+         <InitialEdgeSet>2</InitialEdgeSet>
          <UseMirroredEdgeSet>false</UseMirroredEdgeSet>
       </Identification>
    </Identifications>
@@ -81,6 +81,28 @@
             <Thickness>0.01</Thickness>
             <VertexCentered>
                <Distance>1.33:0:0:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered/>
+            <Thickness>0.01</Thickness>
+            <VertexCentered>
+               <Distance>0.4:0:0:0</Distance>
+               <Distance>0:1:1:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered/>
+            <Thickness>0.01</Thickness>
+            <VertexCentered>
+               <Distance>1:0:0:0</Distance>
+               <Distance>0:1:1:0</Distance>
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>

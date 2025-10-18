@@ -99,6 +99,20 @@
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
+      <Puzzle>
+         <DisplayName>Peta</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0.225:0:1:0</Distance>
+               <Distance>0.45:0:1:0</Distance>
+               <Distance>0.675:0:1:0</Distance>
+               <Distance>0.9:0:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
       <Edge/>
       <Puzzle>
          <SlicingCircles>
