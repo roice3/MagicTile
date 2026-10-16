@@ -139,6 +139,17 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
+         <DisplayName>Radiolarian 12</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0:2.17:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.015</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
          <DisplayName>Radiolarian 13</DisplayName>
          <SlicingCircles>
             <EdgeCentered/>

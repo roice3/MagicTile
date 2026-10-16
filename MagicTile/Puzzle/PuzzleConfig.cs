@@ -450,7 +450,8 @@
 		Sphere,
 		Boys,
 		CliffordTorus,
-		LawsonKleinBottle
+		LawsonKleinBottle,
+		Dini
 	}
 
 	/// <summary>
@@ -482,6 +483,31 @@
 		public Distance Basis2X { get; set; }
 		[DataMember]
 		public Distance Basis2Y { get; set; }
+
+		/// <summary>
+		/// Dini's surface.
+		/// The hyperbolic length of the deck translation along the horizontal diameter of the disk.
+		/// The puzzle repeats with this period as we go up the surface.
+		/// For the Klein Quartic, this is 3x the translation along the mirror line, 
+		/// i.e. 6 acosh(1 + 2 cos(2pi/7)) = 8.6944483...
+		/// </summary>
+		[DataMember]
+		public double DiniPeriod { get; set; }
+
+		/// <summary>
+		/// Dini's surface.
+		/// Number of turns of the surface per period of the puzzle. Must be at least 2 for the Klein Quartic.
+		/// More turns means a tighter spiral, but a wider band of the puzzle is visible.
+		/// </summary>
+		[DataMember]
+		public int DiniTurns { get; set; }
+
+		/// <summary>
+		/// Dini's surface.
+		/// Number of puzzle periods to draw (default 1).
+		/// </summary>
+		[DataMember]
+		public int DiniRepeats { get; set; }
 	}
 
 	public enum Polytope
@@ -541,7 +567,14 @@
 				SlicingCircles.FaceCentered.Add( new Distance( 2.0 / 3, 0, 1.0, 0 ) );
 			TileShrink = 0.94;
 
-			Version = Loader.VersionCurrent;
+			this.SurfaceConfig = new SurfaceConfig()
+			{
+				DiniPeriod = 8.6944483360655,
+				DiniTurns = 5,
+				Surface = Surface.Dini
+			};
+
+            Version = Loader.VersionCurrent;
 		}
 
 		/// <summary>

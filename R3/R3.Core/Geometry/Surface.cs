@@ -77,6 +77,91 @@
 			return 1.0 / Math.Cosh( val );
 		}
 
+		/// <summary>
+		/// Fermi coordinates (t,s) relative to the horizontal diameter of the Poincare disk.
+		/// t is signed arclength along the diameter (positive to the right),
+		/// s is signed distance from it (positive in the upper half of the disk).
+		/// The hyperbolic metric in these coordinates is ds^2 + cosh^2(s) dt^2.
+		/// Returned as a vector (t,s).
+		/// </summary>
+		public static Vector3D DiskToFermi( Vector3D w )
+		{
+			// Upper half plane with the diameter mapped to the positive imaginary axis.
+			// -1 -> 0, 0 -> i, 1 -> infinity.  The upper half of the disk maps to Re(z) < 0.
+			Complex cw = w.ToComplex();
+			Complex z = Complex.ImaginaryOne * ( 1 + cw ) / ( 1 - cw );
+			double t = Math.Log( z.Magnitude );
+			double s = DonHatch.asinh( -z.Real / z.Imaginary );
+			return new Vector3D( t, s );
+		}
+
+		/// <summary>
+		/// Inverse of DiskToFermi.
+		/// </summary>
+		public static Vector3D FermiToDisk( double t, double s )
+		{
+			Complex z = Math.Exp( t ) * new Complex( -Math.Tanh( s ), 1 / Math.Cosh( s ) );
+			Complex w = ( z - Complex.ImaginaryOne ) / ( z + Complex.ImaginaryOne );
+			return Vector3D.FromComplex( w );
+		}
+
+		/// <summary>
+		/// Map Fermi coordinates (t,s) of the hyperbolic plane isometrically onto Dini's surface,
+		///		x(u,v) = ( a cos(u) sin(v), a sin(u) sin(v), a (cos(v) + ln(tan(v/2))) + b u ),
+		/// with a^2 + b^2 = 1 so that the curvature is -1.
+		/// 
+		/// The geodesic s = 0 (the horizontal diameter of the disk) goes to the z-axis, i.e. the
+		/// limit of the spirals going up the middle of the surface.  Curves of constant s are the
+		/// helices (hypercycles), and the screw motion u -> u + 2pi is the hyperbolic translation
+		/// t -> t + 2 pi b.  The surface only covers 0 < s <= asinh(a/b), the outer limit being
+		/// the cuspidal edge at v = pi/2.
+		/// 
+		/// Derivation: writing the surface as (rho cos(phi), rho sin(phi), f(rho) + b phi), completing 
+		/// the square in the metric gives
+		///		sigma = asinh(rho/b),  psi = phi + (a/b) ln(tan(v/2)) + (1/b) atanh(a cos(v))
+		/// with metric d sigma^2 + b^2 cosh^2(sigma) d psi^2.  So s = sigma, t = b psi.
+		/// 
+		/// The result is rotated so that the surface axis is along y (vertical on screen).
+		/// </summary>
+		public static Vector3D DiniFromFermi( double t, double s, double b )
+		{
+			double a = Math.Sqrt( 1 - b * b );
+
+			double sinv = b * Math.Sinh( s ) / a;
+			if( sinv > 1 ) sinv = 1;
+			if( sinv < 1e-12 ) sinv = 1e-12;
+			double v = Math.Asin( sinv );
+			double cosv = Math.Cos( v );
+
+			double atanh = 0.5 * Math.Log( ( 1 + a * cosv ) / ( 1 - a * cosv ) );
+			double u = ( t - a * Math.Log( Math.Tan( v / 2 ) ) - atanh ) / b;
+
+			// z simplifies to this nice expression (avoids cancellation of the log terms).
+			double z = t + a * cosv - atanh;
+
+			double rho = a * sinv;
+			return new Vector3D( rho * Math.Cos( u ), z, -rho * Math.Sin( u ) );
+		}
+
+		/// <summary>
+		/// Map a point in the Poincare disk to Dini's surface.
+		/// tOffset is a translation along the horizontal diameter applied first.
+		/// </summary>
+		public static Vector3D MapToDini( Vector3D v, double b, double tOffset )
+		{
+			Vector3D ts = DiskToFermi( v );
+			return DiniFromFermi( ts.X + tOffset, ts.Y, b );
+		}
+
+		/// <summary>
+		/// Mobius transformation of the disk that translates along the horizontal diameter by hyperbolic distance t.
+		/// </summary>
+		public static Mobius TranslateAlongDiameter( double t )
+		{
+			double k = Math.Tanh( t / 2 );
+			return new Mobius( 1, k, k, 1 );
+		}
+
 		public static Vector3D Dini( Vector3D uv, double a, double b )
 		{
 			uv = DiskToUpper( uv );

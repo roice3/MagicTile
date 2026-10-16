@@ -359,5 +359,10 @@
          </SlicingCircles>
       </Puzzle>
    </Specific>
+   <SurfaceConfig>
+      <DiniPeriod>8.6944483360655</DiniPeriod>
+      <DiniTurns>5</DiniTurns>
+      <Surface>Dini</Surface>
+   </SurfaceConfig>
    <TileShrink>0.94</TileShrink>
 </PuzzleConfigClass>

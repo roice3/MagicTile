@@ -1744,6 +1744,12 @@
 
 			SurfaceConfig sc = Config.SurfaceConfig;
 			Geometry g = Geometry.Euclidean;
+			if( sc.Surface == Surface.Dini )
+			{
+				PrepareDiniSurfaceData();
+				return;
+			}
+
 			if( sc.Surface == Surface.Sphere || sc.Surface == Surface.Boys )
 			{
 				// Build a polygon with arc segments that will make a circle.
@@ -1821,8 +1827,166 @@
 			SurfaceElementTwistData2 = elementTwistData2.ToArray();
 		}
 
+		/// <summary>
+		/// Dini's surface needs its own setup.
+		/// 
+		/// The horizontal diameter of the disk becomes the axis of the surface (the spirals go up around it),
+		/// and the upper half of the disk out to a hypercycle becomes the surface.
+		/// The puzzle repeats along the axis with period DiniPeriod, and we choose the pitch of the surface
+		/// so that DiniTurns turns of the surface make up one period.
+		/// 
+		/// A long strip of the disk gets badly compressed toward the boundary, so we break each period into 
+		/// patches (one per turn), each of which gets its own texture rendered after translating the patch 
+		/// to be centered at the origin. All patches share the same mesh/texture coordinates.
+		/// Additional periods (DiniRepeats) reuse the same textures, since the puzzle is periodic.
+		/// </summary>
+		private void PrepareDiniSurfaceData()
+		{
+			SurfaceConfig sc = Config.SurfaceConfig;
+			DiniParams dini = new DiniParams();
+			dini.Period = sc.DiniPeriod > 0 ? sc.DiniPeriod : 6 * DonHatch.acosh( 1 + 2 * Math.Cos( 2 * Math.PI / 7 ) );
+			dini.Turns = sc.DiniTurns > 0 ? sc.DiniTurns : 3;
+			int repeats = sc.DiniRepeats > 0 ? sc.DiniRepeats : 1;
+			dini.B = dini.Period / ( 2 * Math.PI * dini.Turns );
+			if( dini.B >= 1 )
+				throw new System.Exception( "DiniTurns is too small for this period. The pitch b must be less than 1." );
+			dini.A = Math.Sqrt( 1 - dini.B * dini.B );
+			dini.SMax = DonHatch.asinh( dini.A / dini.B );
+			dini.NumPatches = dini.Turns;
+			dini.Repeats = repeats;
+			dini.HalfLength = dini.Period / dini.Turns / 2;
+			Dini = dini;
+
+			double h = dini.HalfLength;
+			double sMax = dini.SMax;
+
+			// Boundary of the centered patch, which we use for the bounding box of the texture.
+			List<Vector3D> boundary = new List<Vector3D>();
+			int nb = 50;
+			for( int i = 0; i <= nb; i++ ) boundary.Add( R3.Geometry.Surface.FermiToDisk( -h + 2 * h * i / nb, 0 ) );
+			for( int i = 1; i <= nb; i++ ) boundary.Add( R3.Geometry.Surface.FermiToDisk( h, sMax * i / nb ) );
+			for( int i = 1; i <= nb; i++ ) boundary.Add( R3.Geometry.Surface.FermiToDisk( h - 2 * h * i / nb, sMax ) );
+			for( int i = 1; i < nb; i++ ) boundary.Add( R3.Geometry.Surface.FermiToDisk( -h, sMax - sMax * i / nb ) );
+			SurfacePoly = Polygon.FromPoints( boundary.ToArray() );
+
+			// Mesh in (t,v) coordinates, where v is the Dini surface parameter.
+			// Near the axis, the surface spirals around infinitely, so we space v logarithmically.
+			int nt = 96, nv = 64;
+			double vMin = 0.003, vMax = Math.PI / 2;
+			List<Vector3D> coords = new List<Vector3D>();
+			for( int j = 0; j <= nv; j++ )
+			{
+				double v = vMin * Math.Pow( vMax / vMin, (double)j / nv );
+				double s = DonHatch.asinh( dini.A * Math.Sin( v ) / dini.B );
+				for( int i = 0; i <= nt; i++ )
+				{
+					double t = -h + 2 * h * i / nt;
+					coords.Add( R3.Geometry.Surface.FermiToDisk( t, s ) );
+				}
+			}
+
+			List<int> elements = new List<int>();
+			System.Action<int, int, int> addTri = ( i1, i2, i3 ) =>
+			{
+				// Keep triangles CCW in the disk.
+				Vector3D p1 = coords[i1], p2 = coords[i2], p3 = coords[i3];
+				double cross = ( p2 - p1 ).X * ( p3 - p1 ).Y - ( p2 - p1 ).Y * ( p3 - p1 ).X;
+				if( cross >= 0 )
+					elements.AddRange( new int[] { i1, i2, i3 } );
+				else
+					elements.AddRange( new int[] { i1, i3, i2 } );
+			};
+			for( int j = 0; j < nv; j++ )
+			for( int i = 0; i < nt; i++ )
+			{
+				int i00 = j * ( nt + 1 ) + i;
+				int i10 = i00 + 1;
+				int i01 = i00 + nt + 1;
+				int i11 = i01 + 1;
+				addTri( i00, i10, i11 );
+				addTri( i00, i11, i01 );
+			}
+			SurfaceTextureCoords = coords.ToArray();
+			SurfaceElementIndices = elements.ToArray();
+
+			// Per-patch rendering cells and twist data.
+			Complex[] cellCenters = AllCells.Select( c => c.Boundary.Center.ToComplex() ).ToArray();
+			Cell[] allCells = AllCells.ToArray();
+			double cellRadius = DonHatch.acosh( 1 / ( Math.Tan( Math.PI / Config.P ) * Math.Tan( Math.PI / Config.Q ) ) );
+			double patchRadius = DonHatch.acosh( Math.Cosh( h ) * Math.Cosh( sMax ) );
+			System.Func<Complex, Complex, double> hDist = ( z1, z2 ) =>
+			{
+				double r = ( ( z1 - z2 ) / ( 1 - Complex.Conjugate( z2 ) * z1 ) ).Magnitude;
+				if( r >= 1 ) return double.MaxValue;
+				return 2 * DonHatch.atanh( r );
+			};
+
+			SurfacePatchCells = new Cell[dini.NumPatches][];
+			SurfacePatchTwistData = new TwistData[dini.NumPatches][];
+			for( int k = 0; k < dini.NumPatches; k++ )
+			{
+				double offset = dini.PatchOffset( k );
+				Complex patchCenter = R3.Geometry.Surface.FermiToDisk( offset, 0 ).ToComplex();
+				List<Cell> patchCells = new List<Cell>();
+				for( int i = 0; i < allCells.Length; i++ )
+				{
+					if( hDist( cellCenters[i], patchCenter ) < patchRadius + cellRadius * 1.1 )
+						patchCells.Add( allCells[i] );
+				}
+				SurfacePatchCells[k] = patchCells.ToArray();
+
+				Mobius toOriginal = R3.Geometry.Surface.TranslateAlongDiameter( offset );
+				List<TwistData> twistData = new List<TwistData>();
+				for( int i = 0; i < SurfaceElementIndices.Length; i += 3 )
+				{
+					Vector3D avg = ( coords[SurfaceElementIndices[i]] + coords[SurfaceElementIndices[i + 1]] + coords[SurfaceElementIndices[i + 2]] ) / 3;
+					twistData.Add( ClosestTwistingCircles( toOriginal.Apply( avg ) ) );
+				}
+				SurfacePatchTwistData[k] = twistData.ToArray();
+			}
+
+			SurfaceRenderingCells = SurfacePatchCells[0];
+			SurfaceElementTwistData1 = SurfacePatchTwistData[0];
+			SurfaceElementTwistData2 = new TwistData[0];
+		}
+
+		public class DiniParams
+		{
+			public double Period;		// Hyperbolic length of the deck translation along the axis.
+			public int Turns;			// Turns of the surface per period.
+			public double A, B;			// Dini parameters, with a^2 + b^2 = 1.
+			public double SMax;			// Max distance from the axis (the cuspidal edge).
+			public int NumPatches;		// We use one patch (and texture) per turn.
+			public int Repeats;			// Number of periods to draw. Since the puzzle is periodic, these reuse the patch textures.
+			public double HalfLength;	// Half the length of a patch along the axis.
+
+			/// <summary>
+			/// Offset along the axis of the center of patch k.
+			/// Patches are centered around the origin.
+			/// </summary>
+			public double PatchOffset( int k )
+			{
+				return ( 2 * k + 1 - NumPatches ) * HalfLength;
+			}
+
+			/// <summary>
+			/// Offset along the axis for repeat r (repeats are centered around the origin).
+			/// </summary>
+			public double RepeatOffset( int r )
+			{
+				return ( r - ( Repeats - 1 ) / 2.0 ) * Period;
+			}
+		}
+
+		public DiniParams Dini { get; private set; }
+		public Cell[][] SurfacePatchCells { get; private set; }
+		public TwistData[][] SurfacePatchTwistData { get; private set; }
+
 		private void ClearSurfaceVars()
 		{
+			Dini = null;
+			SurfacePatchCells = null;
+			SurfacePatchTwistData = null;
 			SurfacePoly = null;
 			SurfaceTextureCoords = null;
 			SurfaceElementIndices = null;

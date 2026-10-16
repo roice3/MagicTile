@@ -171,6 +171,11 @@
 			{
 				m_renderToTexture.InvalidateTexture( PuzzleRenderer.SurfaceTexture1 );
 				m_renderToTexture.InvalidateTexture( PuzzleRenderer.SurfaceTexture2 );
+				if( m_puzzle.Dini != null )
+				{
+					for( int k = 0; k < m_puzzle.Dini.NumPatches; k++ )
+						m_renderToTexture.InvalidateTexture( PuzzleRenderer.DiniTextureKey( k ) );
+				}
 			}
 
 			int order = m_currentTwist.IdentifiedTwistDataSystolic == null ? m_currentTwist.IdentifiedTwistData.Order : 10;

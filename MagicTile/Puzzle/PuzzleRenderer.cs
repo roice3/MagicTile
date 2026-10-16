@@ -123,6 +123,7 @@
 			m_renderToTexture.Dispose();
 
 			m_puzzle = puzzle;
+			ClearDiniCaches();
 			CalcTextureScale();
 			ResetView();
 
@@ -143,6 +144,8 @@
 					m_mouseMotion.ScaleLookFrom4D( 0.45 );
 				if( m_surface == Surface.LawsonKleinBottle )
 					m_mouseMotion.ScaleLookFrom4D( 1.5 );
+				if( m_surface == Surface.Dini )
+					m_mouseMotion.ScaleLookFrom4D( 1.2 * m_puzzle.Dini.Repeats );
 			}
 		}
 
@@ -160,6 +163,20 @@
 			if( this.ShowOnSurface )
 			{
 				m_renderToTexture.TextureSize = 2048;
+				if( m_surface == Surface.Dini )
+				{
+					// We have a texture per patch, all of which get regenerated during twists, so keep these smaller.
+					m_renderToTexture.TextureSize = 1024;
+					for( int k = 0; k < m_puzzle.Dini.NumPatches; k++ )
+					{
+						m_surfacePatch = k;
+						if( !m_renderToTexture.CreateTexture( DiniTextureKey( k ), m_settings.EnableTextureMipmaps, RenderSurfaceForTexture ) )
+							break;
+					}
+					m_surfacePatch = 0;
+					return;
+				}
+
 				m_lowerHemisphere = true;
 				m_renderToTexture.CreateTexture( SurfaceTexture1, m_settings.EnableTextureMipmaps, RenderSurfaceForTexture );
 				m_lowerHemisphere = false;
@@ -175,8 +192,80 @@
 
 		private bool m_lowerHemisphere = true;
 
+		/// <summary>
+		/// For surfaces drawn in multiple patches (Dini's surface), the patch we are currently working with.
+		/// </summary>
+		private int m_surfacePatch = 0;
+		private int m_surfaceRepeat = 0;
+
+		public static string DiniTextureKey( int patch )
+		{
+			return "SurfaceTextureDini" + patch;
+		}
+
+		/// <summary>
+		/// Dini's surface caches.
+		/// The surface vertices only depend on the puzzle, and the VBOs only depend on the 4D view,
+		/// so we avoid recalculating these every frame (e.g. during twisting).
+		/// </summary>
+		private Dictionary<string, Vector3D[]> m_diniVertCache = new Dictionary<string, Vector3D[]>();
+		private Dictionary<string, VBO> m_diniVboCache = new Dictionary<string, VBO>();
+		private Matrix4D m_diniVboCacheRot;
+		private double m_diniVboCacheProjDist;
+
+		private void ClearDiniCaches()
+		{
+			m_diniVertCache.Clear();
+			ClearDiniVboCache();
+		}
+
+		private void ClearDiniVboCache()
+		{
+			foreach( VBO vbo in m_diniVboCache.Values )
+				vbo.Dispose();
+			m_diniVboCache.Clear();
+			m_diniVboCacheRot = null;
+		}
+
+		/// <summary>
+		/// Get a cached VBO for the current patch/repeat, creating it if needed.
+		/// The cache is invalidated whenever the 4D view changes.
+		/// </summary>
+		private VBO DiniCachedVbo( string kind, System.Func<VBO> create )
+		{
+			Matrix4D rot = m_mouseMotion.RotHandler4D.Current4dView;
+			double projDist = m_mouseMotion.ProjectionDistance4D;
+			if( !SameMatrix( rot, m_diniVboCacheRot ) || projDist != m_diniVboCacheProjDist )
+			{
+				ClearDiniVboCache();
+				m_diniVboCacheRot = rot == null ? null : rot.Clone();
+				m_diniVboCacheProjDist = projDist;
+			}
+
+			string key = kind + "_" + m_surfacePatch + "_" + m_surfaceRepeat;
+			VBO vbo;
+			if( !m_diniVboCache.TryGetValue( key, out vbo ) )
+			{
+				vbo = create();
+				m_diniVboCache[key] = vbo;
+			}
+			return vbo;
+		}
+
+		private static bool SameMatrix( Matrix4D m1, Matrix4D m2 )
+		{
+			if( m1 == null || m2 == null )
+				return m1 == null && m2 == null;
+			for( int i = 0; i < 4; i++ )
+			for( int j = 0; j < 4; j++ )
+				if( m1[i, j] != m2[i, j] )
+					return false;
+			return true;
+		}
+
 		public void InvalidateTextures()
 		{
+			ClearDiniVboCache();
 			m_renderToTexture.InvalidateAllTextures();
 		}
 
@@ -673,6 +762,20 @@
 				if( RenderingDisks )
 					trans *= m_mouseMotion.Isometry;
 			}
+			else if( m_surface == Surface.Dini )
+			{
+				// Translate this patch along the axis to be centered at the origin, then center the bounding box.
+				var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
+				Vector3D mid = (boundingBox.Item1 + boundingBox.Item2) / 2;
+				Mobius toCenter = R3.Geometry.Surface.TranslateAlongDiameter( -m_puzzle.Dini.PatchOffset( m_surfacePatch ) );
+				Complex cMid = mid.ToComplex();
+				m = new Mobius(
+					toCenter.A - cMid * toCenter.C,
+					toCenter.B - cMid * toCenter.D,
+					toCenter.C,
+					toCenter.D );
+				trans = new Isometry( m, null );
+			}
 			else
 			{
 				var boundingBox = m_puzzle.SurfacePoly.BoundingBox;
@@ -681,7 +784,10 @@
 				trans = new Isometry( m, null );
 			}
 
-			foreach( Cell c in m_puzzle.SurfaceRenderingCells )
+			Cell[] renderingCells = m_surface == Surface.Dini ?
+				m_puzzle.SurfacePatchCells[m_surfacePatch] :
+				m_puzzle.SurfaceRenderingCells;
+			foreach( Cell c in renderingCells )
 				RenderCellForTexture( c.IsMaster ? c : c.Master, trans * c.Isometry.Inverse(), clipForElliptical );
 
 			GL.Disable( EnableCap.DepthTest );
@@ -1047,6 +1153,21 @@
 		{
 			ShowTextureTrianglesIfNeeded();
 
+			if( m_surface == Surface.Dini )
+			{
+				for( int r = 0; r < m_puzzle.Dini.Repeats; r++ )
+				for( int k = 0; k < m_puzzle.Dini.NumPatches; k++ )
+				{
+					m_surfacePatch = k;
+					m_surfaceRepeat = r;
+					m_renderToTexture.BindTexture( DiniTextureKey( k ) );
+					DiniCachedVbo( "draw", CreateSurfaceVbo ).Draw();
+				}
+				m_surfacePatch = 0;
+				m_surfaceRepeat = 0;
+				return;
+			}
+
 			m_lowerHemisphere = true;
 			m_renderToTexture.BindTexture( SurfaceTexture1 );
 			using( VBO vbo = CreateSurfaceVbo() )
@@ -1114,6 +1235,25 @@
 
 		private void RenderOnSurfaceForPickingInternal( int X, int Y )
 		{
+			if( m_surface == Surface.Dini )
+			{
+				for( int r = 0; r < m_puzzle.Dini.Repeats; r++ )
+				for( int k = 0; k < m_puzzle.Dini.NumPatches; k++ )
+				{
+					m_surfacePatch = k;
+					m_surfaceRepeat = r;
+					VBO vbo1 = DiniCachedVbo( "pickFront", () => CreateSurfacePickVbo( backFacing: false ) );
+					VBO vbo2 = DiniCachedVbo( "pickBack", () => CreateSurfacePickVbo( backFacing: true ) );
+					GL.CullFace( CullFaceMode.Back );
+					vbo1.Draw();
+					GL.CullFace( CullFaceMode.Front );
+					vbo2.Draw();
+				}
+				m_surfacePatch = 0;
+				m_surfaceRepeat = 0;
+				return;
+			}
+
 			m_lowerHemisphere = true;
 			using( VBO vbo1 = CreateSurfacePickVbo( backFacing: false ) )
 			using( VBO vbo2 = CreateSurfacePickVbo( backFacing: true ) )
@@ -1323,6 +1463,18 @@
 		private Vector3D[] SurfaceTransformedTextureVerts()
 		{
 			Vector3D[] textureCoords = m_puzzle.SurfaceTextureCoords;
+			if( m_surface == Surface.Dini )
+			{
+				string key = m_surfacePatch + "_" + m_surfaceRepeat;
+				Vector3D[] cached;
+				if( !m_diniVertCache.TryGetValue( key, out cached ) )
+				{
+					cached = textureCoords.Select( v => SurfaceTransformedTextureVert( v ) ).ToArray();
+					m_diniVertCache[key] = cached;
+				}
+				return cached;
+			}
+
 			Vector3D[] textureVerts = textureCoords.Select( v => SurfaceTransformedTextureVert( v ) ).ToArray();
 			return textureVerts;
 		}
@@ -1357,6 +1509,9 @@
 				v = Torus.MapRhombusToUnitSquare( m_puzzle.SurfacePoly.Vertices[1], m_puzzle.SurfacePoly.Vertices[3], v );
 				v = KleinBottle.MapToLawson( v,
 					m_puzzle.Config.P == 4 && m_puzzle.Config.ExpectedNumColors == 9 ); // ZZZ - Hacky to handle this one puzzle differently.
+				break;
+			case Surface.Dini:
+				v = R3.Geometry.Surface.MapToDini( v, m_puzzle.Dini.B, m_puzzle.Dini.PatchOffset( m_surfacePatch ) + m_puzzle.Dini.RepeatOffset( m_surfaceRepeat ) );
 				break;
 			}
 
@@ -1458,7 +1613,8 @@
 			if( RenderingDisks )
 				return;
 
-			if( m_settings.ConstrainToHypersphere )
+			// Dini's surface lives in R3, so it should never be pushed to the hypersphere.
+			if( m_settings.ConstrainToHypersphere && !( ShowOnSurface && m_surface == Surface.Dini ) )
 				vert.Normalize();
 			vert = rot.RotateVector( vert );
 			vert = vert.ProjectTo3DSafe( m_mouseMotion.ProjectionDistance4D );
@@ -1503,6 +1659,8 @@
 				var td = m_puzzle.SurfaceElementTwistData1[i / 3];
 				if( m_surface == Surface.Sphere && !m_lowerHemisphere )
 					td = m_puzzle.SurfaceElementTwistData2[i / 3];
+				if( m_surface == Surface.Dini )
+					td = m_puzzle.SurfacePatchTwistData[m_surfacePatch][i / 3];
 				Color c = Color.Black;
 				if( td != null )
 				{
