@@ -81,7 +81,7 @@
 		/// </summary>
 		public void SaveVrml()
 		{
-			if( !(m_settings.SurfaceDisplay && m_puzzle.HasSurfaceConfig) )
+			if( !(m_settings.SurfaceDisplay && m_puzzle.HasSurfaceConfig && m_puzzle.EnsureSurfaceData()) )
 				return;
 
 			Matrix4D rot = m_mouseMotion.RotHandler4D.Current4dView;
@@ -382,12 +382,17 @@
 				if( m_puzzle == null )
 					return false;
 
+				// NOTE: Surface data is prepared lazily, the first time we need it.
 				if( RenderingDisks )
+				{
+					m_puzzle.EnsureSurfaceData();
 					return true;
+				}
 
 				return
 					m_settings.SurfaceDisplay && 
-					m_puzzle.HasSurfaceConfig;
+					m_puzzle.HasSurfaceConfig &&
+					m_puzzle.EnsureSurfaceData();
 			}
 		}
 

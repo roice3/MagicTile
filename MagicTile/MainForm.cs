@@ -231,6 +231,14 @@
 				if( config != null )
 					puzzle.Config = config;
 				puzzle.Build( this );
+
+				// Surface data is deferred during the build, but if we're going to show it right away,
+				// prepare it now while we are still on the build thread.
+				if( m_settings.SurfaceDisplay && puzzle.HasSurfaceConfig )
+				{
+					( (IStatusCallback)this ).Status( "preparing surface data..." );
+					puzzle.EnsureSurfaceData();
+				}
 			}
 			catch( System.Exception )
 			{

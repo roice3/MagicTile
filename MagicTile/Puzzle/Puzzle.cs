@@ -267,8 +267,12 @@
 			SetupTwistDataForFullPuzzle( tiling, topology, templateTwistDataArray );
 			SetupCellNearTree( completed );
 
-			StatusOrCancel( callback, "preparing surface data..." );
-			PrepareSurfaceData( callback );
+			// Surface data can be expensive to prepare (e.g. Dini's surface for the default Klein Quartic),
+			// so we wait until it is actually needed for display. See EnsureSurfaceData.
+			ClearSurfaceVars();
+			m_surfaceDataState = SurfaceDataState.NotPrepared;
+			if( this.HasSurfaceConfig && Config.SurfaceConfig.Surface == Surface.Dini )
+				Dini = CalcDiniParams();
 
 			StatusOrCancel( callback, "loading and preparing irp data..." );
 			try 
@@ -1736,7 +1740,48 @@
 		private List<Cell> m_stateCalcCells;
 		private HashSet<Cell> m_stateCalcCellSet;
 
-		private void PrepareSurfaceData( IStatusCallback callback )
+		private enum SurfaceDataState
+		{
+			NotPrepared,
+			Prepared,
+			Failed
+		}
+		private SurfaceDataState m_surfaceDataState = SurfaceDataState.NotPrepared;
+		private readonly object m_surfaceDataLock = new object();
+
+		/// <summary>
+		/// Prepares the surface data if it hasn't been already (this is deferred from Build because it can be slow).
+		/// Returns false if the puzzle has no surface, or if preparing the surface data failed.
+		/// </summary>
+		public bool EnsureSurfaceData()
+		{
+			if( !this.HasSurfaceConfig )
+				return false;
+
+			lock( m_surfaceDataLock )
+			{
+				if( m_surfaceDataState == SurfaceDataState.NotPrepared )
+				{
+					try
+					{
+						PrepareSurfaceData();
+						m_surfaceDataState = SurfaceDataState.Prepared;
+					}
+					catch( System.Exception ex )
+					{
+						Log.Error( "Failed to prepare surface data.\n" + ex.Message );
+						ClearSurfaceVars();
+						if( Config.SurfaceConfig.Surface == Surface.Dini )
+							Dini = CalcDiniParams();
+						m_surfaceDataState = SurfaceDataState.Failed;
+					}
+				}
+
+				return m_surfaceDataState == SurfaceDataState.Prepared;
+			}
+		}
+
+		private void PrepareSurfaceData()
 		{
 			ClearSurfaceVars();
 			if( !this.HasSurfaceConfig )
@@ -1846,7 +1891,10 @@
 		/// to be centered at the origin. All patches share the same mesh/texture coordinates.
 		/// Additional periods (DiniRepeats) reuse the same textures, since the puzzle is periodic.
 		/// </summary>
-		private void PrepareDiniSurfaceData()
+		/// <summary>
+		/// The (cheap) Dini parameters, which we calculate at build time since the view setup depends on them.
+		/// </summary>
+		private DiniParams CalcDiniParams()
 		{
 			SurfaceConfig sc = Config.SurfaceConfig;
 			DiniParams dini = new DiniParams();
@@ -1861,6 +1909,12 @@
 			dini.NumPatches = dini.Turns;
 			dini.Repeats = repeats;
 			dini.HalfLength = dini.Period / dini.Turns / 2;
+			return dini;
+		}
+
+		private void PrepareDiniSurfaceData()
+		{
+			DiniParams dini = CalcDiniParams();
 			Dini = dini;
 
 			double h = dini.HalfLength;
@@ -1941,14 +1995,17 @@
 				}
 				SurfacePatchCells[k] = patchCells.ToArray();
 
+				// The near tree lookups are read-only, so we can do these in parallel.
 				Mobius toOriginal = R3.Geometry.Surface.TranslateAlongDiameter( offset );
-				List<TwistData> twistData = new List<TwistData>();
-				for( int i = 0; i < SurfaceElementIndices.Length; i += 3 )
+				int[] els = SurfaceElementIndices;
+				TwistData[] twistData = new TwistData[els.Length / 3];
+				System.Threading.Tasks.Parallel.For( 0, twistData.Length, t =>
 				{
-					Vector3D avg = ( coords[SurfaceElementIndices[i]] + coords[SurfaceElementIndices[i + 1]] + coords[SurfaceElementIndices[i + 2]] ) / 3;
-					twistData.Add( ClosestTwistingCircles( toOriginal.Apply( avg ) ) );
-				}
-				SurfacePatchTwistData[k] = twistData.ToArray();
+					int i = 3 * t;
+					Vector3D avg = ( coords[els[i]] + coords[els[i + 1]] + coords[els[i + 2]] ) / 3;
+					twistData[t] = ClosestTwistingCircles( toOriginal.Apply( avg ) );
+				} );
+				SurfacePatchTwistData[k] = twistData;
 			}
 
 			SurfaceRenderingCells = SurfacePatchCells[0];

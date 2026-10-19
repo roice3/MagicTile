@@ -250,12 +250,14 @@
 				}
 				case Metric.Hyperbolic:
 				{
-					// ZZZ - Is it too expensive to build up a mobius every time?
-					//		 I wonder if there is a better way.
-					Mobius m = new Mobius();
-					m.Isometry( Geometry.Hyperbolic, 0, -p1 );
-					Vector3D temp = m.Apply( p2 );
-					return DonHatch.e2hNorm( temp.Abs() );
+					// This is the same as moving p1 to the origin with the Mobius transformation
+					// z -> (z - p1) / (1 - conj(p1) z) and taking the hyperbolic norm of the image of p2,
+					// but written out in real arithmetic, since this is hot (e.g. during surface setup).
+					double dx = p2.X - p1.X, dy = p2.Y - p1.Y;
+					double re = 1 - ( p1.X * p2.X + p1.Y * p2.Y );
+					double im = p1.X * p2.Y - p1.Y * p2.X;
+					double r = System.Math.Sqrt( ( dx * dx + dy * dy ) / ( re * re + im * im ) );
+					return DonHatch.e2hNorm( r );
 				}
 			}
 
