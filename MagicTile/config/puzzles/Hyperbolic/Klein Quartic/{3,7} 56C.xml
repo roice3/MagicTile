@@ -29,11 +29,67 @@
    <Q>7</Q>
    <Specific>
       <Puzzle>
+         <DisplayName>Heptalarian 1.5</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0:0.1:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Heptalarian 2</DisplayName>
          <ID>Puzzle.{3,7}.F.56</ID>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>
                <Distance>0:0.33:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Heptalarian 3</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0:0.47:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Heptalarian 4</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0:0.6:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Heptalarian 5</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0:0.66:1:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
+         <DisplayName>Heptalarian 6</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0:0.75:1:0</Distance>
             </FaceCentered>
             <Thickness>0.01</Thickness>
             <VertexCentered/>

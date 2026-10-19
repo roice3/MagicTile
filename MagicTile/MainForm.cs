@@ -836,7 +836,8 @@
 				"  Andrey Astrelin\n" +
 				"  Luna Harran\n" +
 				"  Josh Courtney\n" +
-				"  Michael Gottlieb";
+				"  Michael Gottlieb\n" +
+                "  Jasper Gray";
 			string caption = "About";
 			MessageBox.Show( this, text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information );
 		}

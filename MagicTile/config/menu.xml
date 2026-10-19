@@ -160,11 +160,13 @@
                <Item>{6,3}.9b</Item>
                <Item>{6,3}.9S</Item>
                <Item>{6,3}.12</Item>
+               <Item>{6,3}.13</Item>
                <Item>{6,3}.16</Item>
                <Item>{6,3}.19</Item>
                <Item>{6,3}.24a</Item>
                <Item>{6,3}.24b</Item>
                <Item>{6,3}.25</Item>
+               <Item>{6,3}.36</Item>
             </Group>
          </Group>
          <Group Name="Klein Bottle">
@@ -174,10 +176,12 @@
             <Group Name="{4,4}">
                <Item>{4,4}.4.Non</Item>
                <Item>{4,4}.9.Non</Item>
+               <Item>{4,4}.12.Non</Item>
             </Group>
             <Group Name="{6,3}">
                <Item>{6,3}.9</Item>
                <Item>{6,3}.24k</Item>
+               <Item>{6,3}.25k</Item>
             </Group>
          </Group>
          <Group Name="Orbifold">
@@ -216,6 +220,8 @@
          <Group Name="{4,5}">
             <Item>{4,5}.5</Item>
             <Item>{4,5}.10</Item>
+            <Item>{4,5}.15.Non</Item>
+            <Item>{4,5}.30</Item>
             <Item>{4,5}.40</Item>
          </Group>
          <Group Name="{4,6}">
@@ -241,6 +247,7 @@
             <Item>{5,5}.6B</Item>
             <Item>{5,5}.6C</Item>
             <Item>{5,5}.12</Item>
+            <Item>{5,5}.32</Item>
          </Group>
          <Item>{6,4}.8</Item>
          <Group Name="{6,6}">
@@ -279,7 +286,7 @@
          <Group Name="{12,3}">
             <Item>{12,3}.4</Item>
             <Item>{12,3}.6</Item>
-            <Item>{12,3}.12</Item>
+            <Item>{12,3}.24</Item>
          </Group>
          <Group Name="{12,4}">
             <Item>{12,4}.4</Item>

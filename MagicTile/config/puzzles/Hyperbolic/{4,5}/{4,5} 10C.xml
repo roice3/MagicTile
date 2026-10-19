@@ -74,6 +74,17 @@
             </VertexCentered>
          </SlicingCircles>
       </Puzzle>
+      <Puzzle>
+         <DisplayName>Raptor Order-5 Square Tiling</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered/>
+            <Thickness>0.01</Thickness>
+            <VertexCentered>
+               <Distance>0:0:1.3:0</Distance>
+            </VertexCentered>
+         </SlicingCircles>
+      </Puzzle>
       <Mixed/>
       <Puzzle>
          <SlicingCircles>

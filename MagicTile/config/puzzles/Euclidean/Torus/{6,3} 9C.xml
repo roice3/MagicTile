@@ -70,6 +70,18 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
+         <DisplayName>Hexagon Master Brillic</DisplayName>
+         <SlicingCircles>
+            <EdgeCentered/>
+            <FaceCentered>
+               <Distance>0.5:0:1:0</Distance>
+               <Distance>0:2:0:0</Distance>
+            </FaceCentered>
+            <Thickness>0.01</Thickness>
+            <VertexCentered/>
+         </SlicingCircles>
+      </Puzzle>
+      <Puzzle>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>

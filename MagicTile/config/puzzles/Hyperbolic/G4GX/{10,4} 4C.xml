@@ -1,7 +1,7 @@
 <PuzzleConfigClass>
    <ClassDisplayName>{10,4} 4-Color</ClassDisplayName>
-   <ExpectedNumColors>4</ExpectedNumColors>
    <ClassID>{10,4}.4</ClassID>
+   <ExpectedNumColors>4</ExpectedNumColors>
    <Identifications>
       <Identification>
          <EdgeSet>2</EdgeSet>
