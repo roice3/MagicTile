@@ -451,7 +451,12 @@
 		Boys,
 		CliffordTorus,
 		LawsonKleinBottle,
-		Dini
+		Dini,
+
+		/// <summary>
+		/// A precomputed triangle mesh in S^3 with texture coordinates in the disk, loaded from a data file.
+		/// </summary>
+		Mesh
 	}
 
 	/// <summary>
@@ -508,6 +513,12 @@
 		/// </summary>
 		[DataMember]
 		public int DiniRepeats { get; set; }
+
+		/// <summary>
+		/// For Surface.Mesh, the data file (relative to config/surfaces).
+		/// </summary>
+		[DataMember]
+		public string MeshFile { get; set; }
 	}
 
 	public enum Polytope

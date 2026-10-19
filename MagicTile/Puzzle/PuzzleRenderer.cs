@@ -1463,6 +1463,8 @@
 		private Vector3D[] SurfaceTransformedTextureVerts()
 		{
 			Vector3D[] textureCoords = m_puzzle.SurfaceTextureCoords;
+			if( m_surface == Surface.Mesh )
+				return m_puzzle.SurfaceMeshVerts;
 			if( m_surface == Surface.Dini )
 			{
 				string key = m_surfacePatch + "_" + m_surfaceRepeat;

@@ -1750,6 +1750,12 @@
 				return;
 			}
 
+			if( sc.Surface == Surface.Mesh )
+			{
+				PrepareMeshSurfaceData();
+				return;
+			}
+
 			if( sc.Surface == Surface.Sphere || sc.Surface == Surface.Boys )
 			{
 				// Build a polygon with arc segments that will make a circle.
@@ -1979,12 +1985,80 @@
 		}
 
 		public DiniParams Dini { get; private set; }
+
+		/// <summary>
+		/// Load a precomputed surface mesh.
+		/// File format (one record per line, '#' comments allowed):
+		///		v x y z w						a vertex in S^3 (or R^4)
+		///		f i j k u0 v0 u1 v1 u2 v2		a triangle (0-based vertex indices) with Poincare disk texture coords per corner
+		/// The texture coords must be lifts of points on the puzzle surface, consistent within each triangle,
+		/// and triangles should be CCW in the disk.
+		/// </summary>
+		private void PrepareMeshSurfaceData()
+		{
+			string path = System.IO.Path.Combine( Utils.StandardPaths.SurfacesDir, Config.SurfaceConfig.MeshFile );
+			List<Vector3D> verts = new List<Vector3D>();
+			List<Vector3D> coords = new List<Vector3D>();
+			List<Vector3D> cornerVerts = new List<Vector3D>();
+			System.Globalization.CultureInfo inv = System.Globalization.CultureInfo.InvariantCulture;
+			foreach( string rawLine in System.IO.File.ReadLines( path ) )
+			{
+				string line = rawLine.Trim();
+				if( line.Length == 0 || line.StartsWith( "#" ) )
+					continue;
+				string[] s = line.Split( new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries );
+				if( s[0] == "v" )
+				{
+					verts.Add( new Vector3D( double.Parse( s[1], inv ), double.Parse( s[2], inv ), double.Parse( s[3], inv ), double.Parse( s[4], inv ) ) );
+				}
+				else if( s[0] == "f" )
+				{
+					for( int c = 0; c < 3; c++ )
+					{
+						cornerVerts.Add( verts[int.Parse( s[1 + c] )] );
+						coords.Add( new Vector3D( double.Parse( s[4 + 2 * c], inv ), double.Parse( s[5 + 2 * c], inv ) ) );
+					}
+				}
+			}
+
+			SurfaceTextureCoords = coords.ToArray();
+			SurfaceMeshVerts = cornerVerts.ToArray();
+			SurfaceElementIndices = Enumerable.Range( 0, coords.Count ).ToArray();
+
+			// Bounding box of the texture coords, which is what we render into the texture.
+			double minX = coords.Min( v => v.X ), maxX = coords.Max( v => v.X );
+			double minY = coords.Min( v => v.Y ), maxY = coords.Max( v => v.Y );
+			SurfacePoly = Polygon.FromPoints( new Vector3D[] {
+				new Vector3D( minX, minY ), new Vector3D( maxX, minY ), new Vector3D( maxX, maxY ), new Vector3D( minX, maxY ) } );
+			// Only render cells near the texture coords (otherwise twisting would be slow).
+			double cellRadius = DonHatch.acosh( 1 / ( Math.Tan( Math.PI / Config.P ) * Math.Tan( Math.PI / Config.Q ) ) );
+			Vector3D[] samples = coords.Where( ( v, i ) => i % 3 == 0 ).ToArray();
+			System.Func<Vector3D, Vector3D, double> hDist = ( a, b ) =>
+			{
+				Complex z1 = a.ToComplex(), z2 = b.ToComplex();
+				double r = ( ( z1 - z2 ) / ( 1 - Complex.Conjugate( z2 ) * z1 ) ).Magnitude;
+				return r >= 1 ? double.MaxValue : 2 * DonHatch.atanh( r );
+			};
+			SurfaceRenderingCells = AllCells.Where( c => samples.Any( v => hDist( c.Boundary.Center, v ) < 2 * cellRadius ) ).ToArray();
+
+			List<TwistData> twistData = new List<TwistData>();
+			for( int i = 0; i < coords.Count; i += 3 )
+				twistData.Add( ClosestTwistingCircles( ( coords[i] + coords[i + 1] + coords[i + 2] ) / 3 ) );
+			SurfaceElementTwistData1 = twistData.ToArray();
+			SurfaceElementTwistData2 = new TwistData[0];
+		}
+
+		/// <summary>
+		/// For Surface.Mesh, the S^3 position of each texture coordinate (parallel to SurfaceTextureCoords).
+		/// </summary>
+		public Vector3D[] SurfaceMeshVerts { get; private set; }
 		public Cell[][] SurfacePatchCells { get; private set; }
 		public TwistData[][] SurfacePatchTwistData { get; private set; }
 
 		private void ClearSurfaceVars()
 		{
 			Dini = null;
+			SurfaceMeshVerts = null;
 			SurfacePatchCells = null;
 			SurfacePatchTwistData = null;
 			SurfacePoly = null;

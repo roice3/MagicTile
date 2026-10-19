@@ -9,6 +9,7 @@
 		private const string menuFile = "menu.xml";
 		private const string config = "config";
 		private const string irpDir = "irp";
+		private const string surfacesDir = "surfaces";
 
 		private static string MainAppDataFolder
 		{
@@ -58,6 +59,14 @@
 				// Diff directory for development.
 				string dev = Directory.GetParent( current ).Parent.FullName;
 				return Path.Combine( dev, config );
+			}
+		}
+
+		public static string SurfacesDir
+		{
+			get
+			{
+				return Path.Combine( StandardPaths.ConfigDir, surfacesDir );
 			}
 		}
 
