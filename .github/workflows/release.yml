@@ -1,0 +1,99 @@
+# Builds MagicTile on every push to master, zips it, and publishes the zip
+# to a rolling GitHub Release tagged "latest".
+#
+# Stable download link (always the newest build):
+#   https://github.com/roice3/MagicTile/releases/download/latest/MagicTile_v2.zip
+
+name: Build and release
+
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.gitattributes'
+  workflow_dispatch:   # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write      # needed to move the tag and update the release
+
+# If you push twice quickly, finish the older run before starting the newer
+# one so the newest commit always wins.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  ZIP_NAME: MagicTile_v2.zip
+  RELEASE_TAG: latest
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: microsoft/setup-msbuild@v2
+      - uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore MagicTile.sln
+
+      - name: Build (Release|x86)
+        run: msbuild MagicTile.sln /m /v:minimal /p:Configuration=Release /p:Platform=x86
+
+      - name: Assemble zip
+        shell: pwsh
+        run: |
+          $out   = "MagicTile/bin/Release"
+          $stage = "dist/MagicTile"
+          New-Item -ItemType Directory -Force $stage | Out-Null
+
+          # Program + DLLs + .config files (skip debug symbols and API doc XML).
+          Get-ChildItem $out -File |
+            Where-Object { $_.Extension -notin '.pdb', '.xml' } |
+            Copy-Item -Destination $stage
+
+          # Puzzle definitions, menu, surfaces, IRP data. The app looks for
+          # a "config" folder next to the exe (current directory).
+          Copy-Item MagicTile/config -Destination $stage -Recurse
+
+          Get-ChildItem $stage -Recurse -File | Measure-Object -Sum Length |
+            ForEach-Object { "Staged $($_.Count) files, $([math]::Round($_.Sum/1MB,1)) MB" }
+
+          Compress-Archive -Path $stage -DestinationPath "dist/$env:ZIP_NAME" -Force
+
+      - name: Keep a copy as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MagicTile
+          path: dist/${{ env.ZIP_NAME }}
+          retention-days: 30
+
+      - name: Publish to the "latest" release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SHORT=$(git rev-parse --short HEAD)
+          SUBJECT=$(git log -1 --format=%s)
+          DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
+
+          # Point the rolling tag at this commit.
+          git tag -f "$RELEASE_TAG" "$GITHUB_SHA"
+          git push -f origin "refs/tags/$RELEASE_TAG"
+
+          NOTES="Automatic build of commit $SHORT ($DATE): $SUBJECT
+
+          Download **$ZIP_NAME**, unzip anywhere, and run MagicTile.exe (Windows, .NET Framework 4.8)."
+
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --title "MagicTile (latest build)" \
+              --notes "$NOTES" --latest
+          fi
+
+          gh release upload "$RELEASE_TAG" "dist/$ZIP_NAME" --clobber
+          gh release edit "$RELEASE_TAG" --notes "$NOTES" --latest
