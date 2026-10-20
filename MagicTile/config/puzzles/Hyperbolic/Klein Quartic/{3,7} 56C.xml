@@ -241,7 +241,7 @@
       </Puzzle>
    </Specific>
    <SurfaceConfig>
-      <MeshFile>KleinQuartic.txt</MeshFile>
+      <MeshFile>KleinQuartic_Tetrahedral.txt</MeshFile>
       <Surface>Mesh</Surface>
    </SurfaceConfig>
    <TileShrink>0.94</TileShrink>
