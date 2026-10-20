@@ -90,7 +90,7 @@
          </SlicingCircles>
       </Puzzle>
       <Puzzle>
-         <DisplayName>Hexagon Master Brillic</DisplayName>
+         <CutDescription>Hexagon Master Brillic</CutDescription>
          <SlicingCircles>
             <EdgeCentered/>
             <FaceCentered>

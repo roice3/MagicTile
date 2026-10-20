@@ -61,6 +61,17 @@
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
+	   <Puzzle>
+		   <DisplayName>Pentultimate</DisplayName>
+		   <SlicingCircles>
+			   <EdgeCentered/>
+			   <FaceCentered>
+				   <Distance>1:1:1:0</Distance>
+			   </FaceCentered>
+			   <Thickness>0.015</Thickness>
+			   <VertexCentered/>
+		   </SlicingCircles>
+	   </Puzzle>
       <Puzzle>
          <DisplayName>Master Starminx</DisplayName>
          <SlicingCircles>
@@ -85,17 +96,18 @@
             <VertexCentered/>
          </SlicingCircles>
       </Puzzle>
-      <Puzzle>
-         <DisplayName>Pentultimate</DisplayName>
-         <SlicingCircles>
-            <EdgeCentered/>
-            <FaceCentered>
-               <Distance>1:1:1:0</Distance>
-            </FaceCentered>
-            <Thickness>0.015</Thickness>
-            <VertexCentered/>
-         </SlicingCircles>
-      </Puzzle>
+	   <Puzzle>
+		   <DisplayName>Master Brillic</DisplayName>
+		   <SlicingCircles>
+			   <EdgeCentered/>
+			   <FaceCentered>
+				   <Distance>0.73:0:1:0</Distance>
+				   <Distance>0:2:0:0</Distance>
+			   </FaceCentered>
+			   <Thickness>0.015</Thickness>
+			   <VertexCentered/>
+		   </SlicingCircles>
+	   </Puzzle>
       <Puzzle>
          <DisplayName>Starmate</DisplayName>
          <SlicingCircles>
