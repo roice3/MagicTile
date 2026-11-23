@@ -2049,6 +2049,10 @@
 
 		private void PerformClick( ClickData clickData )
 		{
+			// No puzzle yet (e.g. a click while the startup puzzle is still building).
+			if( m_puzzle == null )
+				return;
+
 			// Handle macros.
 			if( AltDown )
 			{
